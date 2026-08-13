@@ -1,0 +1,80 @@
+@model CVMatch.Web.Models.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Yönetim Paneli";
+}
+
+<h1 class="h3 mb-4">Yönetim Paneli</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Toplam Başvuru</div>
+                <div class="h3 mb-0">@Model.ToplamBasvuru</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Değerlendirilmemiş</div>
+                <div class="h3 mb-0">@Model.YeniBasvuru</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Son 7 Gün</div>
+                <div class="h3 mb-0">@Model.SonYediGun</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-secondary small">Aktif İlan</div>
+                <div class="h3 mb-0">@Model.AktifIlan</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="h5 mb-3">Son Başvurular</h2>
+
+        @if (Model.SonBasvurular.Count == 0)
+        {
+            <p class="text-secondary mb-0">Henüz başvuru yok.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-secondary small">
+                            <th>Başvuru No</th>
+                            <th>Ad Soyad</th>
+                            <th>Şehir</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model.SonBasvurular)
+                        {
+                            <tr>
+                                <td class="font-monospace small">@b.ApplicationReferenceNumber</td>
+                                <td>@b.FullName</td>
+                                <td>@(b.CityName ?? "—")</td>
+                                <td class="small text-secondary">
+                                    @b.SubmittedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

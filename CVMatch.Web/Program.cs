@@ -29,6 +29,10 @@ builder.Services.AddHttpClient<ICvExtractionService, ClaudeCvExtractionService>(
 builder.Services.AddScoped<ICvProcessingService, CvProcessingService>();
 #pragma warning restore CA1416
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole(DbSeeder.AdminRole));
+});
 
 var app = builder.Build();
 
@@ -52,6 +56,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
