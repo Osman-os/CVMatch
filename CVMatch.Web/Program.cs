@@ -41,6 +41,9 @@ app.Services.GetRequiredService<IFileStorage>();
 
 await DbSeeder.SeedAsync(app.Services);
 
+if (app.Environment.IsDevelopment())
+    await TestDataSeeder.SeedAsync(app.Services);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
