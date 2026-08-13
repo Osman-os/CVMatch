@@ -1,0 +1,53 @@
+@model CVMatch.Web.Models.ViewModels.WorkExperienceInputModel
+@{
+    var i = (int)ViewData["Index"]!;
+    var prefix = $"WorkExperiences[{i}]";
+}
+
+<div class="border rounded p-3 mb-3 experience-row">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="fw-semibold small">İş Deneyimi</span>
+        <button type="button" class="btn btn-link btn-sm text-danger p-0 remove-row">
+            Sil
+        </button>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Pozisyon</label>
+            <input name="@(prefix).Position" value="@Model.Position" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Kurum</label>
+            <input name="@(prefix).CompanyName" value="@Model.CompanyName" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Başlangıç Tarihi</label>
+            <input name="@(prefix).StartDate" value="@Model.StartDate"
+                   class="form-control" placeholder="aa/yyyy" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Bitiş Tarihi</label>
+            <input name="@(prefix).EndDate" value="@Model.EndDate"
+                   class="form-control end-date" placeholder="aa/yyyy"
+                   disabled="@Model.IsCurrent" />
+        </div>
+    </div>
+
+    <div class="form-check mb-3">
+        <input type="checkbox" name="@(prefix).IsCurrent" value="true"
+               class="form-check-input is-current"
+               id="@(prefix)_IsCurrent"
+               checked="@Model.IsCurrent" />
+        <input type="hidden" name="@(prefix).IsCurrent" value="false" />
+        <label class="form-check-label" for="@(prefix)_IsCurrent">Devam Ediyor</label>
+    </div>
+
+    <div class="mb-0">
+        <label class="form-label">Açıklama</label>
+        <textarea name="@(prefix).Description" class="form-control" rows="2">@Model.Description</textarea>
+    </div>
+</div>

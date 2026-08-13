@@ -1,0 +1,58 @@
+@model CVMatch.Web.Models.ViewModels.CvUploadViewModel
+@{
+    ViewData["Title"] = "CV Yükle";
+}
+
+<div class="text-center py-5">
+    <h1 class="display-5 fw-bold">CV'nizi yükleyin, başvurunuzu kolayca oluşturun</h1>
+    <p class="lead text-secondary mt-3">
+        Staj veya tam zamanlı iş başvurunuz için CV'nizi PDF olarak yükleyin.
+        Bilgilerinizi kontrol edin, başvuru türünüzü seçin ve başvurunuzu onaylayın.
+    </p>
+
+    <div class="d-flex justify-content-center gap-4 flex-wrap my-4 small text-secondary">
+        <span>Üyelik gerekmez</span>
+        <span>Bilgilerinizi göndermeden önce kontrol edebilirsiniz</span>
+        <span>Başvurunuz yalnızca onayınızdan sonra kaydedilir</span>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body p-4">
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="border border-2 border-primary border-dashed rounded p-5 text-center">
+                        <p class="fw-semibold mb-1">PDF CV'nizi buraya sürükleyin</p>
+                        <p class="text-secondary small mb-3">veya</p>
+
+                        <input type="file"
+                               name="CvFile"
+                               accept="application/pdf"
+                               class="form-control"
+                               required />
+
+                        <p class="text-secondary small mt-3 mb-0">
+                            Yalnızca PDF · En fazla 10 MB
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4">
+                        CV'yi Yükle
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>

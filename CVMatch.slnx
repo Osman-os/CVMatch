@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CVMatch.Tests/CVMatch.Tests.csproj" />
+  <Project Path="CVMatch.Web/CVMatch.Web.csproj" />
+</Solution>

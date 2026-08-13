@@ -1,0 +1,28 @@
+@model CVMatch.Web.Models.Entities.CvSubmission
+@{
+    ViewData["Title"] = "CV okunamadı";
+}
+
+<div class="row justify-content-center py-5">
+    <div class="col-lg-6 text-center">
+        <h1 class="h3">CV'nizdeki bilgiler okunamadı</h1>
+
+        <p class="text-secondary mt-3">
+            @(Model.ErrorMessage ?? "Yüklediğiniz CV'den bilgiler otomatik olarak çıkarılamadı.")
+        </p>
+
+        <p class="text-secondary">
+            Farklı bir PDF yükleyebilir veya bilgilerinizi manuel olarak girerek
+            başvurunuza devam edebilirsiniz.
+        </p>
+
+        <div class="d-flex gap-2 justify-content-center mt-4">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                Farklı Bir CV Yükle
+            </a>
+            <a asp-action="Review" asp-route-token="@Model.Token" class="btn btn-primary">
+                Bilgileri Manuel Gir
+            </a>
+        </div>
+    </div>
+</div>
