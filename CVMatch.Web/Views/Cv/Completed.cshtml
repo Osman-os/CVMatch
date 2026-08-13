@@ -1,0 +1,76 @@
+@model CVMatch.Web.Models.ViewModels.CvCompletedViewModel
+@{
+    ViewData["Title"] = "Başvurunuz alındı";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        <div class="text-center mb-4">
+            <div class="display-6 mb-2">Başvurunuz alındı</div>
+            <p class="text-secondary">
+                Başvurunuz kaydedildi ve değerlendirmeye alındı.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <div class="text-secondary small mb-1">Başvuru Numaranız</div>
+                <div class="h4 mb-0 font-monospace">@Model.ReferenceNumber</div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.EditToken))
+        {
+            <div class="card border-warning mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-2">Düzenleme Bağlantınız</h2>
+                    <p class="small text-secondary">
+                        Bu bağlantı ile başvurunuzu görüntüleyebilir, güncelleyebilir veya
+                        silinmesini talep edebilirsiniz. <strong>Bu bağlantı yalnızca bir kez
+                        gösterilir</strong> — kaydetmeyi unutmayın.
+                    </p>
+
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control font-monospace small"
+                               id="editLink" readonly value="@Model.EditToken" />
+                        <button class="btn btn-outline-secondary" type="button" id="copyBtn">Kopyala</button>
+                    </div>
+
+                    <div class="small text-secondary">
+                        Geçerlilik süresi: @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                Düzenleme bağlantınız oluşturulamadı. Başvurunuz kaydedildi; değişiklik
+                gerekirse başvuru numaranızla bizimle iletişime geçin.
+            </div>
+        }
+
+        <div class="alert alert-light border small">
+            Süre dolduktan sonra da verilerinizin silinmesini talep edebilirsiniz.
+            Bunun için başvuru numaranızla bize ulaşmanız yeterlidir.
+        </div>
+
+        <div class="text-center">
+            <a asp-action="Index" class="btn btn-outline-secondary">Yeni Başvuru Yap</a>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('copyBtn')?.addEventListener('click', function () {
+            const input = document.getElementById('editLink');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            this.textContent = 'Kopyalandı';
+            setTimeout(() => { this.textContent = 'Kopyala'; }, 2000);
+        });
+    </script>
+}

@@ -14,6 +14,9 @@ public class CvController : Controller
 {
     // Onaylanmayan taslaklar bu süre sonunda temizlenir
     private static readonly TimeSpan DraftLifetime = TimeSpan.FromHours(24);
+    
+    // Aday bu süre boyunca başvurusunu düzenleyebilir
+    private static readonly TimeSpan EditTokenLifetime = TimeSpan.FromDays(30);
 
     private readonly ApplicationDbContext _db;
     private readonly IFileStorage _storage;
@@ -252,6 +255,211 @@ public class CvController : Controller
         }
 
         return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Confirm(CvConsentInputModel consent, CancellationToken ct)
+    {
+        var submission = await _db.CvSubmissions
+            .FirstOrDefaultAsync(x => x.Token == consent.Token, ct);
+
+        if (submission is null) return NotFound();
+
+        if (submission.Status == SubmissionStatus.Approved)
+            return RedirectToAction(nameof(Summary), new { token = consent.Token });
+
+        // Onay kutuları eksikse özet ekranını hatalarla tekrar göster
+        if (!ModelState.IsValid)
+            return await BuildSummaryViewAsync(submission, consent, ct);
+
+        if (string.IsNullOrWhiteSpace(submission.ExtractedJson))
+            return RedirectToAction(nameof(Review), new { token = consent.Token });
+
+        var data = JsonSerializer.Deserialize<ExtractedCvData>(submission.ExtractedJson);
+        if (data is null)
+            return RedirectToAction(nameof(Review), new { token = consent.Token });
+
+        var now = DateTime.UtcNow;
+        var editToken = ApplicationHelpers.GenerateEditToken();
+
+        var profile = new CandidateProfile
+        {
+            ApplicationReferenceNumber = await GenerateUniqueReferenceAsync(ct),
+            FullName = data.FullName ?? "(belirtilmedi)",
+            Email = data.Email ?? "(belirtilmedi)",
+            PhoneNumber = data.PhoneNumber,
+            Address = data.Address,
+            PhotoFileName = submission.PhotoFileName,
+            CityId = data.CityId,
+            TotalExperienceMonths = data.TotalExperienceMonths ?? 0,
+            PreferredEmploymentType = data.PreferredEmploymentType ?? EmploymentType.Internship,
+            LinkedInUrl = data.LinkedInUrl,
+            GitHubUrl = data.GitHubUrl,
+            Status = ApplicationStatus.New,
+            EditTokenHash = ApplicationHelpers.HashEditToken(editToken),
+            EditTokenExpiresAt = now.Add(EditTokenLifetime),
+            ConsentGivenAt = now,
+            SubmittedAt = now
+        };
+
+        foreach (var e in data.Educations.Where(x => !string.IsNullOrWhiteSpace(x.School)))
+        {
+            profile.Educations.Add(new Education
+            {
+                School = e.School!,
+                FieldOfStudy = e.FieldOfStudy,
+                Level = Enum.TryParse<EducationLevel>(e.Level, true, out var lvl) ? lvl : null,
+                StartDate = ParseIsoLike(e.StartDate),
+                EndDate = e.IsCurrent ? null : ParseIsoLike(e.EndDate),
+                IsCurrent = e.IsCurrent
+            });
+        }
+
+        foreach (var w in data.WorkExperiences.Where(x => !string.IsNullOrWhiteSpace(x.CompanyName)))
+        {
+            profile.WorkExperiences.Add(new WorkExperience
+            {
+                CompanyName = w.CompanyName!,
+                Position = w.Position,
+                Description = w.Description,
+                StartDate = ParseIsoLike(w.StartDate),
+                EndDate = w.IsCurrent ? null : ParseIsoLike(w.EndDate),
+                IsCurrent = w.IsCurrent
+            });
+        }
+
+        await AttachSkillsAsync(profile, data.Skills, ct);
+
+        _db.CandidateProfiles.Add(profile);
+
+        submission.CandidateProfile = profile;
+        submission.Status = SubmissionStatus.Approved;
+        submission.ApprovedAt = now;
+
+        await _db.SaveChangesAsync(ct);
+
+        _logger.LogInformation(
+            "Başvuru tamamlandı. Referans: {Reference}",
+            profile.ApplicationReferenceNumber);
+
+        // Ham token yalnızca burada, bir kez gösterilir
+        return View(nameof(Completed), new CvCompletedViewModel
+        {
+            ReferenceNumber = profile.ApplicationReferenceNumber,
+            EditToken = editToken.ToString(),
+            EditTokenExpiresAt = profile.EditTokenExpiresAt
+        });
+    }
+
+    [HttpGet]
+    public IActionResult Completed()
+        => RedirectToAction(nameof(Index));
+
+    private async Task<string> GenerateUniqueReferenceAsync(CancellationToken ct)
+    {
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            var candidate = ApplicationHelpers.GenerateReferenceNumber();
+
+            var exists = await _db.CandidateProfiles
+                .AnyAsync(x => x.ApplicationReferenceNumber == candidate, ct);
+
+            if (!exists) return candidate;
+        }
+
+        throw new InvalidOperationException("Benzersiz başvuru numarası üretilemedi.");
+    }
+
+    private async Task AttachSkillsAsync(
+        CandidateProfile profile,
+        IEnumerable<string> rawSkills,
+        CancellationToken ct)
+    {
+        var names = rawSkills
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => s.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (names.Count == 0) return;
+
+        // Sözlükteki yazımlar kazanır: "REACT" girilse de "React" kaydedilir
+        var existing = await _db.Skills
+            .AsNoTracking()
+            .ToDictionaryAsync(s => s.Name, s => s.Name, StringComparer.OrdinalIgnoreCase, ct);
+
+        var added = new Dictionary<string, Skill>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var raw in names)
+        {
+            var name = ApplicationHelpers.NormalizeSkillName(raw, existing);
+
+            var skill = await _db.Skills
+                .FirstOrDefaultAsync(s => s.Name == name, ct);
+
+            if (skill is null && !added.TryGetValue(name, out skill))
+            {
+                skill = new Skill { Name = name };
+                _db.Skills.Add(skill);
+                added[name] = skill;
+            }
+
+            profile.CandidateSkills.Add(new CandidateSkill
+            {
+                Skill = skill!,
+                IsAiExtracted = true
+            });
+        }
+    }
+
+    private async Task<IActionResult> BuildSummaryViewAsync(
+        CvSubmission submission,
+        CvConsentInputModel consent,
+        CancellationToken ct)
+    {
+        var data = string.IsNullOrWhiteSpace(submission.ExtractedJson)
+            ? null
+            : JsonSerializer.Deserialize<ExtractedCvData>(submission.ExtractedJson);
+
+        if (data is null)
+            return RedirectToAction(nameof(Review), new { token = consent.Token });
+
+        var vm = new CvSummaryViewModel
+        {
+            Token = consent.Token,
+            OriginalFileName = submission.OriginalFileName,
+            HasPreview = !string.IsNullOrEmpty(submission.PreviewImageFileName),
+            Skills = data.Skills.Where(s => !string.IsNullOrWhiteSpace(s)).ToList(),
+            Consent = consent
+        };
+
+        ExtractionMapper.Apply(vm.Data, data);
+        vm.Data.CityId = data.CityId;
+        vm.Data.PreferredEmploymentType = data.PreferredEmploymentType;
+
+        if (data.CityId is int cityId)
+        {
+            vm.CityName = await _db.Cities
+                .AsNoTracking()
+                .Where(c => c.Id == cityId)
+                .Select(c => c.Name)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        return View(nameof(Summary), vm);
+    }
+
+    private static DateOnly? ParseIsoLike(string? isoLike)
+    {
+        if (string.IsNullOrWhiteSpace(isoLike)) return null;
+
+        return DateOnly.TryParseExact(
+            isoLike + "-01", "yyyy-MM-dd",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var date)
+            ? date
+            : null;
     }
 
     [HttpGet]

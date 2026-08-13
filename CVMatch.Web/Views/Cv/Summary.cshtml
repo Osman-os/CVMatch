@@ -201,4 +201,13 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Sunucudan gelen hata mesajları kutu işaretlenince temizlensin
+        document.querySelectorAll('.form-check-input[type=checkbox]').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                const msg = this.closest('.form-check')?.querySelector('.field-validation-error');
+                if (msg) msg.textContent = '';
+            });
+        });
+    </script>
 }

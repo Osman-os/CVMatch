@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using CVMatch.Web.Models.Enums;
+using CVMatch.Web.Models.Validation;
 
 namespace CVMatch.Web.Models.ViewModels;
 
@@ -47,15 +48,12 @@ public class CvConsentInputModel
 {
     public Guid Token { get; set; }
 
-    [Range(typeof(bool), "true", "true",
-        ErrorMessage = "Aydınlatma metnini okuduğunuzu onaylamanız gerekiyor.")]
+    [OnayGerekli(ErrorMessage = "Aydınlatma metnini okuduğunuzu onaylamanız gerekiyor.")]
     public bool KvkkAydinlatmaOnayi { get; set; }
 
-    [Range(typeof(bool), "true", "true",
-        ErrorMessage = "Verilerinizin işlenmesi için açık rıza vermeniz gerekiyor.")]
+    [OnayGerekli(ErrorMessage = "Verilerinizin işlenmesi için açık rıza vermeniz gerekiyor.")]
     public bool AcikRizaOnayi { get; set; }
 
-    [Range(typeof(bool), "true", "true",
-        ErrorMessage = "Bilgilerin doğruluğunu beyan etmeniz gerekiyor.")]
+    [OnayGerekli(ErrorMessage = "Bilgilerin doğruluğunu beyan etmeniz gerekiyor.")]
     public bool DogrulukBeyani { get; set; }
 }
