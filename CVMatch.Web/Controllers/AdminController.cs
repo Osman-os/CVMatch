@@ -1,6 +1,9 @@
 using CVMatch.Web.Data;
 using CVMatch.Web.Models.Enums;
 using CVMatch.Web.Models.ViewModels;
+using CVMatch.Web.Models.Entities;
+using CVMatch.Web.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +15,18 @@ namespace CVMatch.Web.Controllers;
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly IFileStorage _fileStorage;
 
-    public AdminController(ApplicationDbContext db) => _db = db;
+    public AdminController(
+        ApplicationDbContext db,
+        UserManager<IdentityUser> userManager,
+        IFileStorage fileStorage)
+    {
+        _db = db;
+        _userManager = userManager;
+        _fileStorage = fileStorage;
+    }
 
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -148,5 +161,190 @@ public class AdminController : Controller
             .ToListAsync(ct);
 
         return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Candidate(int id, CancellationToken ct)
+    {
+        var vm = await _db.CandidateProfiles
+            .AsNoTracking()
+            .Where(x => x.Id == id)
+            .Select(x => new AdminCandidateDetailViewModel
+            {
+                Id = x.Id,
+                ApplicationReferenceNumber = x.ApplicationReferenceNumber,
+                FullName = x.FullName,
+                Email = x.Email,
+                PhoneNumber = x.PhoneNumber,
+                Address = x.Address,
+                CityName = x.City != null ? x.City.Name : null,
+                LinkedInUrl = x.LinkedInUrl,
+                GitHubUrl = x.GitHubUrl,
+                TotalExperienceMonths = x.TotalExperienceMonths,
+                PreferredEmploymentType = x.PreferredEmploymentType,
+                Status = x.Status,
+                SubmittedAt = x.SubmittedAt,
+                UpdatedAt = x.UpdatedAt,
+                EditTokenExpiresAt = x.EditTokenExpiresAt,
+
+                Skills = x.CandidateSkills
+                    .OrderBy(cs => cs.Skill.Name)
+                    .Select(cs => cs.Skill.Name)
+                    .ToList(),
+
+                Educations = x.Educations
+                    .OrderByDescending(e => e.StartDate)
+                    .Select(e => new EgitimSatiri
+                    {
+                        School = e.School,
+                        FieldOfStudy = e.FieldOfStudy,
+                        Level = e.Level,
+                        StartDate = e.StartDate,
+                        EndDate = e.EndDate,
+                        IsCurrent = e.IsCurrent
+                    })
+                    .ToList(),
+
+                WorkExperiences = x.WorkExperiences
+                    .OrderByDescending(w => w.StartDate)
+                    .Select(w => new DeneyimSatiri
+                    {
+                        CompanyName = w.CompanyName,
+                        Position = w.Position,
+                        Description = w.Description,
+                        StartDate = w.StartDate,
+                        EndDate = w.EndDate,
+                        IsCurrent = w.IsCurrent
+                    })
+                    .ToList(),
+
+                Notes = x.Notes
+                    .OrderByDescending(n => n.CreatedAt)
+                    .Select(n => new NotSatiri
+                    {
+                        Id = n.Id,
+                        Content = n.Content,
+                        AuthorEmail = n.CreatedByEmail,
+                        CreatedAt = n.CreatedAt
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync(ct);
+
+        if (vm is null) return NotFound();
+
+        // En son yüklenen CV
+        var submission = await _db.CvSubmissions
+            .AsNoTracking()
+            .Where(s => s.CandidateProfileId == id)
+            .OrderByDescending(s => s.UploadedAt)
+            .FirstOrDefaultAsync(ct);
+
+        if (submission is not null)
+        {
+            vm.SubmissionId = submission.Id;
+            vm.OriginalFileName = submission.OriginalFileName;
+            vm.HasPreview = !string.IsNullOrEmpty(submission.PreviewImageFileName);
+            vm.HasPhoto = !string.IsNullOrEmpty(submission.PhotoFileName);
+        }
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeStatus(int id, ApplicationStatus status, CancellationToken ct)
+    {
+        var profile = await _db.CandidateProfiles.FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (profile is null) return NotFound();
+
+        profile.Status = status;
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Bilgi"] = "Başvuru durumu güncellendi.";
+        return RedirectToAction(nameof(Candidate), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddNote(int id, string content, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            TempData["Hata"] = "Not boş olamaz.";
+            return RedirectToAction(nameof(Candidate), new { id });
+        }
+
+        var varMi = await _db.CandidateProfiles.AnyAsync(x => x.Id == id, ct);
+        if (!varMi) return NotFound();
+
+        _db.CandidateNotes.Add(new CandidateNote
+        {
+            CandidateProfileId = id,
+            Content = content.Trim(),
+            CreatedByUserId = _userManager.GetUserId(User)!,
+            CreatedByEmail = User.Identity?.Name ?? "(bilinmiyor)",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Bilgi"] = "Not eklendi.";
+        return RedirectToAction(nameof(Candidate), new { id });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CandidateFile(int id, string type, CancellationToken ct)
+    {
+        var profile = await _db.CandidateProfiles
+            .AsNoTracking()
+            .Where(x => x.Id == id)
+            .Select(x => new { x.Id, x.PhotoFileName })
+            .FirstOrDefaultAsync(ct);
+
+        if (profile is null) return NotFound();
+
+        // Vesikalık profilde saklanır, diğerleri son yüklemede
+        if (type == "photo")
+        {
+            if (string.IsNullOrEmpty(profile.PhotoFileName)) return NotFound();
+            return await DosyaDondurAsync(profile.PhotoFileName, "image/jpeg", ct);
+        }
+
+        var submission = await _db.CvSubmissions
+            .AsNoTracking()
+            .Where(s => s.CandidateProfileId == id)
+            .OrderByDescending(s => s.UploadedAt)
+            .FirstOrDefaultAsync(ct);
+
+        if (submission is null) return NotFound();
+
+        return type switch
+        {
+            "preview" when !string.IsNullOrEmpty(submission.PreviewImageFileName)
+                => await DosyaDondurAsync(submission.PreviewImageFileName, "image/jpeg", ct),
+
+            "pdf" => await DosyaDondurAsync(
+                submission.StoredFileName, "application/pdf", ct, submission.OriginalFileName),
+
+            _ => NotFound()
+        };
+    }
+
+    private async Task<IActionResult> DosyaDondurAsync(
+        string storedFileName,
+        string contentType,
+        CancellationToken ct,
+        string? indirmeAdi = null)
+    {
+        if (!_fileStorage.Exists(storedFileName))
+            return NotFound();
+
+        var stream = await _fileStorage.OpenReadAsync(storedFileName, ct);
+
+        // indirmeAdi verilirse tarayıcı indirme adını bilir, verilmezse gömülü gösterir
+        return File(stream, contentType, indirmeAdi);
     }
 }

@@ -104,7 +104,8 @@ else
                     <tr>
                         <td class="font-monospace small">@a.ApplicationReferenceNumber</td>
                         <td>
-                            <div>@a.FullName</div>
+                            <a asp-action="Candidate" asp-route-id="@a.Id"
+                               class="text-decoration-none fw-semibold">@a.FullName</a>
                             <div class="text-secondary small">@a.Email</div>
                         </td>
                         <td>@(a.CityName ?? "—")</td>
