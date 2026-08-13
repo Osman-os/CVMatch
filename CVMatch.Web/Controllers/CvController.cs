@@ -201,10 +201,57 @@ public class CvController : Controller
     }
 
     [HttpGet]
-    public IActionResult Summary(Guid token)
+    public async Task<IActionResult> Summary(Guid token, CancellationToken ct)
     {
-        // Bir sonraki adımda dolduracağız
-        return Content($"Özet: {token}");
+        var submission = await _db.CvSubmissions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Token == token, ct);
+
+        if (submission is null) return NotFound();
+
+        // Onay verilmemişse buraya gelinmemeli
+        if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
+            return RedirectToAction(nameof(Processing), new { token });
+
+        if (string.IsNullOrWhiteSpace(submission.ExtractedJson))
+            return RedirectToAction(nameof(Review), new { token });
+
+        ExtractedCvData? data;
+        try
+        {
+            data = JsonSerializer.Deserialize<ExtractedCvData>(submission.ExtractedJson);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Özet için taslak JSON çözümlenemedi: {Token}", token);
+            return RedirectToAction(nameof(Review), new { token });
+        }
+
+        if (data is null) return RedirectToAction(nameof(Review), new { token });
+
+        var vm = new CvSummaryViewModel
+        {
+            Token = token,
+            OriginalFileName = submission.OriginalFileName,
+            HasPreview = !string.IsNullOrEmpty(submission.PreviewImageFileName),
+            Skills = data.Skills.Where(s => !string.IsNullOrWhiteSpace(s)).ToList(),
+            Consent = new CvConsentInputModel { Token = token }
+        };
+
+        ExtractionMapper.Apply(vm.Data, data);
+        vm.Data.CityId = data.CityId;
+        vm.Data.PreferredEmploymentType = data.PreferredEmploymentType;
+
+        if (data.CityId is int cityId)
+        {
+            vm.CityName = await _db.Cities
+                .AsNoTracking()
+                .Where(c => c.Id == cityId)
+                .Select(c => c.Name)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        return View(vm);
     }
 
     [HttpGet]

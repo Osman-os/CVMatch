@@ -1,0 +1,204 @@
+@model CVMatch.Web.Models.ViewModels.CvSummaryViewModel
+@{
+    ViewData["Title"] = "Başvuru özeti";
+}
+
+<h1 class="h3 mb-1">Başvuru özeti</h1>
+<p class="text-secondary">
+    Bilgilerinizi son kez kontrol edin. Onayladıktan sonra başvurunuz kaydedilecek.
+</p>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h2 class="h5 mb-0">Kişisel Bilgiler</h2>
+                    <a asp-action="Review" asp-route-token="@Model.Token"
+                       class="btn btn-sm btn-outline-secondary">Düzenle</a>
+                </div>
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 fw-normal text-secondary">Ad Soyad</dt>
+                    <dd class="col-sm-8">@Model.Data.FullName</dd>
+
+                    <dt class="col-sm-4 fw-normal text-secondary">Başvuru Türü</dt>
+                    <dd class="col-sm-8">@Model.EmploymentTypeText</dd>
+
+                    <dt class="col-sm-4 fw-normal text-secondary">E-posta</dt>
+                    <dd class="col-sm-8">@Model.Data.Email</dd>
+
+                    <dt class="col-sm-4 fw-normal text-secondary">Telefon</dt>
+                    <dd class="col-sm-8">@Model.Data.PhoneNumber</dd>
+
+                    <dt class="col-sm-4 fw-normal text-secondary">Şehir</dt>
+                    <dd class="col-sm-8">@(Model.CityName ?? "Belirtilmedi")</dd>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Data.Address))
+                    {
+                        <dt class="col-sm-4 fw-normal text-secondary">Adres</dt>
+                        <dd class="col-sm-8">@Model.Data.Address</dd>
+                    }
+
+                    <dt class="col-sm-4 fw-normal text-secondary">Toplam Deneyim</dt>
+                    <dd class="col-sm-8">@Model.TotalExperienceText</dd>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Data.LinkedInUrl))
+                    {
+                        <dt class="col-sm-4 fw-normal text-secondary">LinkedIn</dt>
+                        <dd class="col-sm-8 text-break">@Model.Data.LinkedInUrl</dd>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Data.GitHubUrl))
+                    {
+                        <dt class="col-sm-4 fw-normal text-secondary">GitHub</dt>
+                        <dd class="col-sm-8 text-break">@Model.Data.GitHubUrl</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Eğitim</h2>
+
+                @if (Model.Data.Educations.Count == 0)
+                {
+                    <p class="text-secondary mb-0">Eğitim bilgisi girilmedi.</p>
+                }
+                else
+                {
+                    @foreach (var e in Model.Data.Educations)
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="fw-semibold">@e.School</div>
+                            <div class="text-secondary small">@e.FieldOfStudy</div>
+                            <div class="text-secondary small">
+                                @(e.StartDate ?? "—")
+                                &ndash;
+                                @(e.IsCurrent ? "Devam ediyor" : (e.EndDate ?? "—"))
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">İş Deneyimi</h2>
+
+                @if (Model.Data.WorkExperiences.Count == 0)
+                {
+                    <p class="text-secondary mb-0">İş deneyimi girilmedi.</p>
+                }
+                else
+                {
+                    @foreach (var w in Model.Data.WorkExperiences)
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="fw-semibold">@w.Position</div>
+                            <div class="text-secondary small">@w.CompanyName</div>
+                            <div class="text-secondary small">
+                                @(w.StartDate ?? "—")
+                                &ndash;
+                                @(w.IsCurrent ? "Devam ediyor" : (w.EndDate ?? "—"))
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(w.Description))
+                            {
+                                <div class="small mt-1">@w.Description</div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Yetenekler</h2>
+
+                @if (Model.Skills.Count == 0)
+                {
+                    <p class="text-secondary mb-0">Yetenek girilmedi.</p>
+                }
+                else
+                {
+                    @foreach (var s in Model.Skills)
+                    {
+                        <span class="badge rounded-pill text-bg-light border me-1 mb-1">@s</span>
+                    }
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card position-sticky" style="top: 1rem;">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Yüklenen CV</h2>
+                <p class="small text-break mb-2">@Model.OriginalFileName</p>
+
+                @if (Model.HasPreview)
+                {
+                    <img src="@Url.Action("File", new { token = Model.Token, type = "preview" })"
+                         class="img-fluid border rounded" alt="CV önizlemesi" />
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Confirm" method="post" class="mt-4">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Consent.Token" />
+
+    <div class="card border-primary mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Onaylar</h2>
+
+            <p class="small text-secondary">
+                Başvurunuz kapsamında paylaştığınız kimlik, iletişim, eğitim ve iş deneyimi
+                bilgileri; başvurunuzun değerlendirilmesi ve açık iş/staj ilanlarıyla
+                eşleştirilmesi amacıyla işlenir. Verileriniz üçüncü kişilerle paylaşılmaz.
+                Başvuru sonrası size verilecek bağlantı ile bilgilerinizi güncelleyebilir
+                veya silinmesini talep edebilirsiniz.
+            </p>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" asp-for="Consent.KvkkAydinlatmaOnayi" />
+                <label class="form-check-label" asp-for="Consent.KvkkAydinlatmaOnayi">
+                    KVKK aydınlatma metnini okudum ve anladım.
+                </label>
+                <span asp-validation-for="Consent.KvkkAydinlatmaOnayi" class="d-block text-danger small"></span>
+            </div>
+
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" asp-for="Consent.AcikRizaOnayi" />
+                <label class="form-check-label" asp-for="Consent.AcikRizaOnayi">
+                    Kişisel verilerimin yukarıdaki amaçlarla işlenmesine açık rıza veriyorum.
+                </label>
+                <span asp-validation-for="Consent.AcikRizaOnayi" class="d-block text-danger small"></span>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="Consent.DogrulukBeyani" />
+                <label class="form-check-label" asp-for="Consent.DogrulukBeyani">
+                    Verdiğim bilgilerin doğru ve güncel olduğunu beyan ederim.
+                </label>
+                <span asp-validation-for="Consent.DogrulukBeyani" class="d-block text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between border-top pt-3">
+        <a asp-action="Review" asp-route-token="@Model.Token" class="btn btn-outline-secondary">Geri Dön</a>
+        <button type="submit" class="btn btn-primary">Başvuruyu Tamamla</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
