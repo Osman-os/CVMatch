@@ -16,6 +16,12 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages(options =>
+{
+    // Aday üyeliği yok; kayıt sayfası yalnızca yöneticiye açık
+    options.Conventions.AuthorizeAreaPage("Identity", "/Account/Register", "AdminOnly");
+    options.Conventions.AuthorizeAreaPage("Identity", "/Account/RegisterConfirmation", "AdminOnly");
+});
 builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
 builder.Services.AddSingleton<IPdfTextExtractor, PdfPigTextExtractor>();
 builder.Services.AddSingleton<IPdfPhotoExtractor, PdfPigPhotoExtractor>();
@@ -61,6 +67,19 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Aday üyeliği yok; kayıt sayfası yalnızca yöneticiye açık
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/Identity/Account/Register")
+        && !context.User.IsInRole("Admin"))
+    {
+        context.Response.Redirect("/Identity/Account/Login");
+        return;
+    }
+
+    await next();
+});
 
 app.MapStaticAssets();
 

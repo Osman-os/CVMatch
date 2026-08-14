@@ -4,6 +4,13 @@
 }
 
 <div class="text-center py-5">
+    @if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <span>Yönetici olarak giriş yaptınız.</span>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-sm btn-primary">Yönetim Paneline Git</a>
+    </div>
+}
     <h1 class="display-5 fw-bold">CV'nizi yükleyin, başvurunuzu kolayca oluşturun</h1>
     <p class="lead text-secondary mt-3">
         Staj veya tam zamanlı iş başvurunuz için CV'nizi PDF olarak yükleyin.
