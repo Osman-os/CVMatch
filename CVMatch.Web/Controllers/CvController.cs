@@ -356,6 +356,215 @@ public class CvController : Controller
     public IActionResult Completed()
         => RedirectToAction(nameof(Index));
 
+    [HttpGet]
+    public async Task<IActionResult> Edit(string key, CancellationToken ct)
+    {
+        var profile = await BulEditProfiliAsync(key, ct);
+        if (profile is null) return View("EditUnavailable");
+
+        var vm = new CvEditViewModel
+        {
+            Key = key,
+            ApplicationReferenceNumber = profile.ApplicationReferenceNumber,
+            SubmittedAt = profile.SubmittedAt,
+            EditTokenExpiresAt = profile.EditTokenExpiresAt,
+            Data = new CvReviewViewModel
+            {
+                FullName = profile.FullName,
+                Email = profile.Email,
+                PhoneNumber = profile.PhoneNumber,
+                Address = profile.Address,
+                CityId = profile.CityId,
+                LinkedInUrl = profile.LinkedInUrl,
+                GitHubUrl = profile.GitHubUrl,
+                PreferredEmploymentType = profile.PreferredEmploymentType,
+                ExperienceYears = profile.TotalExperienceMonths / 12,
+                ExperienceMonths = profile.TotalExperienceMonths % 12,
+                SkillsCsv = string.Join(", ", profile.CandidateSkills
+                    .OrderBy(cs => cs.Skill.Name)
+                    .Select(cs => cs.Skill.Name)),
+                Cities = await GetCitiesAsync(ct),
+                Educations = profile.Educations
+                    .OrderByDescending(e => e.StartDate)
+                    .Select(e => new EducationInputModel
+                    {
+                        School = e.School,
+                        FieldOfStudy = e.FieldOfStudy,
+                        Level = e.Level,
+                        StartDate = e.StartDate?.ToString("MM/yyyy"),
+                        EndDate = e.EndDate?.ToString("MM/yyyy"),
+                        IsCurrent = e.IsCurrent
+                    })
+                    .ToList(),
+                WorkExperiences = profile.WorkExperiences
+                    .OrderByDescending(w => w.StartDate)
+                    .Select(w => new WorkExperienceInputModel
+                    {
+                        CompanyName = w.CompanyName,
+                        Position = w.Position,
+                        Description = w.Description,
+                        StartDate = w.StartDate?.ToString("MM/yyyy"),
+                        EndDate = w.EndDate?.ToString("MM/yyyy"),
+                        IsCurrent = w.IsCurrent
+                    })
+                    .ToList()
+            }
+        };
+
+        if (vm.Data.Educations.Count == 0)
+            vm.Data.Educations.Add(new EducationInputModel());
+
+        if (vm.Data.WorkExperiences.Count == 0)
+            vm.Data.WorkExperiences.Add(new WorkExperienceInputModel());
+
+        return View(vm);
+    }
+
+    /// <summary>
+    /// Ham anahtarın özetini hesaplayıp süresi dolmamış profili bulur.
+    /// </summary>
+    private async Task<CandidateProfile?> BulEditProfiliAsync(string? key, CancellationToken ct)
+    {
+        var hash = ApplicationHelpers.TryHashEditKey(key);
+        if (hash is null) return null;
+
+        return await _db.CandidateProfiles
+            .Include(x => x.Educations)
+            .Include(x => x.WorkExperiences)
+            .Include(x => x.CandidateSkills)
+                .ThenInclude(cs => cs.Skill)
+            .FirstOrDefaultAsync(
+                x => x.EditTokenHash == hash && x.EditTokenExpiresAt > DateTime.UtcNow, ct);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(string key, CvReviewViewModel data, CancellationToken ct)
+    {
+        var profile = await BulEditProfiliAsync(key, ct);
+        if (profile is null) return View("EditUnavailable");
+
+        if (!ModelState.IsValid)
+        {
+            data.Cities = await GetCitiesAsync(ct);
+
+            if (data.Educations.Count == 0)
+                data.Educations.Add(new EducationInputModel());
+
+            if (data.WorkExperiences.Count == 0)
+                data.WorkExperiences.Add(new WorkExperienceInputModel());
+
+            return View(new CvEditViewModel
+            {
+                Key = key,
+                ApplicationReferenceNumber = profile.ApplicationReferenceNumber,
+                SubmittedAt = profile.SubmittedAt,
+                EditTokenExpiresAt = profile.EditTokenExpiresAt,
+                Data = data
+            });
+        }
+
+        profile.FullName = data.FullName!.Trim();
+        profile.Email = data.Email!.Trim();
+        profile.PhoneNumber = data.PhoneNumber?.Trim();
+        profile.Address = string.IsNullOrWhiteSpace(data.Address) ? null : data.Address.Trim();
+        profile.CityId = data.CityId;
+        profile.LinkedInUrl = string.IsNullOrWhiteSpace(data.LinkedInUrl) ? null : data.LinkedInUrl.Trim();
+        profile.GitHubUrl = string.IsNullOrWhiteSpace(data.GitHubUrl) ? null : data.GitHubUrl.Trim();
+        profile.PreferredEmploymentType = data.PreferredEmploymentType!.Value;
+        profile.TotalExperienceMonths = data.TotalExperienceMonths;
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        // Alt kayıtlar baştan kurulur
+        _db.Educations.RemoveRange(profile.Educations);
+        profile.Educations.Clear();
+
+        foreach (var e in data.Educations.Where(x => !string.IsNullOrWhiteSpace(x.School)))
+        {
+            profile.Educations.Add(new Education
+            {
+                School = e.School!.Trim(),
+                FieldOfStudy = e.FieldOfStudy?.Trim(),
+                Level = e.Level,
+                StartDate = ParseIsoLike(ToIsoLike(e.StartDate)),
+                EndDate = e.IsCurrent ? null : ParseIsoLike(ToIsoLike(e.EndDate)),
+                IsCurrent = e.IsCurrent
+            });
+        }
+
+        _db.WorkExperiences.RemoveRange(profile.WorkExperiences);
+        profile.WorkExperiences.Clear();
+
+        foreach (var w in data.WorkExperiences.Where(x => !string.IsNullOrWhiteSpace(x.CompanyName)))
+        {
+            profile.WorkExperiences.Add(new WorkExperience
+            {
+                CompanyName = w.CompanyName!.Trim(),
+                Position = w.Position?.Trim(),
+                Description = w.Description?.Trim(),
+                StartDate = ParseIsoLike(ToIsoLike(w.StartDate)),
+                EndDate = w.IsCurrent ? null : ParseIsoLike(ToIsoLike(w.EndDate)),
+                IsCurrent = w.IsCurrent
+            });
+        }
+
+        _db.CandidateSkills.RemoveRange(profile.CandidateSkills);
+        profile.CandidateSkills.Clear();
+
+        var yetenekler = (data.SkillsCsv ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        await AttachSkillsAsync(profile, yetenekler, ct);
+
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Bilgi"] = "Başvurunuz güncellendi.";
+        return RedirectToAction(nameof(Edit), new { key });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteApplication(string key, CancellationToken ct)
+    {
+        var profile = await BulEditProfiliAsync(key, ct);
+        if (profile is null) return View("EditUnavailable");
+
+        var submissions = await _db.CvSubmissions
+            .Where(s => s.CandidateProfileId == profile.Id)
+            .ToListAsync(ct);
+
+        // Diskteki dosyalar da silinsin
+        foreach (var s in submissions)
+        {
+            _storage.Delete(s.StoredFileName);
+
+            if (!string.IsNullOrEmpty(s.PreviewImageFileName))
+                _storage.Delete(s.PreviewImageFileName);
+
+            if (!string.IsNullOrEmpty(s.PhotoFileName))
+                _storage.Delete(s.PhotoFileName);
+        }
+
+        var notes = await _db.CandidateNotes
+            .Where(n => n.CandidateProfileId == profile.Id)
+            .ToListAsync(ct);
+
+        _db.CandidateNotes.RemoveRange(notes);
+        _db.CvSubmissions.RemoveRange(submissions);
+        _db.CandidateSkills.RemoveRange(profile.CandidateSkills);
+        _db.Educations.RemoveRange(profile.Educations);
+        _db.WorkExperiences.RemoveRange(profile.WorkExperiences);
+        _db.CandidateProfiles.Remove(profile);
+
+        await _db.SaveChangesAsync(ct);
+
+        _logger.LogInformation(
+            "Başvuru aday tarafından silindi: {Reference}",
+            profile.ApplicationReferenceNumber);
+
+        return View("ApplicationDeleted");
+    }
+
     private async Task<string> GenerateUniqueReferenceAsync(CancellationToken ct)
     {
         for (var attempt = 0; attempt < 10; attempt++)

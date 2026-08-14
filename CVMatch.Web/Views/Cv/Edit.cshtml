@@ -1,0 +1,64 @@
+@model CVMatch.Web.Models.ViewModels.CvEditViewModel
+@{
+    ViewData["Title"] = "Başvurumu Düzenle";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-1">Başvurumu Düzenle</h1>
+        <div class="text-secondary small">
+            <span class="font-monospace">@Model.ApplicationReferenceNumber</span>
+            &middot; @Model.SubmittedAt.ToLocalTime().ToString("dd.MM.yyyy") tarihinde başvuruldu
+        </div>
+    </div>
+</div>
+
+@if (TempData["Bilgi"] is string bilgi)
+{
+    <div class="alert alert-success">@bilgi</div>
+}
+
+<div class="alert alert-info small">
+    Değişiklikleriniz kaydettiğiniz anda geçerli olur.
+    Bu bağlantı @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy") tarihine kadar geçerlidir.
+</div>
+
+<form asp-action="Edit" method="post" id="editForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="key" value="@Model.Key" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+    @await Html.PartialAsync("_CvFormFields", Model.Data)
+
+    <div class="d-flex justify-content-between border-top pt-3 mb-5">
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+    </div>
+</form>
+
+<div class="card border-danger mb-5">
+    <div class="card-body">
+        <h2 class="h6 mb-2">Başvurumu Sil</h2>
+        <p class="small text-secondary">
+            Başvurunuz ve yüklediğiniz CV kalıcı olarak silinir. Bu işlem geri alınamaz.
+        </p>
+
+        <form asp-action="DeleteApplication" method="post"
+              onsubmit="return confirm('Başvurunuz kalıcı olarak silinecek. Emin misiniz?');">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="key" value="@Model.Key" />
+            <button type="submit" class="btn btn-outline-danger btn-sm">Başvurumu Sil</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        window.initialSkills = @Html.Raw(
+            System.Text.Json.JsonSerializer.Serialize(
+                (Model.Data.SkillsCsv ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries)));
+    </script>
+    <script src="/js/cv-review.js"></script>
+}

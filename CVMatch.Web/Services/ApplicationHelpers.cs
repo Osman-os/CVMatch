@@ -8,7 +8,6 @@ public static class ApplicationHelpers
 {
     // Karışabilecek karakterler çıkarıldı: I, O, 0, 1
     private const string ReferenceAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
     // Örn: CVM-2026-7K4P9Q
     public static string GenerateReferenceNumber()
     {
@@ -19,6 +18,17 @@ public static class ApplicationHelpers
         return $"CVM-{DateTime.UtcNow.Year}-{new string(suffix)}";
     }
 
+    /// <summary>
+    /// Adayın elindeki ham anahtarı doğrular ve karşılık gelen özeti döner.
+    /// Anahtar geçersiz biçimdeyse null döner.
+    /// </summary>
+    public static string? TryHashEditKey(string? rawKey)
+    {
+        if (string.IsNullOrWhiteSpace(rawKey)) return null;
+        if (!Guid.TryParse(rawKey, out var token)) return null;
+
+        return HashEditToken(token);
+    }
     // Adaya ham token gösterilir, veritabanında yalnızca özeti saklanır
     public static Guid GenerateEditToken() => Guid.NewGuid();
 

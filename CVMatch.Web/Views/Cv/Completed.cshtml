@@ -33,12 +33,17 @@
 
                     <div class="input-group mb-2">
                         <input type="text" class="form-control font-monospace small"
-                               id="editLink" readonly value="@Model.EditToken" />
+                               id="editLink" readonly
+                               value="@Url.Action("Edit", "Cv", new { key = Model.EditToken }, Context.Request.Scheme)" />
                         <button class="btn btn-outline-secondary" type="button" id="copyBtn">Kopyala</button>
                     </div>
 
-                    <div class="small text-secondary">
-                        Geçerlilik süresi: @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small text-secondary">
+                            Geçerlilik süresi: @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
+                        </span>
+                        <a asp-action="Edit" asp-route-key="@Model.EditToken"
+                           class="btn btn-sm btn-outline-primary">Başvurumu Düzenle</a>
                     </div>
                 </div>
             </div>
