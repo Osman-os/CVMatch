@@ -2,141 +2,214 @@
 @using CVMatch.Web.Models.Enums
 @{
     ViewData["Title"] = "Adaylar";
+    ViewData["Breadcrumb"] = "Yönetici Paneli / Adaylar";
+
+    string DurumMetni(ApplicationStatus s) => s switch
+    {
+        ApplicationStatus.New => "Yeni",
+        ApplicationStatus.UnderReview => "İnceleniyor",
+        ApplicationStatus.Suitable => "Uygun",
+        ApplicationStatus.NotSuitable => "Uygun Değil",
+        _ => s.ToString()
+    };
+
+    string DurumSinifi(ApplicationStatus s) => s switch
+    {
+        ApplicationStatus.New => "cvm-chip-blue",
+        ApplicationStatus.UnderReview => "cvm-chip-amber",
+        ApplicationStatus.Suitable => "cvm-chip-green",
+        ApplicationStatus.NotSuitable => "cvm-chip-red",
+        _ => "cvm-chip-gray"
+    };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Adaylar</h1>
-    <span class="text-secondary small">@Model.ToplamKayit kayıt</span>
-</div>
+<h1 class="h3 mb-1">Adaylar</h1>
+<p class="text-secondary mb-4">Başvuruları arayın, filtreleyin ve inceleyin.</p>
 
-<form method="get" asp-action="Candidates" class="card mb-4">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label small">Ara</label>
-                <input type="text" name="arama" value="@Model.Arama"
-                       class="form-control" placeholder="Ad, e-posta veya başvuru no" />
-            </div>
+<form method="get" asp-action="Candidates" id="filterForm">
 
-            <div class="col-md-3">
-                <label class="form-label small">Şehir</label>
-                <select name="cityId" class="form-select" asp-items="Model.Cities">
-                    <option value="">Tümü</option>
-                </select>
-            </div>
+    <div class="card mb-3">
+        <div class="card-body d-flex gap-3 align-items-center">
+            <input type="text" name="arama" value="@Model.Arama"
+                   class="form-control" placeholder="Aday ara — ad, e-posta veya başvuru no" />
 
-            <div class="col-md-2">
-                <label class="form-label small">Başvuru Türü</label>
-                <select name="employmentType" class="form-select">
-                    <option value="">Tümü</option>
-                    <option value="@((int)EmploymentType.Internship)"
-                            selected="@(Model.EmploymentType == EmploymentType.Internship)">Staj</option>
-                    <option value="@((int)EmploymentType.FullTime)"
-                            selected="@(Model.EmploymentType == EmploymentType.FullTime)">Tam Zamanlı</option>
-                </select>
-            </div>
+            <button type="button" class="btn btn-outline-secondary flex-shrink-0"
+                    data-bs-toggle="offcanvas" data-bs-target="#filtrePaneli">
+                Gelişmiş Filtreler
+                @if (Model.AktifFiltreSayisi > 0)
+                {
+                    <span class="badge rounded-pill text-bg-primary ms-1">@Model.AktifFiltreSayisi</span>
+                }
+            </button>
+        </div>
+    </div>
 
-            <div class="col-md-3">
-                <label class="form-label small">Durum</label>
-                <select name="status" class="form-select">
-                    <option value="">Tümü</option>
-                    @foreach (var s in Enum.GetValues<ApplicationStatus>())
-                    {
-                        <option value="@((int)s)" selected="@(Model.Status == s)">@s</option>
-                    }
-                </select>
-            </div>
+    @if (Model.FiltreVarMi)
+    {
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            @if (!string.IsNullOrWhiteSpace(Model.Arama))
+            {
+                <span class="cvm-filter-chip">Arama: @Model.Arama</span>
+            }
+            @if (Model.SecilenSehir is not null)
+            {
+                <span class="cvm-filter-chip">Şehir: @Model.SecilenSehir</span>
+            }
+            @if (Model.EmploymentType.HasValue)
+            {
+                <span class="cvm-filter-chip">
+                    Başvuru Türü: @(Model.EmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı")
+                </span>
+            }
+            @if (Model.Status.HasValue)
+            {
+                <span class="cvm-filter-chip">Durum: @DurumMetni(Model.Status.Value)</span>
+            }
+            @foreach (var y in Model.SecilenYetenekler)
+            {
+                <span class="cvm-filter-chip">Yetenek: @y</span>
+            }
+
+            <a asp-action="Candidates" class="small text-decoration-underline">Filtreleri Temizle</a>
+        </div>
+    }
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="filtrePaneli">
+        <div class="offcanvas-header border-bottom">
+            <h2 class="h5 mb-0">Gelişmiş Filtreler</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
 
-        <div class="mt-3">
-            <label class="form-label small d-block">
-                Yetenekler
-                <span class="text-secondary">— seçilenlerin hepsine sahip adaylar listelenir</span>
-            </label>
+        <div class="offcanvas-body">
 
-            <div class="border rounded p-2" style="max-height: 160px; overflow-y: auto;">
+            <h3 class="h6 text-secondary">Başvuru Türü</h3>
+            <select name="employmentType" class="form-select mb-4">
+                <option value="">Tümü</option>
+                <option value="@((int)EmploymentType.Internship)"
+                        selected="@(Model.EmploymentType == EmploymentType.Internship)">Staj</option>
+                <option value="@((int)EmploymentType.FullTime)"
+                        selected="@(Model.EmploymentType == EmploymentType.FullTime)">Tam Zamanlı</option>
+            </select>
+
+            <h3 class="h6 text-secondary">Başvuru Durumu</h3>
+            <select name="status" class="form-select mb-4">
+                <option value="">Tümü</option>
+                @foreach (var s in Enum.GetValues<ApplicationStatus>())
+                {
+                    <option value="@((int)s)" selected="@(Model.Status == s)">@DurumMetni(s)</option>
+                }
+            </select>
+
+            <h3 class="h6 text-secondary">Şehir</h3>
+            <select name="cityId" class="form-select mb-4" asp-items="Model.Cities">
+                <option value="">Tümü</option>
+            </select>
+
+            <h3 class="h6 text-secondary">Yetenekler</h3>
+            <p class="small text-secondary">Seçilenlerin hepsine sahip adaylar listelenir.</p>
+
+            <div class="border rounded p-2 mb-4" style="max-height: 320px; overflow-y: auto;">
                 @foreach (var y in Model.TumYetenekler)
                 {
-                    <div class="form-check form-check-inline">
+                    <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="skillIds"
                                value="@y.Id" id="skill-@y.Id" checked="@y.Secili" />
                         <label class="form-check-label small" for="skill-@y.Id">@y.Name</label>
                     </div>
                 }
             </div>
-        </div>
 
-        <div class="mt-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Filtrele</button>
-            @if (Model.FiltreVarMi)
-            {
-                <a asp-action="Candidates" class="btn btn-outline-secondary">Temizle</a>
-            }
+            <div class="d-flex gap-2">
+                <a asp-action="Candidates" class="btn btn-outline-secondary flex-fill">Sıfırla</a>
+                <button type="submit" class="btn btn-primary flex-fill">Filtrele</button>
+            </div>
         </div>
     </div>
+
+    <button type="submit" class="d-none">Ara</button>
 </form>
 
 @if (Model.Adaylar.Count == 0)
 {
-    <div class="alert alert-light border">
-        @(Model.FiltreVarMi ? "Bu filtrelere uyan aday bulunamadı." : "Henüz başvuru yok.")
+    <div class="card">
+        <div class="card-body text-center text-secondary py-5">
+            @(Model.FiltreVarMi ? "Bu filtrelere uyan aday bulunamadı." : "Henüz başvuru yok.")
+        </div>
     </div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr class="text-secondary small">
-                    <th>Başvuru No</th>
-                    <th>Ad Soyad</th>
-                    <th>Şehir</th>
-                    <th>Deneyim</th>
-                    <th>Tür</th>
-                    <th>Yetenekler</th>
-                    <th>Durum</th>
-                    <th>Tarih</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var a in Model.Adaylar)
-                {
-                    <tr>
-                        <td class="font-monospace small">@a.ApplicationReferenceNumber</td>
-                        <td>
-                            <a asp-action="Candidate" asp-route-id="@a.Id"
-                               class="text-decoration-none fw-semibold">@a.FullName</a>
-                            <div class="text-secondary small">@a.Email</div>
-                        </td>
-                        <td>@(a.CityName ?? "—")</td>
-                        <td class="small">@a.DeneyimMetni</td>
-                        <td class="small">
-                            @(a.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı")
-                        </td>
-                        <td style="max-width: 260px;">
-                            @foreach (var s in a.Skills.Take(4))
-                            {
-                                <span class="badge rounded-pill text-bg-light border">@s</span>
-                            }
-                            @if (a.Skills.Count > 4)
-                            {
-                                <span class="text-secondary small">+@(a.Skills.Count - 4)</span>
-                            }
-                        </td>
-                        <td><span class="badge text-bg-secondary">@a.Status</span></td>
-                        <td class="small text-secondary">@a.SubmittedAt.ToLocalTime().ToString("dd.MM.yyyy")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Aday</th>
+                            <th>Başvuru Türü</th>
+                            <th>Şehir</th>
+                            <th>Deneyim</th>
+                            <th>Yetenekler</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Adaylar)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="cvm-avatar">@a.BasHarfler</span>
+                                        <div>
+                                            <div class="fw-semibold">@a.FullName</div>
+                                            <div class="text-secondary" style="font-size: .75rem;">@a.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="cvm-chip @(a.PreferredEmploymentType == EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
+                                        @(a.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "İş")
+                                    </span>
+                                </td>
+                                <td>@(a.CityName ?? "—")</td>
+                                <td class="small text-secondary">@a.DeneyimMetni</td>
+                                <td style="max-width: 220px;">
+                                    @foreach (var s in a.Skills.Take(3))
+                                    {
+                                        <span class="cvm-skill-chip">@s</span>
+                                    }
+                                    @if (a.Skills.Count > 3)
+                                    {
+                                        <span class="text-secondary small">+@(a.Skills.Count - 3)</span>
+                                    }
+                                </td>
+                                <td><span class="cvm-chip @DurumSinifi(a.Status)">@DurumMetni(a.Status)</span></td>
+                                <td class="small text-secondary">
+                                    @a.SubmittedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Candidate" asp-route-id="@a.Id"
+                                       class="btn btn-sm btn-outline-secondary">Görüntüle</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    @if (Model.ToplamSayfa > 1)
-    {
-        <nav class="d-flex justify-content-between align-items-center">
-            <span class="text-secondary small">
-                Sayfa @Model.Sayfa / @Model.ToplamSayfa
-            </span>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <span class="text-secondary small">
+            @Model.ToplamKayit adaydan
+            @((Model.Sayfa - 1) * Model.SayfaBoyutu + 1)–@(Math.Min(Model.Sayfa * Model.SayfaBoyutu, Model.ToplamKayit))
+            arası gösteriliyor
+        </span>
+
+        @if (Model.ToplamSayfa > 1)
+        {
             <div class="btn-group">
                 <a class="btn btn-outline-secondary btn-sm @(Model.OncekiVar ? "" : "disabled")"
                    asp-action="Candidates"
@@ -147,6 +220,10 @@ else
                    asp-route-skillIds="@Model.SkillIds"
                    asp-route-sayfa="@(Model.Sayfa - 1)">Önceki</a>
 
+                <span class="btn btn-outline-secondary btn-sm disabled">
+                    @Model.Sayfa / @Model.ToplamSayfa
+                </span>
+
                 <a class="btn btn-outline-secondary btn-sm @(Model.SonrakiVar ? "" : "disabled")"
                    asp-action="Candidates"
                    asp-route-arama="@Model.Arama"
@@ -156,6 +233,6 @@ else
                    asp-route-skillIds="@Model.SkillIds"
                    asp-route-sayfa="@(Model.Sayfa + 1)">Sonraki</a>
             </div>
-        </nav>
-    }
+        }
+    </div>
 }

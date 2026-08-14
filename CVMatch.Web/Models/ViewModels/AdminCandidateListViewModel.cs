@@ -32,6 +32,23 @@ public class AdminCandidateListViewModel
     public bool FiltreVarMi =>
         !string.IsNullOrWhiteSpace(Arama) || CityId.HasValue
         || EmploymentType.HasValue || Status.HasValue || SkillIds.Count > 0;
+    
+    public string? SecilenSehir { get; set; }
+    public List<string> SecilenYetenekler { get; set; } = new();
+
+    public int AktifFiltreSayisi
+    {
+        get
+        {
+            var n = 0;
+            if (!string.IsNullOrWhiteSpace(Arama)) n++;
+            if (CityId.HasValue) n++;
+            if (EmploymentType.HasValue) n++;
+            if (Status.HasValue) n++;
+            n += SkillIds.Count;
+            return n;
+        }
+    }
 }
 
 public class SkillSecimi
@@ -64,6 +81,17 @@ public class AdaySatiri
             if (yil == 0) return $"{ay} ay";
             if (ay == 0) return $"{yil} yıl";
             return $"{yil} yıl {ay} ay";
+        }
+    }
+    public string BasHarfler
+    {
+        get
+        {
+            var parcalar = FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parcalar.Length == 0) return "?";
+            if (parcalar.Length == 1) return parcalar[0][..1].ToUpperInvariant();
+
+            return (parcalar[0][..1] + parcalar[^1][..1]).ToUpperInvariant();
         }
     }
 }

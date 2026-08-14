@@ -6,6 +6,8 @@ public class AdminDashboardViewModel
     public int YeniBasvuru { get; set; }
     public int SonYediGun { get; set; }
     public int AktifIlan { get; set; }
+    public int TaslakIlan { get; set; }
+    public int KapaliIlan { get; set; }
 
     public List<SonBasvuruSatiri> SonBasvurular { get; set; } = new();
 }
@@ -17,4 +19,17 @@ public class SonBasvuruSatiri
     public string FullName { get; set; } = null!;
     public string? CityName { get; set; }
     public DateTime SubmittedAt { get; set; }
+    public CVMatch.Web.Models.Enums.ApplicationStatus Status { get; set; }
+    public int TotalExperienceMonths { get; set; }
+
+    public string DeneyimMetni
+    {
+        get
+        {
+            if (TotalExperienceMonths <= 0) return "—";
+            var yil = TotalExperienceMonths / 12;
+            var ay = TotalExperienceMonths % 12;
+            return ay == 0 ? $"{yil} yıl" : $"{yil} yıl {ay} ay";
+        }
+    }
 }

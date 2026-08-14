@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CVMatch</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body class="admin-body">
+
+    <div class="admin-shell">
+
+        <aside class="admin-sidebar">
+            <div class="admin-brand">CVMatch</div>
+
+            <nav class="admin-nav">
+                @{
+                    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+                    var action = ViewContext.RouteData.Values["action"]?.ToString();
+                }
+
+                <a class="admin-nav-item @(controller == "Admin" && action == "Index" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Index">
+                    <span class="admin-nav-icon">▦</span> Genel Bakış
+                </a>
+
+                <a class="admin-nav-item @(controller == "Admin" && action != "Index" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Candidates">
+                    <span class="admin-nav-icon">◍</span> Adaylar
+                </a>
+
+                <a class="admin-nav-item @(controller == "JobPostings" ? "active" : "")"
+                   asp-controller="JobPostings" asp-action="Index">
+                    <span class="admin-nav-icon">▤</span> İlanlar
+                </a>
+            </nav>
+        </aside>
+
+        <div class="admin-main">
+
+            <header class="admin-topbar">
+                <div class="admin-breadcrumb">
+                    @if (ViewData["Breadcrumb"] is string bc)
+                    {
+                        @bc
+                    }
+                    else
+                    {
+                        <text>Yönetici Paneli</text>
+                    }
+                </div>
+
+                <div class="admin-user">
+                    <span class="admin-avatar">SY</span>
+                    <span class="admin-user-name">Sistem Yöneticisi</span>
+
+                    <form asp-area="Identity" asp-page="/Account/Logout"
+                          asp-route-returnUrl="@Url.Action("Index", "Cv")" method="post" class="d-inline">
+                        <button type="submit" class="admin-logout">Çıkış Yap</button>
+                    </form>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                @RenderBody()
+            </main>
+
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

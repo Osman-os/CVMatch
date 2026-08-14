@@ -45,6 +45,12 @@ public class AdminController : Controller
 
             AktifIlan = await _db.JobPostings
                 .CountAsync(x => x.Status == JobPostingStatus.Active, ct),
+            
+            TaslakIlan = await _db.JobPostings
+                .CountAsync(x => x.Status == JobPostingStatus.Draft, ct),
+
+            KapaliIlan = await _db.JobPostings
+                .CountAsync(x => x.Status == JobPostingStatus.Closed, ct),
 
             SonBasvurular = await _db.CandidateProfiles
                 .AsNoTracking()
@@ -56,7 +62,9 @@ public class AdminController : Controller
                     ApplicationReferenceNumber = x.ApplicationReferenceNumber,
                     FullName = x.FullName,
                     CityName = x.City != null ? x.City.Name : null,
-                    SubmittedAt = x.SubmittedAt
+                    SubmittedAt = x.SubmittedAt,
+                    Status = x.Status,
+                    TotalExperienceMonths = x.TotalExperienceMonths
                 })
                 .ToListAsync(ct)
         };
@@ -92,10 +100,28 @@ public class AdminController : Controller
         if (!string.IsNullOrWhiteSpace(arama))
         {
             var terim = arama.Trim();
-            query = query.Where(x =>
-                x.FullName.Contains(terim) ||
-                x.Email.Contains(terim) ||
-                x.ApplicationReferenceNumber.Contains(terim));
+
+            if (terim.Contains('@'))
+            {
+                query = query.Where(x => x.Email.Contains(terim));
+            }
+            else if (terim.Length >= 3)
+            {
+                // 3+ karakterde başvuru numarası da taranır
+                var bosluklu = " " + terim;
+                query = query.Where(x =>
+                    x.FullName.StartsWith(terim) ||
+                    x.FullName.Contains(bosluklu) ||
+                    x.ApplicationReferenceNumber.Contains(terim));
+            }
+            else
+            {
+                // Kısa terimlerde yalnızca ad; numarada tek harf çok fazla eşleşme üretir
+                var bosluklu = " " + terim;
+                query = query.Where(x =>
+                    x.FullName.StartsWith(terim) ||
+                    x.FullName.Contains(bosluklu));
+            }
         }
 
         if (cityId.HasValue)
@@ -159,6 +185,19 @@ public class AdminController : Controller
                 Secili = skillIds.Contains(s.Id)
             })
             .ToListAsync(ct);
+        
+        if (cityId.HasValue)
+        {
+            vm.SecilenSehir = await _db.Cities
+                .Where(c => c.Id == cityId.Value)
+                .Select(c => c.Name)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        vm.SecilenYetenekler = vm.TumYetenekler
+            .Where(y => y.Secili)
+            .Select(y => y.Name)
+            .ToList();
 
         return View(vm);
     }
