@@ -29,6 +29,22 @@ public static class ApplicationHelpers
 
         return HashEditToken(token);
     }
+
+    /// <summary>
+    /// Telefon numarasını yalnızca rakamlara indirger ve baştaki ülke kodunu atar.
+    /// "+90 532 456 78 90" ve "0532 456 78 90" aynı sonucu verir.
+    /// </summary>
+    public static string? NormalizePhone(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+
+        var digits = new string(raw.Where(char.IsDigit).ToArray());
+        if (digits.Length < 7) return null;
+
+        // Son 10 hane karşılaştırma için yeterli
+        return digits.Length > 10 ? digits[^10..] : digits;
+    }
+    
     // Adaya ham token gösterilir, veritabanında yalnızca özeti saklanır
     public static Guid GenerateEditToken() => Guid.NewGuid();
 

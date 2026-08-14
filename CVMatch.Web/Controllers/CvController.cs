@@ -280,6 +280,29 @@ public class CvController : Controller
         if (data is null)
             return RedirectToAction(nameof(Review), new { token = consent.Token });
 
+        // Mükerrer başvuru kontrolü: e-posta veya telefon eşleşmesi
+        var email = data.Email?.Trim().ToLowerInvariant();
+        var phone = ApplicationHelpers.NormalizePhone(data.PhoneNumber);
+
+        var mevcut = await _db.CandidateProfiles
+            .AsNoTracking()
+            .Where(x => x.EditTokenExpiresAt > DateTime.UtcNow)
+            .Where(x =>
+                (email != null && x.Email.ToLower() == email) ||
+                (phone != null && x.PhoneNormalized == phone))
+            .Select(x => x.ApplicationReferenceNumber)
+            .FirstOrDefaultAsync(ct);
+
+        if (mevcut is not null)
+        {
+            ModelState.AddModelError(string.Empty,
+                $"Bu iletişim bilgileriyle yapılmış bir başvurunuz zaten var ({mevcut}). " +
+                "Bilgilerinizi düzenleme bağlantınızla güncelleyebilirsiniz. " +
+                "Bağlantıya erişemiyorsanız başvuru numaranızla kvkk@cvmatch.example adresine yazın.");
+
+            return await BuildSummaryViewAsync(submission, consent, ct);
+        }
+
         var now = DateTime.UtcNow;
         var editToken = ApplicationHelpers.GenerateEditToken();
 
@@ -289,6 +312,7 @@ public class CvController : Controller
             FullName = data.FullName ?? "(belirtilmedi)",
             Email = data.Email ?? "(belirtilmedi)",
             PhoneNumber = data.PhoneNumber,
+            PhoneNormalized = phone,
             Address = data.Address,
             PhotoFileName = submission.PhotoFileName,
             CityId = data.CityId,
@@ -467,6 +491,7 @@ public class CvController : Controller
         profile.FullName = data.FullName!.Trim();
         profile.Email = data.Email!.Trim();
         profile.PhoneNumber = data.PhoneNumber?.Trim();
+        profile.PhoneNormalized = ApplicationHelpers.NormalizePhone(data.PhoneNumber);
         profile.Address = string.IsNullOrWhiteSpace(data.Address) ? null : data.Address.Trim();
         profile.CityId = data.CityId;
         profile.LinkedInUrl = string.IsNullOrWhiteSpace(data.LinkedInUrl) ? null : data.LinkedInUrl.Trim();

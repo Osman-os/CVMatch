@@ -12,7 +12,11 @@ public class CandidateProfile
     public string FullName { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string? PhoneNumber { get; set; }
+
+    /// <summary>Mükerrer başvuru kontrolü için normalleştirilmiş telefon.</summary>
+    public string? PhoneNormalized { get; set; }
     public string? Address { get; set; }
+    
     // CV'den çıkarılan vesikalık; bulunamazsa null
     public string? PhotoFileName { get; set; }
 

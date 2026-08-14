@@ -151,6 +151,13 @@
     </div>
 </div>
 
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors.Count > 0)
+{
+    <div class="alert alert-warning mt-4">
+        <div asp-validation-summary="ModelOnly" class="mb-0"></div>
+    </div>
+}
+
 <form asp-action="Confirm" method="post" class="mt-4">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Consent.Token" />
