@@ -1,0 +1,101 @@
+@model CVMatch.Web.Models.ViewModels.JobPostingListViewModel
+@using CVMatch.Web.Models.Enums
+@{
+    ViewData["Title"] = "İlanlar";
+
+    string DurumMetni(JobPostingStatus s) => s switch
+    {
+        JobPostingStatus.Draft => "Taslak",
+        JobPostingStatus.Active => "Yayında",
+        JobPostingStatus.Closed => "Kapalı",
+        _ => s.ToString()
+    };
+
+    string DurumRengi(JobPostingStatus s) => s switch
+    {
+        JobPostingStatus.Draft => "text-bg-secondary",
+        JobPostingStatus.Active => "text-bg-success",
+        JobPostingStatus.Closed => "text-bg-dark",
+        _ => "text-bg-light"
+    };
+}
+
+@if (TempData["Bilgi"] is string bilgi)
+{
+    <div class="alert alert-success">@bilgi</div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">İlanlar</h1>
+    <a asp-action="Create" class="btn btn-primary">Yeni İlan</a>
+</div>
+
+@if (Model.Ilanlar.Count == 0)
+{
+    <div class="alert alert-light border">
+        Henüz ilan oluşturulmamış. Eşleştirme yapabilmek için en az bir ilan gerekir.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr class="text-secondary small">
+                    <th>Başlık</th>
+                    <th>Şehir</th>
+                    <th>Tür</th>
+                    <th>Asgari Deneyim</th>
+                    <th>Yetenek</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var i in Model.Ilanlar)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@i.Id"
+                               class="text-decoration-none fw-semibold">@i.Title</a>
+                            <div class="text-secondary" style="font-size: .8rem;">
+                                @i.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
+                            </div>
+                        </td>
+                        <td>@(i.CityName ?? "Fark etmez")</td>
+                        <td class="small">
+                            @(i.EmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı")
+                        </td>
+                        <td class="small">
+                            @(i.MinExperienceYears == 0 ? "—" : $"{i.MinExperienceYears} yıl")
+                        </td>
+                        <td class="small">@i.SkillCount</td>
+                        <td><span class="badge @DurumRengi(i.Status)">@DurumMetni(i.Status)</span></td>
+                        <td class="text-end">
+                            <a asp-action="Match" asp-route-id="@i.Id"
+                               class="btn btn-sm btn-primary">Eşleştir</a>
+
+                            <form asp-action="ChangeStatus" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@i.Id" />
+
+                                @if (i.Status != JobPostingStatus.Active)
+                                {
+                                    <button type="submit" name="status"
+                                            value="@((int)JobPostingStatus.Active)"
+                                            class="btn btn-sm btn-outline-success">Yayınla</button>
+                                }
+                                else
+                                {
+                                    <button type="submit" name="status"
+                                            value="@((int)JobPostingStatus.Closed)"
+                                            class="btn btn-sm btn-outline-secondary">Kapat</button>
+                                }
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

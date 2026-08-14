@@ -1,0 +1,190 @@
+using CVMatch.Web.Data;
+using CVMatch.Web.Models.Entities;
+using CVMatch.Web.Models.Enums;
+using CVMatch.Web.Models.ViewModels;
+using CVMatch.Web.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+
+namespace CVMatch.Web.Controllers;
+
+[Authorize(Policy = "AdminOnly")]
+public class JobPostingsController : Controller
+{
+    private readonly ApplicationDbContext _db;
+    private readonly IMatchingService _matching;
+
+    public JobPostingsController(ApplicationDbContext db, IMatchingService matching)
+    {
+        _db = db;
+        _matching = matching;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index(CancellationToken ct)
+    {
+        var vm = new JobPostingListViewModel
+        {
+            Ilanlar = await _db.JobPostings
+                .AsNoTracking()
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(x => new IlanSatiri
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    CityName = x.City != null ? x.City.Name : null,
+                    EmploymentType = x.EmploymentType,
+                    Status = x.Status,
+                    MinExperienceYears = x.MinExperienceYears,
+                    SkillCount = x.JobPostingSkills.Count,
+                    CreatedAt = x.CreatedAt
+                })
+                .ToListAsync(ct)
+        };
+
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Create(CancellationToken ct)
+    {
+        var vm = new JobPostingEditViewModel();
+        await ListeleriDoldurAsync(vm, ct);
+        return View(nameof(Edit), vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id, CancellationToken ct)
+    {
+        var ilan = await _db.JobPostings
+            .AsNoTracking()
+            .Include(x => x.JobPostingSkills)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        if (ilan is null) return NotFound();
+
+        var vm = new JobPostingEditViewModel
+        {
+            Id = ilan.Id,
+            Title = ilan.Title,
+            EmploymentType = ilan.EmploymentType,
+            Description = ilan.Description,
+            MinExperienceYears = ilan.MinExperienceYears,
+            CityId = ilan.CityId,
+            Status = ilan.Status,
+            ZorunluSkillIds = ilan.JobPostingSkills.Where(s => s.IsRequired).Select(s => s.SkillId).ToList(),
+            TercihSkillIds = ilan.JobPostingSkills.Where(s => !s.IsRequired).Select(s => s.SkillId).ToList()
+        };
+
+        await ListeleriDoldurAsync(vm, ct);
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Save(JobPostingEditViewModel vm, CancellationToken ct)
+    {
+        // Aynı yetenek iki listede birden olmasın
+        vm.TercihSkillIds = vm.TercihSkillIds.Except(vm.ZorunluSkillIds).ToList();
+
+        if (!ModelState.IsValid)
+        {
+            await ListeleriDoldurAsync(vm, ct);
+            return View(nameof(Edit), vm);
+        }
+
+        JobPosting ilan;
+
+        if (vm.Id == 0)
+        {
+            ilan = new JobPosting { CreatedAt = DateTime.UtcNow };
+            _db.JobPostings.Add(ilan);
+        }
+        else
+        {
+            var mevcut = await _db.JobPostings
+                .Include(x => x.JobPostingSkills)
+                .FirstOrDefaultAsync(x => x.Id == vm.Id, ct);
+
+            if (mevcut is null) return NotFound();
+
+            ilan = mevcut;
+            ilan.UpdatedAt = DateTime.UtcNow;
+
+            // Yetenek seçimi baştan kurulur
+            _db.JobPostingSkills.RemoveRange(ilan.JobPostingSkills);
+            ilan.JobPostingSkills.Clear();
+        }
+
+        ilan.Title = vm.Title.Trim();
+        ilan.EmploymentType = vm.EmploymentType;
+        ilan.Description = string.IsNullOrWhiteSpace(vm.Description) ? null : vm.Description.Trim();
+        ilan.MinExperienceYears = vm.MinExperienceYears;
+        ilan.CityId = vm.CityId;
+        ilan.Status = vm.Status;
+
+        foreach (var skillId in vm.ZorunluSkillIds)
+            ilan.JobPostingSkills.Add(new JobPostingSkill { SkillId = skillId, IsRequired = true });
+
+        foreach (var skillId in vm.TercihSkillIds)
+            ilan.JobPostingSkills.Add(new JobPostingSkill { SkillId = skillId, IsRequired = false });
+
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Bilgi"] = vm.Id == 0 ? "İlan oluşturuldu." : "İlan güncellendi.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeStatus(int id, JobPostingStatus status, CancellationToken ct)
+    {
+        var ilan = await _db.JobPostings.FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (ilan is null) return NotFound();
+
+        ilan.Status = status;
+        ilan.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Bilgi"] = "İlan durumu güncellendi.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Match(int id, int? asgariSkor, CancellationToken ct)
+    {
+        var vm = await _matching.MatchAsync(id, asgariSkor ?? 1, ct);
+        if (vm is null) return NotFound();
+
+        return View(vm);
+    }
+
+    private async Task ListeleriDoldurAsync(JobPostingEditViewModel vm, CancellationToken ct)
+    {
+        vm.Cities = await _db.Cities
+            .AsNoTracking()
+            .OrderBy(c => c.Name)
+            .Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name,
+                Selected = c.Id == vm.CityId
+            })
+            .ToListAsync(ct);
+
+        vm.TumYetenekler = await _db.Skills
+            .AsNoTracking()
+            .OrderBy(s => s.Name)
+            .Select(s => new YetenekSecenegi
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Zorunlu = vm.ZorunluSkillIds.Contains(s.Id),
+                Tercih = vm.TercihSkillIds.Contains(s.Id)
+            })
+            .ToListAsync(ct);
+    }
+}

@@ -35,6 +35,8 @@ builder.Services.AddHttpClient<ICvExtractionService, ClaudeCvExtractionService>(
 builder.Services.AddScoped<ICvProcessingService, CvProcessingService>();
 #pragma warning restore CA1416
 
+builder.Services.AddScoped<IMatchingService, MatchingService>();
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(DbSeeder.AdminRole));
