@@ -9,10 +9,11 @@ public class PdfPreviewTests
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public void IlkSayfa_JpegOlarakUretilebilir()
     {
-        var pdfPath = @"C:\Dev\CVMatch\test-cv.pdf";
-        var outPath = @"C:\Dev\CVMatch\test-cv-onizleme.jpg";
-
+        var pdfPath = TestPaths.TestCvPdf;
         Assert.True(File.Exists(pdfPath), $"Test PDF bulunamadı: {pdfPath}");
+
+        var outputDir = TestPaths.CreateOutputDirectory();
+        var outPath = Path.Combine(outputDir, "test-cv-onizleme.jpg");
 
         var pdfBytes = File.ReadAllBytes(pdfPath);
 
@@ -23,9 +24,13 @@ public class PdfPreviewTests
 
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Jpeg, 85);
-        using var fs = File.OpenWrite(outPath);
-        data.SaveTo(fs);
+
+        using (var fs = File.OpenWrite(outPath))
+        {
+            data.SaveTo(fs);
+        }
 
         Assert.True(bitmap.Width > 0 && bitmap.Height > 0);
+        Assert.True(new FileInfo(outPath).Length > 0, "Önizleme dosyası oluşmadı.");
     }
 }

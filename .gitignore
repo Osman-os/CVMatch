@@ -484,3 +484,8 @@ $RECYCLE.BIN/
 # CVMatch
 appsettings.Development.json
 storage/
+
+# Test çıktıları
+test-cv-*.txt
+test-cv-*.jpg
+test-cv-gorseller/

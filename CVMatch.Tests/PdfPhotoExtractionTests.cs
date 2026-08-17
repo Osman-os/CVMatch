@@ -8,7 +8,7 @@ public class PdfPhotoExtractionTests
     [Fact]
     public void AdayFotografi_Ayiklanabilir()
     {
-        var pdfPath = @"C:\Dev\CVMatch\test-cv.pdf";
+        var pdfPath = TestPaths.TestCvPdf;
         Assert.True(File.Exists(pdfPath), $"Test PDF bulunamadı: {pdfPath}");
 
         var extractor = new PdfPigPhotoExtractor(
@@ -20,8 +20,9 @@ public class PdfPhotoExtractionTests
         Assert.Equal(".jpg", photo!.Extension);
         Assert.True(photo.Width >= 200 && photo.Height >= 200);
 
+        var outputDir = TestPaths.CreateOutputDirectory();
         File.WriteAllBytes(
-            $@"C:\Dev\CVMatch\test-cv-foto{photo.Extension}",
+            Path.Combine(outputDir, $"test-cv-foto{photo.Extension}"),
             photo.Bytes);
     }
 }

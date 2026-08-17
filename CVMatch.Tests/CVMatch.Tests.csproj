@@ -25,4 +25,10 @@
     <ProjectReference Include="..\CVMatch.Web\CVMatch.Web.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

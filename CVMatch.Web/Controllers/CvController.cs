@@ -298,7 +298,7 @@ public class CvController : Controller
             ModelState.AddModelError(string.Empty,
                 $"Bu iletişim bilgileriyle yapılmış bir başvurunuz zaten var ({mevcut}). " +
                 "Bilgilerinizi düzenleme bağlantınızla güncelleyebilirsiniz. " +
-                "Bağlantıya erişemiyorsanız başvuru numaranızla kvkk@cvmatch.example adresine yazın.");
+                "Bağlantıya erişemiyorsanız başvuru numaranızla [İLETİŞİM-EPOSTA] adresine yazın.");
 
             return await BuildSummaryViewAsync(submission, consent, ct);
         }

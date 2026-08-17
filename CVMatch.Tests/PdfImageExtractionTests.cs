@@ -7,11 +7,10 @@ public class PdfImageExtractionTests
     [Fact]
     public void PdfIcindekiGorseller_Cikarilabilir()
     {
-        var pdfPath = @"C:\Dev\CVMatch\test-cv.pdf";
-        var outDir = @"C:\Dev\CVMatch\test-cv-gorseller";
-
+        var pdfPath = TestPaths.TestCvPdf;
         Assert.True(File.Exists(pdfPath), $"Test PDF bulunamadı: {pdfPath}");
-        Directory.CreateDirectory(outDir);
+
+        var outputDir = TestPaths.CreateOutputDirectory();
 
         using var document = PdfDocument.Open(pdfPath);
 
@@ -30,16 +29,16 @@ public class PdfImageExtractionTests
                 // Önce hazır bayt dizisi varsa onu kullan
                 if (image.TryGetPng(out var png))
                 {
-                    File.WriteAllBytes(Path.Combine(outDir, $"gorsel-{index}.png"), png);
+                    File.WriteAllBytes(Path.Combine(outputDir, $"gorsel-{index}.png"), png);
                 }
                 else
                 {
                     File.WriteAllBytes(
-                        Path.Combine(outDir, $"gorsel-{index}.bin"),
+                        Path.Combine(outputDir, $"gorsel-{index}.bin"),
                         image.RawBytes.ToArray());
                 }
 
-                File.AppendAllLines(Path.Combine(outDir, "bilgi.txt"), new[] { info });
+                File.AppendAllLines(Path.Combine(outputDir, "bilgi.txt"), new[] { info });
             }
         }
 

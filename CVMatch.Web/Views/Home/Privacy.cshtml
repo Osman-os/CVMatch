@@ -1,6 +1,116 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "KVKK Aydınlatma Metni";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div style="max-width: 780px; margin: 0 auto;">
+
+    <h1 class="h3 mb-1">KVKK Aydınlatma Metni</h1>
+    <p class="text-secondary mb-4">
+        6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında hazırlanmıştır.
+    </p>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6">Hangi verileri işliyoruz?</h2>
+            <p class="small mb-0">
+                CVMatch üzerinden başvuru yaptığınızda şu veriler işlenir: ad soyad,
+                e-posta adresi, telefon numarası, şehir, açık adres, eğitim bilgileri,
+                iş deneyimi, yetenekler, varsa LinkedIn ve GitHub bağlantıları,
+                yüklediğiniz CV dosyası ve CV'nizde yer alıyorsa vesikalık fotoğrafınız.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6">Verileriniz nasıl işleniyor?</h2>
+            <p class="small">
+                Yüklediğiniz PDF dosyası sunucumuzda saklanır. Dosyadan çıkarılan metin,
+                bilgilerin otomatik olarak ayrıştırılması amacıyla
+                <strong>Anthropic PBC tarafından sağlanan Claude yapay zekâ hizmetine</strong>
+                gönderilir. Bu işlem, formu sizin elle doldurmanıza gerek kalmaması için yapılır.
+            </p>
+            <p class="small mb-0">
+                Anthropic, API üzerinden gönderilen verileri model eğitimi için kullanmaz.
+                Ayrıntılar için Anthropic'in gizlilik politikasını inceleyebilirsiniz.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6">İşleme aşamaları</h2>
+            <ol class="small mb-0">
+                <li>
+                    CV'nizi yüklediğinizde dosya sunucuya kaydedilir ve içeriği yapay zekâ
+                    hizmetine gönderilerek bilgileriniz çıkarılır. Bu aşamada verileriniz
+                    <strong>geçici taslak</strong> olarak tutulur.
+                </li>
+                <li>
+                    Çıkarılan bilgileri kontrol eder, gerekirse düzeltirsiniz.
+                </li>
+                <li>
+                    Onay verdiğinizde <strong>kalıcı başvuru kaydınız</strong> oluşturulur ve
+                    başvurunuz değerlendirmeye alınır.
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6">Ne amaçla işliyoruz?</h2>
+            <p class="small mb-0">
+                Verileriniz yalnızca başvurunuzun değerlendirilmesi ve açık iş/staj
+                ilanlarıyla eşleştirilmesi amacıyla işlenir. Pazarlama, profilleme veya
+                başka bir amaçla kullanılmaz.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6">Kimlerle paylaşılıyor?</h2>
+            <p class="small mb-0">
+                Verileriniz, yukarıda belirtilen yapay zekâ hizmet sağlayıcısı dışında
+                üçüncü kişilerle paylaşılmaz. Başvurunuza yalnızca yetkili işe alım
+                yöneticileri erişebilir.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6">Ne kadar süre saklanıyor?</h2>
+            <p class="small mb-0">
+                Onaylanmayan taslak başvurular 24 saat içinde silinir. Onaylanan
+                başvurular, silinmesini talep edene kadar saklanır. Başvuru sonrası
+                verilen düzenleme bağlantısı 30 gün geçerlidir; bu süre içinde
+                bilgilerinizi güncelleyebilir veya başvurunuzu tamamen silebilirsiniz.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h6">Haklarınız</h2>
+            <p class="small">
+                KVKK'nın 11. maddesi uyarınca; verilerinizin işlenip işlenmediğini
+                öğrenme, işlenmişse bilgi talep etme, düzeltilmesini veya silinmesini
+                isteme ve işlemeye itiraz etme haklarına sahipsiniz.
+            </p>
+            <p class="small mb-0">
+                Düzenleme bağlantınızın süresi dolduktan sonra da bu haklarınızı
+                kullanabilirsiniz. Başvuru numaranızla
+                <strong>[İLETİŞİM-EPOSTA]</strong> adresine yazmanız yeterlidir.
+            </p>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a asp-controller="Cv" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            Ana Sayfaya Dön
+        </a>
+    </div>
+
+</div>
