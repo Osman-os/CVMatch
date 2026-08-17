@@ -7,6 +7,13 @@ namespace CVMatch.Web.Models.ViewModels;
 public class JobPostingListViewModel
 {
     public List<IlanSatiri> Ilanlar { get; set; } = new();
+
+    public string? Arama { get; set; }
+    public EmploymentType? EmploymentType { get; set; }
+    public JobPostingStatus? Status { get; set; }
+
+    public bool FiltreVarMi =>
+        !string.IsNullOrWhiteSpace(Arama) || EmploymentType.HasValue || Status.HasValue;
 }
 
 public class IlanSatiri

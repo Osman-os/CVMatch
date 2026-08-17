@@ -23,12 +23,33 @@ public class JobPostingsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken ct)
+    public async Task<IActionResult> Index(
+        string? arama,
+        EmploymentType? employmentType,
+        JobPostingStatus? status,
+        CancellationToken ct)
     {
+        var query = _db.JobPostings.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(arama))
+        {
+            var terim = arama.Trim();
+            query = query.Where(x => x.Title.Contains(terim));
+        }
+
+        if (employmentType.HasValue)
+            query = query.Where(x => x.EmploymentType == employmentType.Value);
+
+        if (status.HasValue)
+            query = query.Where(x => x.Status == status.Value);
+
         var vm = new JobPostingListViewModel
         {
-            Ilanlar = await _db.JobPostings
-                .AsNoTracking()
+            Arama = arama,
+            EmploymentType = employmentType,
+            Status = status,
+
+            Ilanlar = await query
                 .OrderByDescending(x => x.CreatedAt)
                 .Select(x => new IlanSatiri
                 {
@@ -154,9 +175,10 @@ public class JobPostingsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Match(int id, int? asgariSkor, CancellationToken ct)
+    public async Task<IActionResult> Match(
+        int id, int? asgariSkor, string? turFiltresi, CancellationToken ct)
     {
-        var vm = await _matching.MatchAsync(id, asgariSkor ?? 1, ct);
+        var vm = await _matching.MatchAsync(id, asgariSkor ?? 1, turFiltresi ?? "tumu", ct);
         if (vm is null) return NotFound();
 
         return View(vm);

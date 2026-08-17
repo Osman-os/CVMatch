@@ -6,7 +6,13 @@ public class MatchResultViewModel
 {
     public int JobPostingId { get; set; }
     public string Title { get; set; } = null!;
+    // "tumu" | "uyumlu" | "uyumsuz"
+    public string TurFiltresi { get; set; } = "tumu";
 
+    public int TurUyumsuzSayisi { get; set; }
+    public int ToplamAday { get; set; }
+    public int OrtalamaUyum { get; set; }
+    public int YuksekUyumluSayisi { get; set; }
     public int? CityId { get; set; }
     public string? CityName { get; set; }
     public EmploymentType EmploymentType { get; set; }
@@ -55,6 +61,10 @@ public class EslesenAday
     public HashSet<int> SahipOlunanSkillIds { get; set; } = new();
 
     public bool Bilir(int skillId) => SahipOlunanSkillIds.Contains(skillId);
+    public bool TurUyumlu { get; set; }
+
+    public List<string> EslesenYetenekler { get; set; } = new();
+    public List<string> EksikYetenekler { get; set; } = new();
 
     public string DeneyimMetni
     {
@@ -73,7 +83,14 @@ public class EslesenAday
     public string SkorRengi => Skor switch
     {
         >= 80 => "bg-success",
-        >= 50 => "bg-warning",
-        _ => "bg-secondary"
+        >= 60 => "bg-warning",
+        _ => "bg-danger"
+    };
+
+    public string SkorSinifi => Skor switch
+    {
+        >= 80 => "cvm-score-high",
+        >= 60 => "cvm-score-mid",
+        _ => "cvm-score-low"
     };
 }

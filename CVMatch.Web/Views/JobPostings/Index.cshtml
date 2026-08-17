@@ -2,6 +2,7 @@
 @using CVMatch.Web.Models.Enums
 @{
     ViewData["Title"] = "İlanlar";
+    ViewData["Breadcrumb"] = "Yönetici Paneli / İlanlar";
 
     string DurumMetni(JobPostingStatus s) => s switch
     {
@@ -11,12 +12,12 @@
         _ => s.ToString()
     };
 
-    string DurumRengi(JobPostingStatus s) => s switch
+    string DurumSinifi(JobPostingStatus s) => s switch
     {
-        JobPostingStatus.Draft => "text-bg-secondary",
-        JobPostingStatus.Active => "text-bg-success",
-        JobPostingStatus.Closed => "text-bg-dark",
-        _ => "text-bg-light"
+        JobPostingStatus.Draft => "cvm-chip-amber",
+        JobPostingStatus.Active => "cvm-chip-green",
+        JobPostingStatus.Closed => "cvm-chip-gray",
+        _ => "cvm-chip-gray"
     };
 }
 
@@ -25,77 +26,133 @@
     <div class="alert alert-success">@bilgi</div>
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">İlanlar</h1>
-    <a asp-action="Create" class="btn btn-primary">Yeni İlan</a>
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-1">İlanlar</h1>
+        <p class="text-secondary mb-0">
+            Açık pozisyonları oluşturun, düzenleyin ve eşleştirme sonuçlarını görüntüleyin.
+        </p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">+ Yeni İlan Oluştur</a>
 </div>
+
+<form method="get" asp-action="Index" class="card mb-3">
+    <div class="card-body d-flex gap-3 align-items-center flex-wrap">
+        <input type="text" name="arama" value="@Model.Arama"
+               class="form-control" style="min-width: 240px; flex: 1;"
+               placeholder="İlan ara" />
+
+        <select name="employmentType" class="form-select" style="width: auto;"
+                onchange="this.form.submit()">
+            <option value="">İlan Tipi: Tümü</option>
+            <option value="@((int)EmploymentType.Internship)"
+                    selected="@(Model.EmploymentType == EmploymentType.Internship)">Staj</option>
+            <option value="@((int)EmploymentType.FullTime)"
+                    selected="@(Model.EmploymentType == EmploymentType.FullTime)">İş</option>
+        </select>
+
+        <select name="status" class="form-select" style="width: auto;"
+                onchange="this.form.submit()">
+            <option value="">İlan Durumu: Tümü</option>
+            @foreach (var s in Enum.GetValues<JobPostingStatus>())
+            {
+                <option value="@((int)s)" selected="@(Model.Status == s)">@DurumMetni(s)</option>
+            }
+        </select>
+
+        <button type="submit" class="btn btn-outline-secondary">Ara</button>
+
+        @if (Model.FiltreVarMi)
+        {
+            <a asp-action="Index" class="small text-decoration-underline">Temizle</a>
+        }
+    </div>
+</form>
 
 @if (Model.Ilanlar.Count == 0)
 {
-    <div class="alert alert-light border">
-        Henüz ilan oluşturulmamış. Eşleştirme yapabilmek için en az bir ilan gerekir.
+    <div class="card">
+        <div class="card-body text-center text-secondary py-5">
+            @(Model.FiltreVarMi
+                ? "Bu filtrelere uyan ilan bulunamadı."
+                : "Henüz ilan oluşturulmamış. Eşleştirme yapabilmek için en az bir ilan gerekir.")
+        </div>
     </div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr class="text-secondary small">
-                    <th>Başlık</th>
-                    <th>Şehir</th>
-                    <th>Tür</th>
-                    <th>Asgari Deneyim</th>
-                    <th>Yetenek</th>
-                    <th>Durum</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var i in Model.Ilanlar)
-                {
-                    <tr>
-                        <td>
-                            <a asp-action="Edit" asp-route-id="@i.Id"
-                               class="text-decoration-none fw-semibold">@i.Title</a>
-                            <div class="text-secondary" style="font-size: .8rem;">
-                                @i.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
-                            </div>
-                        </td>
-                        <td>@(i.CityName ?? "Fark etmez")</td>
-                        <td class="small">
-                            @(i.EmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı")
-                        </td>
-                        <td class="small">
-                            @(i.MinExperienceYears == 0 ? "—" : $"{i.MinExperienceYears} yıl")
-                        </td>
-                        <td class="small">@i.SkillCount</td>
-                        <td><span class="badge @DurumRengi(i.Status)">@DurumMetni(i.Status)</span></td>
-                        <td class="text-end">
-                            <a asp-action="Match" asp-route-id="@i.Id"
-                               class="btn btn-sm btn-primary">Eşleştir</a>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>İlan</th>
+                            <th>İlan Tipi</th>
+                            <th>Şehir</th>
+                            <th>Minimum Deneyim</th>
+                            <th>Yetenek</th>
+                            <th>İlan Durumu</th>
+                            <th class="text-end">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var i in Model.Ilanlar)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">@i.Title</div>
+                                    <div class="text-secondary" style="font-size: .75rem;">
+                                        @i.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="cvm-chip @(i.EmploymentType == EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
+                                        @(i.EmploymentType == EmploymentType.Internship ? "Staj" : "İş")
+                                    </span>
+                                </td>
+                                <td>@(i.CityName ?? "Fark etmez")</td>
+                                <td class="small text-secondary">
+                                    @(i.MinExperienceYears == 0 ? "—" : $"{i.MinExperienceYears} yıl")
+                                </td>
+                                <td class="small text-secondary">@i.SkillCount</td>
+                                <td><span class="cvm-chip @DurumSinifi(i.Status)">@DurumMetni(i.Status)</span></td>
+                                <td class="text-end text-nowrap">
+                                    <a asp-action="Edit" asp-route-id="@i.Id"
+                                       class="small text-decoration-none">Düzenle</a>
 
-                            <form asp-action="ChangeStatus" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@i.Id" />
+                                    <span class="text-secondary mx-1">|</span>
 
-                                @if (i.Status != JobPostingStatus.Active)
-                                {
-                                    <button type="submit" name="status"
-                                            value="@((int)JobPostingStatus.Active)"
-                                            class="btn btn-sm btn-outline-success">Yayınla</button>
-                                }
-                                else
-                                {
-                                    <button type="submit" name="status"
-                                            value="@((int)JobPostingStatus.Closed)"
-                                            class="btn btn-sm btn-outline-secondary">Kapat</button>
-                                }
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                                    <a asp-action="Match" asp-route-id="@i.Id"
+                                       class="small text-decoration-none">Eşleştirme Sonuçları</a>
+
+                                    <form asp-action="ChangeStatus" method="post" class="d-inline ms-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@i.Id" />
+
+                                        @if (i.Status != JobPostingStatus.Active)
+                                        {
+                                            <button type="submit" name="status"
+                                                    value="@((int)JobPostingStatus.Active)"
+                                                    class="btn btn-sm btn-outline-success">Yayınla</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" name="status"
+                                                    value="@((int)JobPostingStatus.Closed)"
+                                                    class="btn btn-sm btn-outline-secondary">Kapat</button>
+                                        }
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-secondary small mt-3">
+        @Model.Ilanlar.Count ilan listeleniyor.
     </div>
 }

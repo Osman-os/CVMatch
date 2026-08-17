@@ -14,7 +14,10 @@ public class MatchingService : IMatchingService
     public MatchingService(ApplicationDbContext db) => _db = db;
 
     public async Task<MatchResultViewModel?> MatchAsync(
-        int jobPostingId, int asgariSkor = 1, CancellationToken ct = default)
+        int jobPostingId,
+        int asgariSkor = 1,
+        string turFiltresi = "tumu",
+        CancellationToken ct = default)
     {
         var ilan = await _db.JobPostings
             .AsNoTracking()
@@ -46,7 +49,8 @@ public class MatchingService : IMatchingService
             MinExperienceYears = ilan.MinExperienceYears,
             Status = ilan.Status,
             Aranan = aranan,
-            AsgariSkor = asgariSkor
+            AsgariSkor = asgariSkor,
+            TurFiltresi = turFiltresi
         };
 
         if (aranan.Count == 0) return vm;
@@ -56,7 +60,6 @@ public class MatchingService : IMatchingService
         // Çalışma türü filtre olarak uygulanır, skoru etkilemez
         var adaylar = await _db.CandidateProfiles
             .AsNoTracking()
-            .Where(x => x.PreferredEmploymentType == ilan.EmploymentType)
             .Select(x => new
             {
                 x.Id,
@@ -66,6 +69,7 @@ public class MatchingService : IMatchingService
                 x.CityId,
                 CityName = x.City != null ? x.City.Name : null,
                 x.TotalExperienceMonths,
+                x.PreferredEmploymentType,
                 x.Status,
                 SkillIds = x.CandidateSkills.Select(cs => cs.SkillId).ToList()
             })
@@ -84,6 +88,16 @@ public class MatchingService : IMatchingService
 
             var deneyimYili = aday.TotalExperienceMonths / 12;
 
+            var eslesen = aranan
+                .Where(y => sahipOlunan.Contains(y.SkillId))
+                .Select(y => y.Name)
+                .ToList();
+
+            var eksik = aranan
+                .Where(y => !sahipOlunan.Contains(y.SkillId))
+                .Select(y => y.Name)
+                .ToList();
+
             vm.Adaylar.Add(new EslesenAday
             {
                 Id = aday.Id,
@@ -97,7 +111,10 @@ public class MatchingService : IMatchingService
                 Status = aday.Status,
                 EksikZorunluSayisi = eksikZorunlu,
                 Skor = (int)Math.Round(kazanilan * 100.0 / toplamPuan),
-                SahipOlunanSkillIds = sahipOlunan
+                SahipOlunanSkillIds = sahipOlunan,
+                TurUyumlu = aday.PreferredEmploymentType == ilan.EmploymentType,
+                EslesenYetenekler = eslesen,
+                EksikYetenekler = eksik
             });
         }
 
@@ -106,9 +123,28 @@ public class MatchingService : IMatchingService
             .OrderByDescending(a => a.Skor)
             .ThenByDescending(a => a.TotalExperienceMonths)
             .ToList();
+        
+        // Özet sayılar filtrelerden önce hesaplanır
+        var skorlu = vm.Adaylar.Where(a => a.Skor > 0).ToList();
+
+        vm.ToplamAday = skorlu.Count;
+        vm.YuksekUyumluSayisi = skorlu.Count(a => a.Skor >= 80);
+        vm.OrtalamaUyum = skorlu.Count == 0
+            ? 0
+            : (int)Math.Round(skorlu.Average(a => a.Skor));
 
         vm.GizlenenSayisi = vm.Adaylar.Count(a => a.Skor < vm.AsgariSkor);
         vm.Adaylar = vm.Adaylar.Where(a => a.Skor >= vm.AsgariSkor).ToList();
+
+        // Tür uyumu artık filtre, skoru etkilemiyor
+        vm.TurUyumsuzSayisi = vm.Adaylar.Count(a => !a.TurUyumlu);
+
+        vm.Adaylar = turFiltresi switch
+        {
+            "uyumlu" => vm.Adaylar.Where(a => a.TurUyumlu).ToList(),
+            "uyumsuz" => vm.Adaylar.Where(a => !a.TurUyumlu).ToList(),
+            _ => vm.Adaylar
+        };
 
         return vm;
     }

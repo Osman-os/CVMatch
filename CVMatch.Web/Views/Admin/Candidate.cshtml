@@ -2,6 +2,7 @@
 @using CVMatch.Web.Models.Enums
 @{
     ViewData["Title"] = Model.FullName;
+    ViewData["Breadcrumb"] = $"Yönetici Paneli / Adaylar / {Model.FullName}";
 
     string DurumMetni(ApplicationStatus s) => s switch
     {
@@ -12,21 +13,22 @@
         _ => s.ToString()
     };
 
-    string DurumRengi(ApplicationStatus s) => s switch
+    string DurumSinifi(ApplicationStatus s) => s switch
     {
-        ApplicationStatus.New => "text-bg-primary",
-        ApplicationStatus.UnderReview => "text-bg-warning",
-        ApplicationStatus.Suitable => "text-bg-success",
-        ApplicationStatus.NotSuitable => "text-bg-secondary",
-        _ => "text-bg-light"
+        ApplicationStatus.New => "cvm-chip-blue",
+        ApplicationStatus.UnderReview => "cvm-chip-amber",
+        ApplicationStatus.Suitable => "cvm-chip-green",
+        ApplicationStatus.NotSuitable => "cvm-chip-red",
+        _ => "cvm-chip-gray"
     };
 
     string Tarih(DateOnly? d) => d?.ToString("MM/yyyy") ?? "—";
-}
 
-<div class="mb-3">
-    <a asp-action="Candidates" class="text-secondary small text-decoration-none">← Aday listesi</a>
-</div>
+    var basHarfler = string.Join("", Model.FullName
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .Take(2)
+        .Select(p => p[..1].ToUpperInvariant()));
+}
 
 @if (TempData["Bilgi"] is string bilgi)
 {
@@ -37,71 +39,93 @@
     <div class="alert alert-danger">@hata</div>
 }
 
-<div class="d-flex align-items-center gap-3 mb-4">
-    @if (Model.HasPhoto)
-    {
-        <img src="@Url.Action("CandidateFile", new { id = Model.Id, type = "photo" })"
-             class="rounded border" alt="@Model.FullName"
-             style="width: 72px; height: 72px; object-fit: cover;" />
-    }
-    <div>
-        <h1 class="h3 mb-1">@Model.FullName</h1>
-        <span class="font-monospace small text-secondary">@Model.ApplicationReferenceNumber</span>
-        <span class="badge @DurumRengi(Model.Status) ms-2">@DurumMetni(Model.Status)</span>
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div class="d-flex align-items-center gap-3">
+        @if (Model.HasPhoto)
+        {
+            <img src="@Url.Action("CandidateFile", new { id = Model.Id, type = "photo" })"
+                 class="rounded-circle border" alt="@Model.FullName"
+                 style="width: 56px; height: 56px; object-fit: cover;" />
+        }
+        else
+        {
+            <span class="cvm-avatar" style="width: 56px; height: 56px; font-size: 1rem;">@basHarfler</span>
+        }
+
+        <div>
+            <h1 class="h3 mb-1">@Model.FullName</h1>
+            <div class="text-secondary small">
+                Başvuru No: <span class="font-monospace">@Model.ApplicationReferenceNumber</span>
+                &nbsp;&middot;&nbsp;
+                Başvuru Tarihi: @Model.SubmittedAt.ToLocalTime().ToString("dd MMMM yyyy")
+            </div>
+        </div>
+    </div>
+
+    <span class="cvm-chip @DurumSinifi(Model.Status)">@DurumMetni(Model.Status)</span>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="ChangeStatus" method="post" class="d-flex align-items-center gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <label class="form-label mb-0 fw-semibold">Başvuru Durumu</label>
+
+            <select name="status" class="form-select" style="width: auto;">
+                @foreach (var s in Enum.GetValues<ApplicationStatus>())
+                {
+                    <option value="@((int)s)" selected="@(Model.Status == s)">@DurumMetni(s)</option>
+                }
+            </select>
+
+            <button type="submit" class="btn btn-primary">Durumu Güncelle</button>
+        </form>
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-8">
+    <div class="col-xl-8">
 
         <div class="card mb-4">
             <div class="card-body">
-                <h2 class="h5 mb-3">Kişisel Bilgiler</h2>
-                <dl class="row mb-0">
-                    <dt class="col-sm-4 fw-normal text-secondary">E-posta</dt>
-                    <dd class="col-sm-8">@Model.Email</dd>
+                <h2 class="h5 mb-3">Aday Bilgileri</h2>
 
-                    <dt class="col-sm-4 fw-normal text-secondary">Telefon</dt>
-                    <dd class="col-sm-8">@(Model.PhoneNumber ?? "—")</dd>
-
-                    <dt class="col-sm-4 fw-normal text-secondary">Şehir</dt>
-                    <dd class="col-sm-8">@(Model.CityName ?? "—")</dd>
-
-                    @if (!string.IsNullOrWhiteSpace(Model.Address))
-                    {
-                        <dt class="col-sm-4 fw-normal text-secondary">Adres</dt>
-                        <dd class="col-sm-8">@Model.Address</dd>
-                    }
-
-                    <dt class="col-sm-4 fw-normal text-secondary">Deneyim</dt>
-                    <dd class="col-sm-8">@Model.DeneyimMetni</dd>
-
-                    <dt class="col-sm-4 fw-normal text-secondary">Başvuru Türü</dt>
-                    <dd class="col-sm-8">
-                        @(Model.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı")
-                    </dd>
-
-                    @if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl))
-                    {
-                        <dt class="col-sm-4 fw-normal text-secondary">LinkedIn</dt>
-                        <dd class="col-sm-8 text-break small">@Model.LinkedInUrl</dd>
-                    }
-
-                    @if (!string.IsNullOrWhiteSpace(Model.GitHubUrl))
-                    {
-                        <dt class="col-sm-4 fw-normal text-secondary">GitHub</dt>
-                        <dd class="col-sm-8 text-break small">@Model.GitHubUrl</dd>
-                    }
-
-                    <dt class="col-sm-4 fw-normal text-secondary">Başvuru Tarihi</dt>
-                    <dd class="col-sm-8">@Model.SubmittedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
-
-                    @if (Model.UpdatedAt.HasValue)
-                    {
-                        <dt class="col-sm-4 fw-normal text-secondary">Son Güncelleme</dt>
-                        <dd class="col-sm-8">@Model.UpdatedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
-                    }
-                </dl>
+                <div class="cvm-detail-row">
+                    <span class="cvm-detail-label">E-posta</span>
+                    <span>@Model.Email</span>
+                </div>
+                <div class="cvm-detail-row">
+                    <span class="cvm-detail-label">Telefon</span>
+                    <span>@(Model.PhoneNumber ?? "—")</span>
+                </div>
+                <div class="cvm-detail-row">
+                    <span class="cvm-detail-label">Başvuru Türü</span>
+                    <span>@(Model.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı İş")</span>
+                </div>
+                <div class="cvm-detail-row">
+                    <span class="cvm-detail-label">Şehir</span>
+                    <span>@(Model.CityName ?? "—")</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Address))
+                {
+                    <div class="cvm-detail-row">
+                        <span class="cvm-detail-label">Açık Adres</span>
+                        <span>@Model.Address</span>
+                    </div>
+                }
+                <div class="cvm-detail-row">
+                    <span class="cvm-detail-label">Toplam Deneyim</span>
+                    <span>@Model.DeneyimMetni</span>
+                </div>
+                @if (Model.UpdatedAt.HasValue)
+                {
+                    <div class="cvm-detail-row">
+                        <span class="cvm-detail-label">Son Güncelleme</span>
+                        <span>@Model.UpdatedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                    </div>
+                }
             </div>
         </div>
 
@@ -116,7 +140,7 @@
                 {
                     @foreach (var s in Model.Skills)
                     {
-                        <span class="badge rounded-pill text-bg-light border me-1 mb-1">@s</span>
+                        <span class="cvm-skill-chip">@s</span>
                     }
                 }
             </div>
@@ -133,10 +157,12 @@
                 {
                     @foreach (var e in Model.Educations)
                     {
-                        <div class="mb-3 pb-3 border-bottom">
-                            <div class="fw-semibold">@e.School</div>
-                            <div class="text-secondary small">@e.FieldOfStudy</div>
-                            <div class="text-secondary small">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <div class="fw-semibold">@e.School</div>
+                                <div class="text-secondary small">@e.FieldOfStudy</div>
+                            </div>
+                            <div class="text-secondary small text-nowrap">
                                 @Tarih(e.StartDate) &ndash; @(e.IsCurrent ? "Devam ediyor" : Tarih(e.EndDate))
                             </div>
                         </div>
@@ -156,12 +182,14 @@
                 {
                     @foreach (var w in Model.WorkExperiences)
                     {
-                        <div class="mb-3 pb-3 border-bottom">
-                            <div class="fw-semibold">@w.Position</div>
-                            <div class="text-secondary small">@w.CompanyName</div>
-                            <div class="text-secondary small">
-                                @Tarih(w.StartDate) &ndash; @(w.IsCurrent ? "Devam ediyor" : Tarih(w.EndDate))
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="fw-semibold">@w.Position</div>
+                                <div class="text-secondary small text-nowrap">
+                                    @Tarih(w.StartDate) &ndash; @(w.IsCurrent ? "Devam ediyor" : Tarih(w.EndDate))
+                                </div>
                             </div>
+                            <div class="cvm-company">@w.CompanyName</div>
                             @if (!string.IsNullOrWhiteSpace(w.Description))
                             {
                                 <div class="small mt-1">@w.Description</div>
@@ -172,6 +200,37 @@
             </div>
         </div>
 
+        @if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl) || !string.IsNullOrWhiteSpace(Model.GitHubUrl))
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Bağlantılar</h2>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl))
+                    {
+                        <div class="cvm-link-box">
+                            <div>
+                                <div class="text-secondary" style="font-size: .75rem;">LinkedIn</div>
+                                <a href="@Model.LinkedInUrl" target="_blank" rel="noopener"
+                                   class="small text-break">@Model.LinkedInUrl</a>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.GitHubUrl))
+                    {
+                        <div class="cvm-link-box">
+                            <div>
+                                <div class="text-secondary" style="font-size: .75rem;">GitHub</div>
+                                <a href="@Model.GitHubUrl" target="_blank" rel="noopener"
+                                   class="small text-break">@Model.GitHubUrl</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
         <div class="card">
             <div class="card-body">
                 <h2 class="h5 mb-3">Yönetici Notları</h2>
@@ -179,10 +238,8 @@
                 <form asp-action="AddNote" method="post" class="mb-3">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
-                    <div class="mb-2">
-                        <textarea name="content" class="form-control" rows="2"
-                                  placeholder="Bu aday hakkında not ekleyin"></textarea>
-                    </div>
+                    <textarea name="content" class="form-control mb-2" rows="2"
+                              placeholder="Bu aday hakkında not ekleyin"></textarea>
                     <button type="submit" class="btn btn-sm btn-primary">Not Ekle</button>
                 </form>
 
@@ -194,9 +251,9 @@
                 {
                     @foreach (var n in Model.Notes)
                     {
-                        <div class="border-top pt-2 mt-2">
+                        <div class="cvm-note">
                             <div class="small">@n.Content</div>
-                            <div class="text-secondary" style="font-size: .8rem;">
+                            <div class="text-secondary" style="font-size: .75rem;">
                                 @n.AuthorEmail — @n.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
                             </div>
                         </div>
@@ -207,69 +264,45 @@
 
     </div>
 
-    <div class="col-lg-4">
-
-        <div class="card mb-4">
+    <div class="col-xl-4">
+        <div class="card position-sticky" style="top: 1rem;">
             <div class="card-body">
-                <h2 class="h5 mb-3">Durum</h2>
-                <form asp-action="ChangeStatus" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <select name="status" class="form-select mb-2">
-                        @foreach (var s in Enum.GetValues<ApplicationStatus>())
-                        {
-                            <option value="@((int)s)" selected="@(Model.Status == s)">@DurumMetni(s)</option>
-                        }
-                    </select>
-                    <button type="submit" class="btn btn-primary w-100">Güncelle</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-body">
-                <h2 class="h5 mb-3">CV</h2>
+                <h2 class="h5 mb-3">CV Önizlemesi</h2>
 
                 @if (Model.SubmissionId is null)
                 {
-                    <p class="text-secondary small mb-0">
-                        Bu adaya ait CV dosyası bulunamadı.
-                    </p>
+                    <p class="text-secondary small mb-0">Bu adaya ait CV dosyası bulunamadı.</p>
                 }
                 else
                 {
-                    <p class="small text-break mb-2">@Model.OriginalFileName</p>
-
                     @if (Model.HasPreview)
                     {
                         <img src="@Url.Action("CandidateFile", new { id = Model.Id, type = "preview" })"
-                             class="img-fluid border rounded mb-2" alt="CV önizlemesi" />
+                             class="img-fluid border rounded mb-3" alt="CV önizlemesi" />
                     }
+
+                    <div class="text-secondary small text-break mb-2">@Model.OriginalFileName</div>
 
                     <a asp-action="CandidateFile" asp-route-id="@Model.Id" asp-route-type="pdf"
                        target="_blank" class="btn btn-outline-secondary btn-sm w-100">PDF'i Aç</a>
                 }
+
+                <hr />
+
+                <div class="text-secondary" style="font-size: .8rem;">
+                    @if (Model.EditTokenGecerliMi)
+                    {
+                        <text>
+                            Aday @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
+                            tarihine kadar başvurusunu düzenleyebilir.
+                        </text>
+                    }
+                    else
+                    {
+                        <text>Adayın düzenleme süresi dolmuş.</text>
+                    }
+                </div>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-body">
-                <h2 class="h6 mb-2">Düzenleme Yetkisi</h2>
-                @if (Model.EditTokenGecerliMi)
-                {
-                    <p class="small text-secondary mb-0">
-                        Aday @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
-                        tarihine kadar başvurusunu düzenleyebilir.
-                    </p>
-                }
-                else
-                {
-                    <p class="small text-secondary mb-0">
-                        Adayın düzenleme süresi dolmuş.
-                    </p>
-                }
-            </div>
-        </div>
-
     </div>
 </div>
