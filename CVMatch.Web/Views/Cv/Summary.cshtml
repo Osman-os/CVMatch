@@ -1,7 +1,10 @@
 @model CVMatch.Web.Models.ViewModels.CvSummaryViewModel
 @{
     ViewData["Title"] = "Başvuru özeti";
+    ViewData["PageClass"] = "cvm-page-wide";
 }
+
+<partial name="_Steps" model="3" />
 
 <h1 class="h3 mb-1">Başvuru özeti</h1>
 <p class="text-secondary">
@@ -200,9 +203,9 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-between border-top pt-3">
+    <div class="cvm-action-bar">
         <a asp-action="Review" asp-route-token="@Model.Token" class="btn btn-outline-secondary">Geri Dön</a>
-        <button type="submit" class="btn btn-primary">Başvuruyu Tamamla</button>
+        <button type="submit" class="btn btn-primary">Onayla ve Gönder →</button>
     </div>
 </form>
 

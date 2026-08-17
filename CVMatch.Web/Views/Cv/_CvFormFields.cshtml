@@ -34,16 +34,17 @@
             <span asp-validation-for="PreferredEmploymentType" class="text-danger small"></span>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger small"></span>
-        </div>
-
-        <div class="mb-0">
-            <label asp-for="PhoneNumber" class="form-label"></label>
-            <input asp-for="PhoneNumber" class="form-control" />
-            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+        <div class="row g-3 mb-0">
+            <div class="col-md-6">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="PhoneNumber" class="form-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+            </div>
         </div>
     </div>
 </div>
@@ -73,7 +74,12 @@
 
 <div class="card mb-4">
     <div class="card-body">
-        <h2 class="h5 mb-3">Eğitim</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0 border-0 pb-0">Eğitim</h2>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addEducationTop">
+                + Yeni Eğitim
+            </button>
+        </div>
 
         <div id="educationList">
             @for (var i = 0; i < Model.Educations.Count; i++)
@@ -83,15 +89,18 @@
             }
         </div>
 
-        <button type="button" class="btn btn-outline-primary btn-sm" id="addEducation">
-            + Yeni Eğitim Ekle
-        </button>
+        @* Mevcut JavaScript bu düğmeyi dinliyor; üstteki düğme buna tıklar *@
+        <button type="button" class="d-none" id="addEducation"></button>
     </div>
 </div>
-
 <div class="card mb-4">
     <div class="card-body">
-        <h2 class="h5 mb-3">İş Deneyimi</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0 border-0 pb-0">İş Deneyimi</h2>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addExperienceTop">
+                + Yeni Deneyim
+            </button>
+        </div>
 
         <div id="experienceList">
             @for (var i = 0; i < Model.WorkExperiences.Count; i++)
@@ -101,25 +110,22 @@
             }
         </div>
 
-        <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="addExperience">
-            + Yeni Deneyim Ekle
-        </button>
+        <button type="button" class="d-none" id="addExperience"></button>
 
-        <hr />
+        <div class="cvm-total-exp">
+            <label class="form-label mb-0">Toplam Deneyim</label>
+            <div class="d-flex align-items-center gap-2">
+                <input asp-for="ExperienceYears" type="number" min="0" max="60"
+                       class="form-control form-control-sm" style="width: 72px;" />
+                <span class="small text-secondary">yıl</span>
 
-        <h3 class="h6 mb-3">Toplam Deneyim Süresi</h3>
-        <div class="row g-3">
-            <div class="col-6">
-                <label asp-for="ExperienceYears" class="form-label"></label>
-                <input asp-for="ExperienceYears" type="number" min="0" max="60" class="form-control" />
-                <span asp-validation-for="ExperienceYears" class="text-danger small"></span>
-            </div>
-            <div class="col-6">
-                <label asp-for="ExperienceMonths" class="form-label"></label>
-                <input asp-for="ExperienceMonths" type="number" min="0" max="11" class="form-control" />
-                <span asp-validation-for="ExperienceMonths" class="text-danger small"></span>
+                <input asp-for="ExperienceMonths" type="number" min="0" max="11"
+                       class="form-control form-control-sm" style="width: 72px;" />
+                <span class="small text-secondary">ay</span>
             </div>
         </div>
+        <span asp-validation-for="ExperienceYears" class="text-danger small"></span>
+        <span asp-validation-for="ExperienceMonths" class="text-danger small"></span>
     </div>
 </div>
 
@@ -129,10 +135,10 @@
 
         <div id="skillTags" class="d-flex flex-wrap gap-2 mb-3"></div>
 
-        <div class="input-group">
+        <div class="input-group cvm-skill-input">
             <input type="text" id="skillInput" class="form-control"
                    placeholder="Yetenek yazın ve Enter'a basın" />
-            <button type="button" class="btn btn-outline-primary" id="addSkill">Ekle</button>
+            <button type="button" class="btn btn-primary" id="addSkill">Ekle</button>
         </div>
     </div>
 </div>

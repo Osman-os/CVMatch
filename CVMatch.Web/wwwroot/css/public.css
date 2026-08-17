@@ -386,3 +386,247 @@ body {
 .cvm-page {
     padding-bottom: 24px;
 }
+
+/* ---- Akış ekranları (kontrol / özet / düzenleme) ---- */
+
+/* Adım göstergesi */
+.cvm-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.cvm-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .825rem;
+    color: var(--cvm-muted);
+}
+
+.cvm-step-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #eef1f5;
+    color: var(--cvm-muted);
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.cvm-step.active .cvm-step-dot {
+    background: var(--cvm-primary);
+    color: #fff;
+}
+
+.cvm-step.active {
+    color: var(--cvm-text);
+    font-weight: 600;
+}
+
+.cvm-step.done .cvm-step-dot {
+    background: #ecf8f1;
+    color: #15803d;
+}
+
+.cvm-step-line {
+    width: 32px;
+    height: 1px;
+    background: var(--cvm-border);
+}
+
+/* Kart başlıkları */
+.cvm-page .card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--cvm-border);
+}
+
+/* Form alanları */
+.cvm-page .form-label {
+    font-size: .825rem;
+    font-weight: 500;
+    color: #475467;
+    margin-bottom: 5px;
+}
+
+.cvm-page .form-control,
+.cvm-page .form-select {
+    border-color: #dfe4ec;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: .9rem;
+}
+
+.cvm-page .form-control:focus,
+.cvm-page .form-select:focus {
+    border-color: var(--cvm-primary);
+    box-shadow: 0 0 0 3px rgba(43, 106, 227, .1);
+}
+
+/* Eğitim / deneyim satırları */
+.education-row,
+.experience-row {
+    background: #fbfcfe;
+    border-color: #e8edf4 !important;
+    border-radius: 10px !important;
+}
+
+/* Yetenek etiketleri */
+#skillTags .badge,
+.skill-tag {
+    background: var(--cvm-primary-soft) !important;
+    color: var(--cvm-primary) !important;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: .8rem;
+    font-weight: 500;
+}
+
+/* Özet ekranı satırları */
+.cvm-page dl.row dt {
+    font-size: .825rem;
+    font-weight: 400;
+    color: var(--cvm-muted);
+    padding: 10px 0;
+}
+
+.cvm-page dl.row dd {
+    font-size: .9rem;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f3f7;
+}
+
+/* Alt aksiyon çubuğu */
+.cvm-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: var(--cvm-surface);
+    border: 1px solid var(--cvm-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 20px;
+}
+
+/* Uyarı bantları yumuşasın */
+.cvm-page .alert {
+    border-radius: 10px;
+    border-width: 1px;
+    font-size: .875rem;
+}
+
+.cvm-page .alert-info {
+    background: #f5f8ff;
+    border-color: #dce7f9;
+    color: #33507f;
+}
+
+.cvm-page .alert-warning {
+    background: #fff8ec;
+    border-color: #f5e3c3;
+    color: #92400e;
+}
+
+/* ---- Geniş akış sayfaları ---- */
+
+.cvm-page-wide {
+    max-width: 1280px;
+}
+
+/* CV önizleme sütunu */
+.cvm-preview-col .card {
+    position: sticky;
+    top: 24px;
+}
+
+.cvm-preview-col img {
+    width: 100%;
+    cursor: zoom-in;
+    transition: transform .2s;
+}
+
+.cvm-preview-col img:hover {
+    transform: scale(1.01);
+}
+
+/* Stepper büyüsün */
+.cvm-steps {
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.cvm-step {
+    font-size: .9rem;
+}
+
+.cvm-step-dot {
+    width: 32px;
+    height: 32px;
+    font-size: .85rem;
+}
+
+.cvm-step-line {
+    width: 48px;
+}
+
+/* Sticky aksiyon çubuğu */
+.cvm-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    box-shadow: 0 -2px 12px rgba(16, 24, 40, .06);
+    margin-top: 24px;
+}
+
+/* Sil düğmeleri yumuşasın */
+.remove-row {
+    color: #98a2b3 !important;
+    font-size: .8rem;
+    text-decoration: none !important;
+    transition: color .15s;
+}
+
+.remove-row:hover {
+    color: #be3f38 !important;
+}
+
+@media (max-width: 992px) {
+    .cvm-preview-col .card { position: static; }
+}
+
+/* Toplam deneyim kompakt */
+.cvm-total-exp {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 16px;
+    margin-top: 4px;
+    border-top: 1px solid var(--cvm-border);
+}
+
+/* Yetenek girişi */
+.cvm-skill-input .form-control {
+    border-right: none;
+}
+
+.cvm-skill-input .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Kart başlığı ayracı ekleme düğmesi varken çift çizgi yapmasın */
+.cvm-page .card h2.border-0 {
+    border-bottom: none !important;
+}

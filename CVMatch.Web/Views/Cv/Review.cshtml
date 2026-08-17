@@ -1,7 +1,10 @@
 @model CVMatch.Web.Models.ViewModels.CvReviewViewModel
 @{
     ViewData["Title"] = "Bilgilerinizi kontrol edin";
+    ViewData["PageClass"] = "cvm-page-wide";
 }
+
+<partial name="_Steps" model="2" />
 
 <h1 class="h3 mb-1">Bilgilerinizi kontrol edin</h1>
 <p class="text-secondary">
@@ -17,8 +20,9 @@
 }
 else
 {
-    <div class="alert alert-info">
-        Başvurunuz henüz gönderilmedi. Bilgileriniz onay aşamasından sonra kaydedilecektir.
+    <div class="alert alert-info d-flex gap-2">
+        <span>ⓘ</span>
+        <span>Başvurunuz henüz gönderilmedi. Bilgileriniz onay aşamasından sonra kaydedilecektir.</span>
     </div>
 }
 
@@ -29,11 +33,11 @@ else
     <input type="hidden" asp-for="Token" />
 
     <div class="row g-4">
-        <div class="col-lg-7">
+        <div class="col-lg-7 cvm-form-col">
             @await Html.PartialAsync("_CvFormFields", Model)
         </div>
 
-        <div class="col-lg-5">
+        <div class="col-lg-5 cvm-preview-col">
             <div class="card position-sticky" style="top: 1rem;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -55,9 +59,9 @@ else
         </div>
     </div>
 
-    <div class="d-flex justify-content-between border-top pt-3 mt-4">
+    <div class="cvm-action-bar">
         <a asp-action="Index" class="btn btn-outline-secondary">Geri Dön</a>
-        <button type="submit" class="btn btn-primary">Özete Devam Et</button>
+        <button type="submit" class="btn btn-primary">Özete Devam Et →</button>
     </div>
 </form>
 
@@ -69,4 +73,10 @@ else
                 (Model.SkillsCsv ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries)));
     </script>
     <script src="/js/cv-review.js"></script>
+    <script>
+        // Önizlemeye tıklayınca yeni sekmede tam boyut
+        document.querySelector('.cvm-preview-col img')?.addEventListener('click', function () {
+            window.open(this.src, '_blank');
+        });
+    </script>
 }

@@ -1,0 +1,22 @@
+@model int
+
+@{
+    var adimlar = new[] { "CV Yükle", "Bilgileri Kontrol Et", "Onayla" };
+}
+
+<div class="cvm-steps">
+    @for (var i = 1; i <= adimlar.Length; i++)
+    {
+        var sinif = i < Model ? "done" : i == Model ? "active" : "";
+
+        <div class="cvm-step @sinif">
+            <span class="cvm-step-dot">@(i < Model ? "✓" : i.ToString())</span>
+            <span>@adimlar[i - 1]</span>
+        </div>
+
+        if (i < adimlar.Length)
+        {
+            <span class="cvm-step-line"></span>
+        }
+    }
+</div>

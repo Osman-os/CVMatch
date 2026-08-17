@@ -89,8 +89,8 @@
         });
     }
 
-    setupList('educationList', 'addEducation', 'Educations');
-    setupList('experienceList', 'addExperience', 'WorkExperiences');
+    setupList('educationList', 'addEducationTop', 'Educations');
+    setupList('experienceList', 'addExperienceTop', 'WorkExperiences');
 
     // ---------- Yetenek etiketleri ----------
 
