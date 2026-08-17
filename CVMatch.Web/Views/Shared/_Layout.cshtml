@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,21 +7,24 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/public.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CVMatch.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-light cvm-navbar">
             <div class="container-fluid">
-                <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Cv" asp-action="Index">CVMatch</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-controller="Cv" asp-action="Index">CVMatch</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse" aria-label="Menü">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 justify-content-end">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#nasil-calisir">Nasıl Çalışır</a>
+                            <a class="nav-link" href="#nasil-calisir">Nasıl Çalışır</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -29,17 +32,26 @@
             </div>
         </nav>
     </header>
-    <div class="container" style="max-width: 1200px;">
-    <main role="main" class="pb-3">
+
+    <main role="main" class="cvm-page">
         @RenderBody()
     </main>
-</div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CVMatch.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="cvm-footer">
+        <div class="container d-flex justify-content-between flex-wrap gap-2">
+            <div>
+                <div class="fw-bold">CVMatch</div>
+                <div class="text-secondary" style="font-size: .825rem;">
+                    CV yükleme ve aday değerlendirme platformu
+                </div>
+            </div>
+            <div class="text-end">
+                <a asp-controller="Home" asp-action="Privacy">KVKK Aydınlatma Metni</a>
+                <div class="text-secondary" style="font-size: .8rem;">© 2026 CVMatch</div>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

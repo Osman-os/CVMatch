@@ -3,63 +3,147 @@
     ViewData["Title"] = "CV Yükle";
 }
 
-<div class="text-center py-5">
-    @if (User.Identity?.IsAuthenticated == true)
+@if (User.Identity?.IsAuthenticated == true)
 {
     <div class="alert alert-info d-flex justify-content-between align-items-center">
         <span>Yönetici olarak giriş yaptınız.</span>
         <a asp-controller="Admin" asp-action="Index" class="btn btn-sm btn-primary">Yönetim Paneline Git</a>
     </div>
 }
-    <h1 class="display-5 fw-bold">CV'nizi yükleyin, başvurunuzu kolayca oluşturun</h1>
-    <p class="lead text-secondary mt-3">
+
+<div class="cvm-hero">
+    <h1>CV'nizi yükleyin, başvurunuzu kolayca oluşturun</h1>
+    <p>
         Staj veya tam zamanlı iş başvurunuz için CV'nizi PDF olarak yükleyin.
-        Bilgilerinizi kontrol edin, başvuru türünüzü seçin ve başvurunuzu onaylayın.
+        Bilgilerinizi kontrol edin, başvuru türünüzü seçin ve onaylayın.
     </p>
 
-    <div class="d-flex justify-content-center gap-4 flex-wrap my-4 small text-secondary">
-        <span>Üyelik gerekmez</span>
-        <span>Bilgilerinizi göndermeden önce kontrol edebilirsiniz</span>
-        <span>Başvurunuz yalnızca onayınızdan sonra kaydedilir</span>
+    <div class="cvm-hero-badges">
+        <span class="cvm-trust"><span class="cvm-trust-tick">✓</span> Üyelik gerekmez</span>
+        <span class="cvm-trust"><span class="cvm-trust-tick">✓</span> Göndermeden önce kontrol edin</span>
+        <span class="cvm-trust"><span class="cvm-trust-tick">✓</span> Onayınız olmadan kaydedilmez</span>
     </div>
 </div>
 
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-body p-4">
+<div class="cvm-upload-wrap">
+    <div class="card">
+        <div class="card-body p-4">
 
-                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-                {
-                    <div class="alert alert-danger" role="alert">
-                        @Model.ErrorMessage
-                    </div>
-                }
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
 
-                <form asp-action="Upload" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
+            <form asp-action="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
+                @Html.AntiForgeryToken()
 
-                    <div class="border border-2 border-primary border-dashed rounded p-5 text-center">
-                        <p class="fw-semibold mb-1">PDF CV'nizi buraya sürükleyin</p>
-                        <p class="text-secondary small mb-3">veya</p>
+                <label class="cvm-dropzone" id="dropzone">
+                    <span class="cvm-dropzone-icon">🗎</span>
+                    <span class="fw-semibold d-block mb-1">CV'nizi buraya bırakın</span>
+                    <span class="text-secondary small d-block mb-3">veya</span>
 
-                        <input type="file"
-                               name="CvFile"
-                               accept="application/pdf"
-                               class="form-control"
-                               required />
+                    <span class="btn btn-outline-primary btn-sm" id="pickBtn">PDF Seç</span>
 
-                        <p class="text-secondary small mt-3 mb-0">
-                            Yalnızca PDF · En fazla 10 MB
-                        </p>
-                    </div>
+                    <input type="file" name="CvFile" id="cvFile"
+                           accept="application/pdf" class="d-none" required />
 
-                    <button type="submit" class="btn btn-primary w-100 mt-4">
-                        CV'yi Yükle
-                    </button>
-                </form>
+                    <span class="text-secondary small d-block mt-3" id="fileInfo">
+                        PDF · En fazla 10 MB
+                    </span>
+                </label>
 
-            </div>
+                <button type="submit" class="btn btn-primary w-100 mt-4" id="submitBtn" disabled>
+                    CV'yi Yükle
+                </button>
+            </form>
+
         </div>
     </div>
 </div>
+
+<section class="cvm-how" id="nasil-calisir">
+    <h2 class="h4 text-center mb-1">Nasıl Çalışır?</h2>
+    <p class="text-center text-secondary mb-4">Üç adımda başvurunuzu tamamlayın.</p>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <span class="cvm-step-num">1</span>
+                    <h3 class="h6">CV'nizi yükleyin</h3>
+                    <p class="text-secondary small mb-0">
+                        PDF biçimindeki CV'nizi sisteme ekleyin. Üyelik veya parola gerekmez.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <span class="cvm-step-num">2</span>
+                    <h3 class="h6">Bilgilerinizi kontrol edin</h3>
+                    <p class="text-secondary small mb-0">
+                        CV'nizden çıkarılan bilgileri gözden geçirin, başvuru türünüzü seçin
+                        ve eksikleri tamamlayın.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <span class="cvm-step-num">3</span>
+                    <h3 class="h6">Başvurunuzu onaylayın</h3>
+                    <p class="text-secondary small mb-0">
+                        Özetinizi kontrol ederek başvurunuzu tamamlayın ve size özel
+                        düzenleme bağlantınızı alın.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const dosyaInput = document.getElementById('cvFile');
+        const gonderBtn = document.getElementById('submitBtn');
+        const bilgi = document.getElementById('fileInfo');
+        const alan = document.getElementById('dropzone');
+
+        function dosyaSecildi(dosya) {
+            if (!dosya) return;
+            const mb = (dosya.size / 1048576).toFixed(1);
+            bilgi.textContent = `${dosya.name} · ${mb} MB`;
+            bilgi.classList.add('text-dark');
+            gonderBtn.disabled = false;
+        }
+
+        dosyaInput.addEventListener('change', () => dosyaSecildi(dosyaInput.files[0]));
+
+        // Sürükle bırak
+        ['dragenter', 'dragover'].forEach(olay => {
+            alan.addEventListener(olay, e => {
+                e.preventDefault();
+                alan.classList.add('dragging');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(olay => {
+            alan.addEventListener(olay, e => {
+                e.preventDefault();
+                alan.classList.remove('dragging');
+            });
+        });
+
+        alan.addEventListener('drop', e => {
+            const dosya = e.dataTransfer.files[0];
+            if (dosya && dosya.type === 'application/pdf') {
+                dosyaInput.files = e.dataTransfer.files;
+                dosyaSecildi(dosya);
+            }
+        });
+    </script>
+}

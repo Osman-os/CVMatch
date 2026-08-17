@@ -1,81 +1,105 @@
 @model CVMatch.Web.Models.ViewModels.CvCompletedViewModel
 @{
-    ViewData["Title"] = "Başvurunuz alındı";
+    ViewData["Title"] = "Başvurunuz tamamlandı";
+
+    var editLink = string.IsNullOrEmpty(Model.EditToken)
+        ? null
+        : Url.Action("Edit", "Cv", new { key = Model.EditToken }, Context.Request.Scheme);
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-7">
+<div class="cvm-done-wrap">
+    <div class="card">
+        <div class="card-body p-4 p-md-5">
 
-        <div class="text-center mb-4">
-            <div class="display-6 mb-2">Başvurunuz alındı</div>
-            <p class="text-secondary">
-                Başvurunuz kaydedildi ve değerlendirmeye alındı.
-            </p>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-body text-center">
-                <div class="text-secondary small mb-1">Başvuru Numaranız</div>
-                <div class="h4 mb-0 font-monospace">@Model.ReferenceNumber</div>
+            <div class="text-center mb-4">
+                <span class="cvm-success-icon">✓</span>
+                <h1 class="h4 mt-3 mb-1">Başvurunuz tamamlandı</h1>
+                <p class="text-secondary mb-0">Başvurunuz başarıyla alındı.</p>
             </div>
-        </div>
 
-        @if (!string.IsNullOrEmpty(Model.EditToken))
-        {
-            <div class="card border-warning mb-4">
-                <div class="card-body">
-                    <h2 class="h5 mb-2">Düzenleme Bağlantınız</h2>
-                    <p class="small text-secondary">
-                        Bu bağlantı ile başvurunuzu görüntüleyebilir, güncelleyebilir veya
-                        silinmesini talep edebilirsiniz. <strong>Bu bağlantı yalnızca bir kez
-                        gösterilir</strong> — kaydetmeyi unutmayın.
+            <hr class="my-4" />
+
+            <div class="cvm-field-label">Başvuru No</div>
+            <div class="cvm-ref-box mb-2">
+                <span class="font-monospace fw-semibold cvm-ref-value">@Model.ReferenceNumber</span>
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        data-copy="@Model.ReferenceNumber">Kopyala</button>
+            </div>
+            <p class="text-secondary small mb-4">
+                Başvuru numaranız başvurunuzu tanımlar; tek başına düzenleme yetkisi vermez.
+            </p>
+
+            @if (editLink is not null)
+            {
+                <div class="cvm-edit-box">
+                    <h2 class="h6 mb-1">Düzenleme Bağlantısı</h2>
+                    <p class="text-secondary small">
+                        Düzenleme bağlantınız
+                        @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
+                        tarihine kadar geçerlidir. Bu süre içinde başvurunuzda değişiklik
+                        yapabilir veya silinmesini talep edebilirsiniz.
                     </p>
 
-                    <div class="input-group mb-2">
-                        <input type="text" class="form-control font-monospace small"
-                               id="editLink" readonly
-                               value="@Url.Action("Edit", "Cv", new { key = Model.EditToken }, Context.Request.Scheme)" />
-                        <button class="btn btn-outline-secondary" type="button" id="copyBtn">Kopyala</button>
+                    <div class="cvm-masked-link mb-2">
+                        <span class="font-monospace small" id="maskedText">
+                            @(new Uri(editLink!).Host)/Cv/Edit?key=••••••••
+                        </span>
+                        <button type="button" class="cvm-copy-btn" id="revealBtn">Göster</button>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="small text-secondary">
-                            Geçerlilik süresi: @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
-                        </span>
-                        <a asp-action="Edit" asp-route-key="@Model.EditToken"
-                           class="btn btn-sm btn-outline-primary">Başvurumu Düzenle</a>
+                    <input type="text" class="form-control font-monospace small mb-2 d-none"
+                           id="editLink" readonly value="@editLink" onclick="this.select()" />
+
+                    <div class="cvm-warn-box mb-3">
+                        Bu bağlantıyı güvenli bir yerde saklayın. Kaybederseniz yeniden oluşturulamaz.
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="@editLink" class="btn btn-primary">Başvurumu Düzenle</a>
+                        <button type="button" class="btn btn-outline-secondary"
+                                data-copy="@editLink">Bağlantıyı Kopyala</button>
                     </div>
                 </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    Düzenleme bağlantınız oluşturulamadı. Başvurunuz kaydedildi; değişiklik
+                    gerekirse başvuru numaranızla bizimle iletişime geçin.
+                </div>
+            }
+
+            <div class="cvm-info-band mt-4">
+                Süre dolduktan sonra da verilerinizin silinmesini talep edebilirsiniz.
+                Başvuru numaranızla <strong>kvkk@cvmatch.example</strong> adresine yazmanız yeterlidir.
             </div>
-        }
-        else
-        {
-            <div class="alert alert-warning">
-                Düzenleme bağlantınız oluşturulamadı. Başvurunuz kaydedildi; değişiklik
-                gerekirse başvuru numaranızla bizimle iletişime geçin.
+
+            <div class="text-center mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Ana Sayfaya Dön</a>
             </div>
-        }
 
-        <div class="alert alert-light border small">
-            Süre dolduktan sonra da verilerinizin silinmesini talep edebilirsiniz.
-            Bunun için başvuru numaranızla bize ulaşmanız yeterlidir.
         </div>
-
-        <div class="text-center">
-            <a asp-action="Index" class="btn btn-outline-secondary">Yeni Başvuru Yap</a>
-        </div>
-
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.getElementById('copyBtn')?.addEventListener('click', function () {
-            const input = document.getElementById('editLink');
-            input.select();
-            navigator.clipboard.writeText(input.value);
-            this.textContent = 'Kopyalandı';
-            setTimeout(() => { this.textContent = 'Kopyala'; }, 2000);
+        document.querySelectorAll('[data-copy]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                navigator.clipboard.writeText(this.dataset.copy);
+
+                const eskiMetin = this.textContent;
+                this.textContent = 'Kopyalandı ✓';
+                setTimeout(() => { this.textContent = eskiMetin; }, 2000);
+            });
+        });
+        
+        document.getElementById('revealBtn')?.addEventListener('click', function () {
+            const kutu = document.getElementById('editLink');
+            const maske = document.querySelector('.cvm-masked-link');
+
+            kutu.classList.remove('d-none');
+            maske.classList.add('d-none');
         });
     </script>
 }
