@@ -7,9 +7,7 @@ namespace CVMatch.Web.Controllers;
 public class HomeController : Controller
 {
     public IActionResult Index()
-    {
-        return View();
-    }
+        => RedirectToAction("Index", "Cv");
 
     public IActionResult Privacy()
     {

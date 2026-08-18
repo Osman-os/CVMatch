@@ -36,6 +36,7 @@ builder.Services.AddScoped<ICvProcessingService, CvProcessingService>();
 #pragma warning restore CA1416
 
 builder.Services.AddScoped<IMatchingService, MatchingService>();
+builder.Services.AddHostedService<DraftCleanupService>();
 
 builder.Services.AddAuthorization(options =>
 {

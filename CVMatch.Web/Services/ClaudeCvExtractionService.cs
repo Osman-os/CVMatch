@@ -24,7 +24,7 @@ public class ClaudeCvExtractionService : ICvExtractionService
 
         _apiKey = config["Anthropic:ApiKey"]
             ?? throw new InvalidOperationException("Anthropic:ApiKey yapılandırılmamış.");
-        _model = config["Anthropic:Model"] ?? "claude-haiku-4-5-20251001";
+        _model = config["Anthropic:Model"] ?? "claude-sonnet-5";
         _baseUrl = config["Anthropic:BaseUrl"] ?? "https://api.anthropic.com/v1/messages";
     }
 

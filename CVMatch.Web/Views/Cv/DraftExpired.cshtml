@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Başvuru süresi doldu";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6 text-center">
+        <h1 class="h4 mb-3">Başvuru süresi doldu</h1>
+
+        <p class="text-secondary">
+            Tamamlanmamış başvurular 24 saat sonra silinir. Bu bağlantı artık geçerli değil.
+        </p>
+
+        <div class="alert alert-light border text-start small">
+            Başvurunuzu tamamladıysanız, size verilen düzenleme bağlantısını kullanın.
+            Başvurunuzu tamamlamadıysanız yeni bir başvuru başlatabilirsiniz.
+        </div>
+
+        <a asp-action="Index" class="btn btn-primary">Yeni Başvuru Yap</a>
+    </div>
+</div>

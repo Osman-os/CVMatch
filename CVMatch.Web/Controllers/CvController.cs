@@ -18,6 +18,10 @@ public class CvController : Controller
     // Aday bu süre boyunca başvurusunu düzenleyebilir
     private static readonly TimeSpan EditTokenLifetime = TimeSpan.FromDays(30);
 
+    //Onaylanmış veya süresi dolmuş taslak bağlantısı çalışmamalı.
+    private static bool TaslakGecerliMi(CvSubmission s) =>
+        s.Status != SubmissionStatus.Approved && s.ExpiresAt > DateTime.UtcNow;
+
     private readonly ApplicationDbContext _db;
     private readonly IFileStorage _storage;
     private readonly ICvProcessingService _processing;
@@ -73,7 +77,7 @@ public class CvController : Controller
         _db.CvSubmissions.Add(submission);
         await _db.SaveChangesAsync(ct);
 
-        _logger.LogInformation("CV yüklendi. Token: {Token}", submission.Token);
+        _logger.LogInformation("CV yüklendi. Kayıt: {Id}", submission.Id);
 
         return RedirectToAction(nameof(Processing), new { token = submission.Token });
     }
@@ -86,6 +90,9 @@ public class CvController : Controller
 
         if (submission is null)
             return NotFound();
+        
+        if (!TaslakGecerliMi(submission))
+            return View("DraftExpired");
 
         // İlk kez geliniyorsa işlemi başlat
         if (submission.Status == SubmissionStatus.Uploaded)
@@ -117,6 +124,12 @@ public class CvController : Controller
             .FirstOrDefaultAsync(x => x.Token == token, ct);
 
         if (submission is null) return NotFound();
+
+        if (!TaslakGecerliMi(submission))
+            return NotFound();
+
+        if (!TaslakGecerliMi(submission))
+            return View("DraftExpired");
 
         if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
             return RedirectToAction(nameof(Processing), new { token });
@@ -172,6 +185,9 @@ public class CvController : Controller
 
         if (submission is null) return NotFound();
 
+        if (!TaslakGecerliMi(submission))
+            return View("DraftExpired");
+
         // Boş satırları at
         model.Educations = model.Educations
             .Where(e => !string.IsNullOrWhiteSpace(e.School))
@@ -212,6 +228,9 @@ public class CvController : Controller
             .FirstOrDefaultAsync(x => x.Token == token, ct);
 
         if (submission is null) return NotFound();
+
+        if (!TaslakGecerliMi(submission))
+            return View("DraftExpired");
 
         // Onay verilmemişse buraya gelinmemeli
         if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
@@ -271,9 +290,13 @@ public class CvController : Controller
 
         if (submission is null) return NotFound();
 
+        // Zaten onaylanmışsa özete dön
         if (submission.Status == SubmissionStatus.Approved)
             return RedirectToAction(nameof(Summary), new { token = consent.Token });
 
+        if (submission.ExpiresAt <= DateTime.UtcNow)
+            return View("DraftExpired");
+            
         // Onay kutuları eksikse özet ekranını hatalarla tekrar göster
         if (!ModelState.IsValid)
             return await BuildSummaryViewAsync(submission, consent, ct);
@@ -741,6 +764,7 @@ public class CvController : Controller
             PhoneNumber = vm.PhoneNumber,
             Address = vm.Address,
             LinkedInUrl = vm.LinkedInUrl,
+            GitHubUrl = vm.GitHubUrl,
             CityId = vm.CityId,
             PreferredEmploymentType = vm.PreferredEmploymentType,
             TotalExperienceMonths = vm.TotalExperienceMonths,
