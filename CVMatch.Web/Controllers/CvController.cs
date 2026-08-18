@@ -21,6 +21,35 @@ public class CvController : Controller
     //Onaylanmış veya süresi dolmuş taslak bağlantısı çalışmamalı.
     private static bool TaslakGecerliMi(CvSubmission s) =>
         s.Status != SubmissionStatus.Approved && s.ExpiresAt > DateTime.UtcNow;
+    
+    /// <summary>
+    /// Elle gönderilen isteklerde tanımsız enum veya olmayan şehir gelebilir.
+    /// Hatalar ModelState'e eklenir, çağıran metot ModelState.IsValid ile kontrol eder.
+    /// </summary>
+    private async Task DogrulamaEkleAsync(CvReviewViewModel data, CancellationToken ct)
+    {
+        if (data.PreferredEmploymentType.HasValue
+            && !Enum.IsDefined(data.PreferredEmploymentType.Value))
+        {
+            ModelState.AddModelError(
+                nameof(data.PreferredEmploymentType), "Geçersiz başvuru türü.");
+        }
+
+        if (data.CityId.HasValue
+            && !await _db.Cities.AnyAsync(c => c.Id == data.CityId.Value, ct))
+        {
+            ModelState.AddModelError(nameof(data.CityId), "Geçersiz şehir seçimi.");
+        }
+
+        foreach (var e in data.Educations)
+        {
+            if (e.Level.HasValue && !Enum.IsDefined(e.Level.Value))
+            {
+                ModelState.AddModelError(string.Empty, "Geçersiz eğitim düzeyi.");
+                break;
+            }
+        }
+    }
 
     private readonly ApplicationDbContext _db;
     private readonly IFileStorage _storage;
@@ -144,10 +173,6 @@ public class CvController : Controller
 
         if (submission is null) return NotFound();
 
-        // Onaylanmış veya süresi dolmuş taslağın dosyalarına erişilemez;
-        // onay sonrası dosyalar yalnızca Admin/CandidateFile üzerinden servis edilir
-        if (!TaslakGecerliMi(submission)) return NotFound();
-
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");
 
@@ -216,6 +241,8 @@ public class CvController : Controller
         model.WorkExperiences = model.WorkExperiences
             .Where(w => !string.IsNullOrWhiteSpace(w.CompanyName))
             .ToList();
+
+        await DogrulamaEkleAsync(model, ct);
 
         if (!ModelState.IsValid)
         {
@@ -526,6 +553,8 @@ public class CvController : Controller
         var profile = await BulEditProfiliAsync(key, ct);
         if (profile is null) return View("EditUnavailable");
 
+        await DogrulamaEkleAsync(data, ct);
+
         if (!ModelState.IsValid)
         {
             data.Cities = await GetCitiesAsync(ct);
@@ -790,6 +819,10 @@ public class CvController : Controller
             .FirstOrDefaultAsync(x => x.Token == token, ct);
 
         if (submission is null) return NotFound();
+
+        // Onaylanmış veya süresi dolmuş taslağın dosyalarına erişilemez;
+        // onay sonrası dosyalar yalnızca Admin/CandidateFile üzerinden servis edilir
+        if (!TaslakGecerliMi(submission)) return NotFound();
 
         var (fileName, contentType) = type switch
         {
