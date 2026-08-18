@@ -132,6 +132,15 @@
         const value = skillInput.value.trim();
         if (value.length === 0) return;
 
+        // Skill.Name veritabanında 100 karakterle sınırlı
+        if (value.length > 100) {
+            skillInput.setCustomValidity('Yetenek adı en fazla 100 karakter olabilir.');
+            skillInput.reportValidity();
+            return;
+        }
+
+        skillInput.setCustomValidity('');
+
         const exists = skills.some(function (s) {
             return s.toLocaleLowerCase('tr') === value.toLocaleLowerCase('tr');
         });

@@ -641,7 +641,8 @@ public class CvController : Controller
     {
         var names = rawSkills
             .Where(s => !string.IsNullOrWhiteSpace(s))
-            .Select(s => s.Trim())
+            // Skill.Name veritabanında 100 karakterle sınırlı
+            .Select(s => s.Trim() is var t && t.Length > 100 ? t[..100] : s.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 

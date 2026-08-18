@@ -630,3 +630,15 @@ body {
 .cvm-page .card h2.border-0 {
     border-bottom: none !important;
 }
+
+/* Uzun yetenek adları kartı taşırmasın */
+#skillTags {
+    max-width: 100%;
+}
+
+#skillTags .badge {
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    text-align: left;
+}

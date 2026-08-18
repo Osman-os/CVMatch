@@ -87,7 +87,7 @@ public class CvProcessingService : ICvProcessingService
             submission.Status = SubmissionStatus.AwaitingReview;
             await _db.SaveChangesAsync(ct);
 
-            _logger.LogInformation("CV işlendi: {Token}", submission.Token);
+            _logger.LogInformation("CV işlendi: {Id}", submission.Id);
         }
         catch (Exception ex)
         {

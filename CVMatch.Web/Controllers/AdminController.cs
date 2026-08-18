@@ -315,6 +315,12 @@ public class AdminController : Controller
             TempData["Hata"] = "Not boş olamaz.";
             return RedirectToAction(nameof(Candidate), new { id });
         }
+        
+        if (content.Trim().Length > 2000)
+        {
+            TempData["Hata"] = "Not en fazla 2000 karakter olabilir.";
+            return RedirectToAction(nameof(Candidate), new { id });
+        }
 
         var varMi = await _db.CandidateProfiles.AnyAsync(x => x.Id == id, ct);
         if (!varMi) return NotFound();
