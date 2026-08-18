@@ -47,6 +47,9 @@ public class ApplicationDbContext : IdentityDbContext
             e.Property(x => x.FullName).IsRequired().HasMaxLength(150);
             e.Property(x => x.Email).IsRequired().HasMaxLength(256);
             e.Property(x => x.PhoneNumber).HasMaxLength(30);
+            e.Property(x => x.PhoneNormalized).HasMaxLength(20);
+            e.HasIndex(x => x.PhoneNormalized);
+            e.HasIndex(x => x.Email);
             e.Property(x => x.Address).HasMaxLength(500);
             e.Property(x => x.LinkedInUrl).HasMaxLength(300);
             e.Property(x => x.GitHubUrl).HasMaxLength(300);

@@ -91,9 +91,13 @@ public class EducationInputModel
     public EducationLevel? Level { get; set; }
 
     // "MM/yyyy" biçiminde
+    [RegularExpression(@"^(0[1-9]|1[0-2])\/\d{4}$",
+        ErrorMessage = "Tarihi aa/yyyy biçiminde girin. Örnek: 06/2019")]
     [Display(Name = "Başlangıç Tarihi")]
     public string? StartDate { get; set; }
 
+    [RegularExpression(@"^(0[1-9]|1[0-2])\/\d{4}$",
+        ErrorMessage = "Tarihi aa/yyyy biçiminde girin. Örnek: 06/2019")]
     [Display(Name = "Bitiş Tarihi")]
     public string? EndDate { get; set; }
 
@@ -114,9 +118,13 @@ public class WorkExperienceInputModel
     [Display(Name = "Açıklama")]
     public string? Description { get; set; }
 
+    [RegularExpression(@"^(0[1-9]|1[0-2])\/\d{4}$",
+        ErrorMessage = "Tarihi aa/yyyy biçiminde girin. Örnek: 06/2019")]
     [Display(Name = "Başlangıç Tarihi")]
     public string? StartDate { get; set; }
 
+    [RegularExpression(@"^(0[1-9]|1[0-2])\/\d{4}$",
+        ErrorMessage = "Tarihi aa/yyyy biçiminde girin. Örnek: 06/2019")]
     [Display(Name = "Bitiş Tarihi")]
     public string? EndDate { get; set; }
 

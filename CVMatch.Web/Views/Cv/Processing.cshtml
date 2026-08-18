@@ -1,15 +1,85 @@
 @model CVMatch.Web.Models.Entities.CvSubmission
+@using CVMatch.Web.Models.Enums
 @{
     ViewData["Title"] = "CV analiz ediliyor";
+    var basliyor = Model.Status == SubmissionStatus.Uploaded;
 }
 
-<div class="row justify-content-center py-5">
-    <div class="col-lg-5 text-center">
-        <div class="spinner-border text-primary mb-4" role="status">
-            <span class="visually-hidden">Yükleniyor</span>
-        </div>
+<partial name="_Steps" model="1" />
 
-        <h1 class="h4">CV'niz analiz ediliyor</h1>
-        <p class="text-secondary">Bu işlem kısa sürebilir. Lütfen sayfayı kapatmayın.</p>
+<div class="cvm-processing-wrap">
+    <div class="card">
+        <div class="card-body text-center p-5">
+
+            <div class="cvm-spinner mb-4"></div>
+
+            <h1 class="h4 mb-2">CV'niz analiz ediliyor</h1>
+            <p class="text-secondary mb-4" id="durumMetni">
+                Bilgileriniz çıkarılıyor. Bu işlem yarım dakika kadar sürebilir.
+            </p>
+
+            <ul class="cvm-steps-list text-start" id="adimListesi">
+                <li data-adim="1">Dosya okunuyor</li>
+                <li data-adim="2">Önizleme oluşturuluyor</li>
+                <li data-adim="3">Metin çıkarılıyor</li>
+                <li data-adim="4">Bilgiler yapılandırılıyor</li>
+            </ul>
+
+            <p class="text-secondary small mt-4 mb-0">
+                Lütfen bu sayfayı kapatmayın.
+            </p>
+
+        </div>
     </div>
 </div>
+
+@if (basliyor)
+{
+    <form id="startForm" method="post" asp-action="Start" asp-route-token="@Model.Token">
+        @Html.AntiForgeryToken()
+    </form>
+}
+
+@section Scripts {
+    <script>
+        // Adımları sırayla vurgula — gerçek ilerlemeyi değil, beklemeyi görselleştirir
+        const adimlar = document.querySelectorAll('#adimListesi li');
+        let sirada = 0;
+
+        function adimIlerlet() {
+            if (sirada > 0) adimlar[sirada - 1].classList.add('tamam');
+            if (sirada < adimlar.length) {
+                adimlar[sirada].classList.add('aktif');
+                sirada++;
+            }
+        }
+
+        adimIlerlet();
+        const zamanlayici = setInterval(adimIlerlet, 4000);
+
+        const form = document.getElementById('startForm');
+
+        if (form) {
+            const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token },
+                body: new FormData(form)
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('İstek başarısız');
+                return r.json();
+            })
+            .then(data => {
+                clearInterval(zamanlayici);
+                window.location.href = data.redirect;
+            })
+            .catch(() => {
+                clearInterval(zamanlayici);
+                document.getElementById('durumMetni').textContent =
+                    'Bir sorun oluştu. Sayfayı yenilemeyi deneyin.';
+            });
+        }
+    </script>
+}

@@ -29,7 +29,7 @@ else
     </div>
 }
 
-<div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+<div asp-validation-summary="All" class="alert alert-danger"></div>
 
 <form asp-action="Review" method="post" id="reviewForm">
     @Html.AntiForgeryToken()

@@ -294,6 +294,7 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangeStatus(int id, ApplicationStatus status, CancellationToken ct)
     {
+        if (!Enum.IsDefined(status)) return BadRequest();
         var profile = await _db.CandidateProfiles.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (profile is null) return NotFound();
 

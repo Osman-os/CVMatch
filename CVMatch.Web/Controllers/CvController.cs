@@ -94,16 +94,6 @@ public class CvController : Controller
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");
 
-        // İlk kez geliniyorsa işlemi başlat
-        if (submission.Status == SubmissionStatus.Uploaded)
-        {
-            await _processing.ProcessAsync(submission.Id, ct);
-
-            submission = await _db.CvSubmissions
-                .AsNoTracking()
-                .FirstAsync(x => x.Token == token, ct);
-        }
-
         return submission.Status switch
         {
             SubmissionStatus.AwaitingReview =>
@@ -116,6 +106,35 @@ public class CvController : Controller
         };
     }
 
+    /// <summary>
+    /// İşlemeyi başlatır. Bekleme ekranı yüklendikten sonra JavaScript çağırır.
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Start(Guid token, CancellationToken ct)
+    {
+        var submission = await _db.CvSubmissions
+            .FirstOrDefaultAsync(x => x.Token == token, ct);
+
+        if (submission is null) return NotFound();
+        if (!TaslakGecerliMi(submission)) return NotFound();
+
+        if (submission.Status == SubmissionStatus.Uploaded)
+            await _processing.ProcessAsync(submission.Id, ct);
+
+        var guncel = await _db.CvSubmissions
+            .AsNoTracking()
+            .FirstAsync(x => x.Token == token, ct);
+
+        var hedef = guncel.Status switch
+        {
+            SubmissionStatus.AwaitingReview => Url.Action(nameof(Review), new { token }),
+            _ => Url.Action(nameof(Processing), new { token })
+        };
+
+        return Json(new { redirect = hedef });
+    }
+
     [HttpGet]
     public async Task<IActionResult> Review(Guid token, CancellationToken ct)
     {
@@ -125,8 +144,9 @@ public class CvController : Controller
 
         if (submission is null) return NotFound();
 
-        if (!TaslakGecerliMi(submission))
-            return NotFound();
+        // Onaylanmış veya süresi dolmuş taslağın dosyalarına erişilemez;
+        // onay sonrası dosyalar yalnızca Admin/CandidateFile üzerinden servis edilir
+        if (!TaslakGecerliMi(submission)) return NotFound();
 
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");
@@ -229,6 +249,10 @@ public class CvController : Controller
 
         if (submission is null) return NotFound();
 
+        // Onaylanmış başvuruda taslak yerine bilgilendirme gösterilir
+        if (submission.Status == SubmissionStatus.Approved)
+            return View("AlreadySubmitted");
+
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");
 
@@ -292,8 +316,8 @@ public class CvController : Controller
 
         // Zaten onaylanmışsa özete dön
         if (submission.Status == SubmissionStatus.Approved)
-            return RedirectToAction(nameof(Summary), new { token = consent.Token });
-
+            return View("AlreadySubmitted");
+            
         if (submission.ExpiresAt <= DateTime.UtcNow)
             return View("DraftExpired");
             
@@ -389,6 +413,11 @@ public class CvController : Controller
         submission.CandidateProfile = profile;
         submission.Status = SubmissionStatus.Approved;
         submission.ApprovedAt = now;
+
+        // Veri minimizasyonu: kalıcı kayıt oluştu, taslak kopyalarına gerek yok
+        submission.ExtractedText = null;
+        submission.ExtractedJson = null;
+        submission.ErrorMessage = null;
 
         await _db.SaveChangesAsync(ct);
 
@@ -516,7 +545,34 @@ public class CvController : Controller
                 Data = data
             });
         }
+        // Başka bir başvuruyla çakışan iletişim bilgisi kabul edilmez
+        var yeniEmail = data.Email?.Trim().ToLowerInvariant();
+        var yeniPhone = ApplicationHelpers.NormalizePhone(data.PhoneNumber);
 
+        var cakisan = await _db.CandidateProfiles
+            .AsNoTracking()
+            .Where(x => x.Id != profile.Id && x.EditTokenExpiresAt > DateTime.UtcNow)
+            .Where(x =>
+                (yeniEmail != null && x.Email.ToLower() == yeniEmail) ||
+                (yeniPhone != null && x.PhoneNormalized == yeniPhone))
+            .AnyAsync(ct);
+
+        if (cakisan)
+        {
+            ModelState.AddModelError(string.Empty,
+                "Bu e-posta adresi veya telefon numarası başka bir başvuruda kullanılıyor.");
+
+            data.Cities = await GetCitiesAsync(ct);
+
+            return View(new CvEditViewModel
+            {
+                Key = key,
+                ApplicationReferenceNumber = profile.ApplicationReferenceNumber,
+                SubmittedAt = profile.SubmittedAt,
+                EditTokenExpiresAt = profile.EditTokenExpiresAt,
+                Data = data
+            });
+        }
         profile.FullName = data.FullName!.Trim();
         profile.Email = data.Email!.Trim();
         profile.PhoneNumber = data.PhoneNumber?.Trim();

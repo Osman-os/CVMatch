@@ -110,6 +110,21 @@ public class JobPostingsController : Controller
         // Aynı yetenek iki listede birden olmasın
         vm.TercihSkillIds = vm.TercihSkillIds.Except(vm.ZorunluSkillIds).ToList();
 
+        // Elle gönderilen isteklerde tanımsız enum veya olmayan FK gelebilir
+        if (!Enum.IsDefined(vm.EmploymentType))
+            ModelState.AddModelError(nameof(vm.EmploymentType), "Geçersiz çalışma türü.");
+
+        if (!Enum.IsDefined(vm.Status))
+            ModelState.AddModelError(nameof(vm.Status), "Geçersiz ilan durumu.");
+
+        if (vm.CityId.HasValue &&
+            !await _db.Cities.AnyAsync(c => c.Id == vm.CityId.Value, ct))
+            ModelState.AddModelError(nameof(vm.CityId), "Geçersiz şehir seçimi.");
+
+        var gecerliSkillIds = await _db.Skills.Select(s => s.Id).ToListAsync(ct);
+        vm.ZorunluSkillIds = vm.ZorunluSkillIds.Where(gecerliSkillIds.Contains).ToList();
+        vm.TercihSkillIds = vm.TercihSkillIds.Where(gecerliSkillIds.Contains).ToList();
+
         if (!ModelState.IsValid)
         {
             await ListeleriDoldurAsync(vm, ct);
@@ -162,6 +177,7 @@ public class JobPostingsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangeStatus(int id, JobPostingStatus status, CancellationToken ct)
     {
+        if (!Enum.IsDefined(status)) return BadRequest();
         var ilan = await _db.JobPostings.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (ilan is null) return NotFound();
 
