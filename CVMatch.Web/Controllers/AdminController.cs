@@ -349,7 +349,10 @@ public class AdminController : Controller
         if (type == "photo")
         {
             if (string.IsNullOrEmpty(profile.PhotoFileName)) return NotFound();
-            return await DosyaDondurAsync(profile.PhotoFileName, "image/jpeg", ct);
+            return await DosyaDondurAsync(
+                profile.PhotoFileName,
+                MimeTypes.FromFileName(profile.PhotoFileName),
+                ct);
         }
 
         var submission = await _db.CvSubmissions
@@ -363,7 +366,7 @@ public class AdminController : Controller
         return type switch
         {
             "preview" when !string.IsNullOrEmpty(submission.PreviewImageFileName)
-                => await DosyaDondurAsync(submission.PreviewImageFileName, "image/jpeg", ct),
+                => await DosyaDondurAsync(submission.PreviewImageFileName, MimeTypes.FromFileName(submission.PreviewImageFileName), ct),
 
             "pdf" => await DosyaDondurAsync(
                 submission.StoredFileName, "application/pdf", ct, submission.OriginalFileName),

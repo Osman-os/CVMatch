@@ -42,6 +42,8 @@ public class ArananYetenek
 
 public class EslesenAday
 {
+    /// <summary>İlanda şehir tercihi yoksa true.</summary>
+    public bool SehirKriteriYok { get; set; }
     public int Id { get; set; }
     public string ApplicationReferenceNumber { get; set; } = null!;
     public string FullName { get; set; } = null!;

@@ -178,8 +178,17 @@ public class JobPostingsController : Controller
     public async Task<IActionResult> Match(
         int id, int? asgariSkor, string? turFiltresi, CancellationToken ct)
     {
-        var vm = await _matching.MatchAsync(id, asgariSkor ?? 1, turFiltresi ?? "tumu", ct);
+        var vm = await _matching.MatchAsync(id, asgariSkor ?? 1, turFiltresi ?? "uyumlu", ct);
         if (vm is null) return NotFound();
+
+        // Eşleştirme yalnızca yayındaki ilanlar için yapılır
+        if (vm.Status != JobPostingStatus.Active)
+        {
+            TempData["Hata"] =
+                $"\"{vm.Title}\" ilanı yayında değil. Eşleştirme yapabilmek için ilanı yayınlayın.";
+
+            return RedirectToAction(nameof(Index));
+        }
 
         return View(vm);
     }

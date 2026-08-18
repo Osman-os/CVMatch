@@ -714,7 +714,7 @@ public class CvController : Controller
         var (fileName, contentType) = type switch
         {
             "preview" => (submission.PreviewImageFileName, "image/jpeg"),
-            "photo" => (submission.PhotoFileName, "image/jpeg"),
+            "photo" => (submission.PhotoFileName, MimeTypes.FromFileName(submission.PhotoFileName)),
             "pdf" => (submission.StoredFileName, "application/pdf"),
             _ => (null, null)
         };

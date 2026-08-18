@@ -106,6 +106,7 @@ public class MatchingService : IMatchingService
                 Email = aday.Email,
                 CityName = aday.CityName,
                 AyniSehir = ilan.CityId.HasValue && aday.CityId == ilan.CityId,
+                SehirKriteriYok = ilan.CityId is null,
                 TotalExperienceMonths = aday.TotalExperienceMonths,
                 DeneyimYeterli = deneyimYili >= ilan.MinExperienceYears,
                 Status = aday.Status,

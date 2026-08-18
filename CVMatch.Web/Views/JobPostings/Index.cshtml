@@ -21,9 +21,9 @@
     };
 }
 
-@if (TempData["Bilgi"] is string bilgi)
+@if (TempData["Hata"] is string hata)
 {
-    <div class="alert alert-success">@bilgi</div>
+    <div class="alert alert-warning">@hata</div>
 }
 
 <div class="d-flex justify-content-between align-items-start mb-4">
@@ -123,8 +123,16 @@ else
 
                                     <span class="text-secondary mx-1">|</span>
 
-                                    <a asp-action="Match" asp-route-id="@i.Id"
-                                       class="small text-decoration-none">Eşleştirme Sonuçları</a>
+                                                                        @if (i.Status == JobPostingStatus.Active)
+                                    {
+                                        <a asp-action="Match" asp-route-id="@i.Id"
+                                           class="small text-decoration-none">Eşleştirme Sonuçları</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="small text-secondary"
+                                              title="Eşleştirme için ilan yayında olmalı">Eşleştirme Sonuçları</span>
+                                    }
 
                                     <form asp-action="ChangeStatus" method="post" class="d-inline ms-2">
                                         @Html.AntiForgeryToken()

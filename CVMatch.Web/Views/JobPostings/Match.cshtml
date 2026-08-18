@@ -156,9 +156,16 @@ else
                         </div>
 
                         <div class="d-flex flex-column align-items-start gap-2">
-                            <span class="cvm-chip @(a.AyniSehir ? "cvm-chip-green" : "cvm-chip-red")">
-                                @(a.AyniSehir ? "Şehir uygun" : "Şehir uyumsuz")
-                            </span>
+                            @if (a.SehirKriteriYok)
+                            {
+                                <span class="cvm-chip cvm-chip-gray">Şehir kriteri yok</span>
+                            }
+                            else
+                            {
+                                <span class="cvm-chip @(a.AyniSehir ? "cvm-chip-green" : "cvm-chip-red")">
+                                    @(a.AyniSehir ? "Şehir uygun" : "Şehir uyumsuz")
+                                </span>
+                            }
 
                             <span class="cvm-chip @(a.DeneyimYeterli ? "cvm-chip-green" : "cvm-chip-amber")">
                                 @(a.DeneyimYeterli ? "Deneyim uygun" : "Deneyim yetersiz")
