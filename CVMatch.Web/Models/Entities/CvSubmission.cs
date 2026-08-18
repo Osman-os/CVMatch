@@ -4,6 +4,11 @@ namespace CVMatch.Web.Models.Entities;
 
 public class CvSubmission
 {
+        /// <summary>
+    /// Aday kontrol ekranını doğrulamadan geçirip gönderdiğinde işaretlenir.
+    /// Özet ve onay adımlarına yalnızca bu işaretten sonra geçilebilir.
+    /// </summary>
+    public DateTime? ReviewedAt { get; set; }
     public int Id { get; set; }
 
     // Aday onaylayana kadar null

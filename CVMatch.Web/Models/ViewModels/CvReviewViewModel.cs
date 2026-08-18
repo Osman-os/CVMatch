@@ -24,11 +24,16 @@ public class CvReviewViewModel
 
     [Required(ErrorMessage = "E-posta adresi zorunludur.")]
     [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi girin.")]
+    [RegularExpression(@"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$",
+        ErrorMessage = "Geçerli bir e-posta adresi girin. Örnek: ad.soyad@ornek.com")]
     [StringLength(256)]
     [Display(Name = "E-posta Adresi")]
     public string? Email { get; set; }
 
+    // 10-13 rakam içermeli; boşluk, +, parantez ve tire serbest, harf kabul edilmez
     [Required(ErrorMessage = "Telefon numarası zorunludur.")]
+    [RegularExpression(@"^(?=(?:\D*\d){10,13}\D*$)[0-9+\s().\-]+$",
+        ErrorMessage = "Geçerli bir telefon numarası girin. Örnek: 0532 123 45 67")]
     [StringLength(30)]
     [Display(Name = "Telefon Numarası")]
     public string? PhoneNumber { get; set; }

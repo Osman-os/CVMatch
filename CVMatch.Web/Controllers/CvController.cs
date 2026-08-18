@@ -198,6 +198,7 @@ public class CvController : Controller
 
         // Adayın düzenlediği hâli taslağa geri yaz
         submission.ExtractedJson = JsonSerializer.Serialize(ToExtractedData(model));
+        submission.ReviewedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
 
         return RedirectToAction(nameof(Summary), new { token = model.Token });
@@ -216,7 +217,11 @@ public class CvController : Controller
         if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
             return RedirectToAction(nameof(Processing), new { token });
 
-        if (string.IsNullOrWhiteSpace(submission.ExtractedJson))
+                if (string.IsNullOrWhiteSpace(submission.ExtractedJson))
+            return RedirectToAction(nameof(Review), new { token });
+
+        // Kontrol ekranı doğrulamadan geçmediyse özete geçilemez
+        if (submission.ReviewedAt is null)
             return RedirectToAction(nameof(Review), new { token });
 
         ExtractedCvData? data;
@@ -273,7 +278,8 @@ public class CvController : Controller
         if (!ModelState.IsValid)
             return await BuildSummaryViewAsync(submission, consent, ct);
 
-        if (string.IsNullOrWhiteSpace(submission.ExtractedJson))
+        if (string.IsNullOrWhiteSpace(submission.ExtractedJson)
+            || submission.ReviewedAt is null)
             return RedirectToAction(nameof(Review), new { token = consent.Token });
 
         var data = JsonSerializer.Deserialize<ExtractedCvData>(submission.ExtractedJson);
@@ -309,15 +315,15 @@ public class CvController : Controller
         var profile = new CandidateProfile
         {
             ApplicationReferenceNumber = await GenerateUniqueReferenceAsync(ct),
-            FullName = data.FullName ?? "(belirtilmedi)",
-            Email = data.Email ?? "(belirtilmedi)",
+            FullName = data.FullName!,
+            Email = data.Email!,
             PhoneNumber = data.PhoneNumber,
             PhoneNormalized = phone,
             Address = data.Address,
             PhotoFileName = submission.PhotoFileName,
             CityId = data.CityId,
             TotalExperienceMonths = data.TotalExperienceMonths ?? 0,
-            PreferredEmploymentType = data.PreferredEmploymentType ?? EmploymentType.Internship,
+            PreferredEmploymentType = data.PreferredEmploymentType!.Value,
             LinkedInUrl = data.LinkedInUrl,
             GitHubUrl = data.GitHubUrl,
             Status = ApplicationStatus.New,

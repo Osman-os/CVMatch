@@ -37,12 +37,14 @@
         <div class="row g-3 mb-0">
             <div class="col-md-6">
                 <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
+                <input asp-for="Email" class="form-control" type="email"
+                        placeholder="ad.soyad@ornek.com" />
                 <span asp-validation-for="Email" class="text-danger small"></span>
             </div>
-            <div class="col-md-6">
+                <div class="col-md-6">
                 <label asp-for="PhoneNumber" class="form-label"></label>
-                <input asp-for="PhoneNumber" class="form-control" />
+                <input asp-for="PhoneNumber" class="form-control" type="tel"
+                       inputmode="tel" placeholder="0532 123 45 67" />
                 <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
             </div>
         </div>
