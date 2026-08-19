@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CVMatch.Web.Data;
 using CVMatch.Web.Services;
+using System.Threading.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +39,54 @@ builder.Services.AddScoped<ICvProcessingService, CvProcessingService>();
 builder.Services.AddScoped<IMatchingService, MatchingService>();
 builder.Services.AddHostedService<DraftCleanupService>();
 
+// ---------- İstek sınırlama ----------
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // CV yükleme: her IP saatte 5 dosya
+    options.AddPolicy("upload", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromHours(1),
+                QueueLimit = 0
+            }));
+
+    // AI çıkarımı tetikleme: her IP saatte 10 istek
+    options.AddPolicy("islem", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 30,
+                Window = TimeSpan.FromHours(1),
+                QueueLimit = 0
+            }));
+
+    // Yönetici girişi: kaba kuvvet denemelerine karşı
+    options.AddPolicy("giris", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(15),
+                QueueLimit = 0
+            }));
+
+    options.OnRejected = async (context, ct) =>
+    {
+        context.HttpContext.Response.ContentType = "text/html; charset=utf-8";
+
+        await context.HttpContext.Response.WriteAsync(
+            "<h3>Çok fazla istek gönderdiniz</h3>" +
+            "<p>Lütfen bir süre bekleyip yeniden deneyin.</p>", ct);
+    };
+});
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(DbSeeder.AdminRole));
@@ -67,7 +116,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -91,7 +140,6 @@ app.MapControllerRoute(
     pattern: "{controller=Cv}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages().RequireRateLimiting("giris");
 
 app.Run();

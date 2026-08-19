@@ -56,8 +56,6 @@ public class ApplicationDbContext : IdentityDbContext
             e.Property(x => x.EditTokenHash).IsRequired().HasMaxLength(128);
             e.Property(x => x.PhotoFileName).HasMaxLength(100);
             e.HasIndex(x => x.PreferredEmploymentType);
-
-            e.HasIndex(x => x.Email);
             e.HasIndex(x => x.ApplicationReferenceNumber).IsUnique();
             e.HasIndex(x => x.EditTokenHash).IsUnique();
             e.HasIndex(x => x.Status);
@@ -105,6 +103,10 @@ public class ApplicationDbContext : IdentityDbContext
 
             e.HasIndex(x => x.Token).IsUnique();
             e.HasIndex(x => new { x.Status, x.ExpiresAt });
+            // Bir yükleme yalnızca tek bir kalıcı başvuruya bağlanabilir
+            e.HasIndex(x => x.CandidateProfileId)
+             .IsUnique()
+             .HasFilter("[CandidateProfileId] IS NOT NULL");
 
             e.HasOne(x => x.CandidateProfile)
              .WithMany(c => c.CvSubmissions)

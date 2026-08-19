@@ -7,6 +7,7 @@ using System.Text.Json;
 using CVMatch.Web.Models.Extraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CVMatch.Web.Controllers;
 
@@ -75,6 +76,7 @@ public class CvController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [RequestSizeLimit(FileValidation.MaxPdfBytes + 1024)]
+    [EnableRateLimiting("upload")]
     public async Task<IActionResult> Upload(CvUploadViewModel model, CancellationToken ct)
     {
         var validation = FileValidation.ValidatePdf(model.CvFile);
@@ -85,7 +87,7 @@ public class CvController : Controller
         }
 
         var file = model.CvFile!;
-
+        
         string storedFileName;
         await using (var stream = file.OpenReadStream())
         {
@@ -104,6 +106,7 @@ public class CvController : Controller
         };
 
         _db.CvSubmissions.Add(submission);
+        
         await _db.SaveChangesAsync(ct);
 
         _logger.LogInformation("CV yüklendi. Kayıt: {Id}", submission.Id);
@@ -140,6 +143,7 @@ public class CvController : Controller
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("islem")]
     public async Task<IActionResult> Start(Guid token, CancellationToken ct)
     {
         var submission = await _db.CvSubmissions
@@ -203,7 +207,7 @@ public class CvController : Controller
             }
             catch (JsonException ex)
             {
-                _logger.LogWarning(ex, "Taslak JSON çözümlenemedi: {Token}", token);
+                    _logger.LogWarning(ex, "Taslak JSON çözümlenemedi. SubmissionId: {Id}", submission.Id);
             }
         }
         else
@@ -232,6 +236,10 @@ public class CvController : Controller
 
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");
+
+        // Kontrol ekranı yalnızca işleme tamamlandıktan sonra kullanılabilir
+        if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
+            return RedirectToAction(nameof(Processing), new { token = model.Token });
 
         // Boş satırları at
         model.Educations = model.Educations
@@ -301,7 +309,7 @@ public class CvController : Controller
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Özet için taslak JSON çözümlenemedi: {Token}", token);
+                _logger.LogWarning(ex, "Özet için taslak JSON çözümlenemedi. SubmissionId: {Id}", submission.Id);
             return RedirectToAction(nameof(Review), new { token });
         }
 
@@ -347,7 +355,15 @@ public class CvController : Controller
             
         if (submission.ExpiresAt <= DateTime.UtcNow)
             return View("DraftExpired");
-            
+
+        // İşleme tamamlanmadan onay verilemez
+        if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
+            return RedirectToAction(nameof(Processing), new { token = consent.Token });
+
+        // Kontrol ekranından geçmeden onay verilemez
+        if (submission.ReviewedAt is null)
+            return RedirectToAction(nameof(Review), new { token = consent.Token });
+
         // Onay kutuları eksikse özet ekranını hatalarla tekrar göster
         if (!ModelState.IsValid)
             return await BuildSummaryViewAsync(submission, consent, ct);
@@ -446,7 +462,18 @@ public class CvController : Controller
         submission.ExtractedJson = null;
         submission.ErrorMessage = null;
 
-        await _db.SaveChangesAsync(ct);
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            // Benzersiz indeks: aynı yükleme için ikinci bir profil oluşturulamaz
+            _logger.LogWarning(
+                "Eşzamanlı onay denemesi engellendi. SubmissionId: {Id}", submission.Id);
+
+            return View("AlreadySubmitted");
+        }
 
         _logger.LogInformation(
             "Başvuru tamamlandı. Referans: {Reference}",
@@ -724,11 +751,13 @@ public class CvController : Controller
         IEnumerable<string> rawSkills,
         CancellationToken ct)
     {
+        const int MaxSkills = 50;
+
         var names = rawSkills
             .Where(s => !string.IsNullOrWhiteSpace(s))
-            // Skill.Name veritabanında 100 karakterle sınırlı
             .Select(s => s.Trim() is var t && t.Length > 100 ? t[..100] : s.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(MaxSkills)
             .ToList();
 
         if (names.Count == 0) return;

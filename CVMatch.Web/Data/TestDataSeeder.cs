@@ -58,7 +58,7 @@ public static class TestDataSeeder
         foreach (var (ad, sehir, ay, tur, durum, yetenekler) in kayitlar)
         {
             var gunOnce = rastgele.Next(0, 25);
-
+            var telefon = $"05{rastgele.Next(10, 99)} {rastgele.Next(100, 999)} {rastgele.Next(10, 99)} {rastgele.Next(10, 99)}";
             var profile = new CandidateProfile
             {
                 ApplicationReferenceNumber = ApplicationHelpers.GenerateReferenceNumber(),
@@ -67,7 +67,8 @@ public static class TestDataSeeder
                     .Replace(" ", ".")
                     .Replace("ı", "i").Replace("ş", "s").Replace("ğ", "g")
                     .Replace("ü", "u").Replace("ö", "o").Replace("ç", "c") + TestDomain,
-                PhoneNumber = $"05{rastgele.Next(10, 99)} {rastgele.Next(100, 999)} {rastgele.Next(10, 99)} {rastgele.Next(10, 99)}",
+                PhoneNumber = telefon,
+                PhoneNormalized = ApplicationHelpers.NormalizePhone(telefon),
                 CityId = cities.TryGetValue(sehir, out var cityId) ? cityId : null,
                 TotalExperienceMonths = ay,
                 PreferredEmploymentType = tur,

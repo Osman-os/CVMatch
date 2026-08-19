@@ -107,7 +107,7 @@ public class JobPostingsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(JobPostingEditViewModel vm, CancellationToken ct)
     {
-        // Aynı yetenek iki listede birden olmasın
+        // Aynı yetenek hem zorunlu hem tercih olamaz
         vm.TercihSkillIds = vm.TercihSkillIds.Except(vm.ZorunluSkillIds).ToList();
 
         // Elle gönderilen isteklerde tanımsız enum veya olmayan FK gelebilir
@@ -122,8 +122,13 @@ public class JobPostingsController : Controller
             ModelState.AddModelError(nameof(vm.CityId), "Geçersiz şehir seçimi.");
 
         var gecerliSkillIds = await _db.Skills.Select(s => s.Id).ToListAsync(ct);
-        vm.ZorunluSkillIds = vm.ZorunluSkillIds.Where(gecerliSkillIds.Contains).ToList();
-        vm.TercihSkillIds = vm.TercihSkillIds.Where(gecerliSkillIds.Contains).ToList();
+
+        // Tekrarlanan Id'ler composite key ihlaline yol açar
+        vm.ZorunluSkillIds = vm.ZorunluSkillIds
+            .Where(gecerliSkillIds.Contains).Distinct().ToList();
+
+        vm.TercihSkillIds = vm.TercihSkillIds
+            .Where(gecerliSkillIds.Contains).Distinct().ToList();
 
         if (!ModelState.IsValid)
         {

@@ -14,6 +14,9 @@ public static class FileValidation
 
         if (file.Length > MaxPdfBytes)
             return new(false, "Dosya boyutu 10 MB'ı aşamaz.");
+        
+        if (Path.GetFileName(file.FileName).Length > 260)
+            return new(false, "Dosya adı çok uzun. Lütfen daha kısa bir adla yeniden deneyin.");
 
         if (!Path.GetExtension(file.FileName)
                  .Equals(".pdf", StringComparison.OrdinalIgnoreCase))
@@ -33,6 +36,9 @@ public static class FileValidation
 
         if (file.Length > MaxImageBytes)
             return new(false, "Fotoğraf boyutu 2 MB'ı aşamaz.");
+        
+        if (Path.GetFileName(file.FileName).Length > 260)
+            return new(false, "Dosya adı çok uzun. Lütfen daha kısa bir adla yeniden deneyin.");
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (extension is not (".jpg" or ".jpeg" or ".png"))

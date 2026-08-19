@@ -85,8 +85,11 @@ public class PdfPigPhotoExtractor : IPdfPhotoExtractor
             return null;
         }
 
-        // Ham baytların biçimini imzasından anla
         extension = DetectExtension(raw);
+
+        if (extension == ".bin")
+            return null;
+
         return raw;
     }
 

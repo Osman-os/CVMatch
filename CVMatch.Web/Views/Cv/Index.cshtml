@@ -145,5 +145,10 @@
                 dosyaSecildi(dosya);
             }
         });
+
+        document.getElementById('uploadForm')?.addEventListener('submit', function () {
+            gonderBtn.disabled = true;
+            gonderBtn.textContent = 'Yükleniyor...';
+        });
     </script>
 }
