@@ -15,9 +15,10 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 * Claude API ile yapılandırılmış veri çıkarımı (eğitim, deneyim, yetenek ve iletişim)
 * Adayın çıkarılan bilgileri onaylamadan önce düzenleyebildiği kontrol ekranı
 * KVKK onay kutuları ve başvuru sonrası düzenleme/silme hakkı
-* Yetenek, şehir, durum ve başvuru türüne göre filtrelenebilen aday listesi
+* Yetenek, şehir, deneyim, durum ve başvuru türüne göre filtrelenebilen aday listesi
 * İlan bazlı eşleştirme ve yetenek uyum skoru
 * Mükerrer başvuru kontrolü
+* İstek sınırlama (rate limiting) ile kötüye kullanım koruması
 
 ## Teknolojiler
 
@@ -82,7 +83,7 @@ Yukarıdaki parola yalnızca örnektir. İlk çalıştırmadan önce kendi parol
 }
 ```
 
-Yüklenen CV'ler `wwwroot` dışında saklanır ve yalnızca yetkilendirilmiş action'lar üzerinden servis edilir.
+Yüklenen CV'ler `wwwroot` dışında saklanır ve statik dosya olarak sunulmaz. Erişim yalnızca kontrollü action'lar üzerinden olur: aday tarafında geçerli taslak bağlantısı, yönetici tarafında Identity yetkilendirmesi gerekir.
 
 Belirtilen klasörün var olduğundan emin olun.
 
@@ -184,6 +185,19 @@ Aynı e-posta adresi veya normalleştirilmiş telefon numarasıyla, düzenleme s
 
 Düzenleme süresi dolmuş başvurular yeni başvuru yapılmasını engellemez. Böylece adayın kalıcı olarak yeni başvuru yapmasının önüne geçilmez.
 
+### Kötüye kullanım koruması
+
+Aday tarafındaki uçlar kimlik doğrulaması gerektirmediğinden IP bazlı istek sınırlaması
+uygulanır: CV yükleme saatte 20, yapay zekâ çıkarımı saatte 30, yönetici girişi 15
+dakikada 10 istekle sınırlıdır.
+
+Yüklenen PDF'lerde dosya imzası doğrulanır, boyut 10 MB ile sınırlıdır ve metin
+çıkarımı en fazla 30 sayfa okur. Bir başvuruya en fazla 50 yetenek kaydedilir.
+
+Bir yüklemenin yalnızca tek bir kalıcı başvuruya bağlanabilmesi veritabanı
+seviyesinde benzersiz indeksle güvence altına alınır; eşzamanlı onay istekleri
+mükerrer kayıt oluşturamaz.
+
 ### Veri bütünlüğü
 
 Tüm foreign key ilişkilerinde `DeleteBehavior.Restrict` kullanılır.
@@ -204,9 +218,11 @@ CVMatch.Web/
 │   └── ViewModels/    Görünüm modelleri
 ├── Services/          Dosya depolama, PDF işleme, çıkarım, eşleştirme
 ├── Views/             Razor görünümleri
-└── wwwroot/css/       admin.css (yönetim), public.css (aday)
+└── wwwroot/
+    ├── css/           admin.css (yönetim), public.css (aday)
+    └── js/            cv-review.js (form etkileşimleri)
 
-CVMatch.Tests/         PDF metin ve görsel çıkarım testleri
+CVMatch.Tests/         PDF çıkarımı ve taslak erişim kuralı testleri
 ```
 
 ## Testler
@@ -217,13 +233,12 @@ Proje kök dizininde:
 dotnet test
 ```
 
-Test projesi:
+Test projesi 8 test içerir:
 
-* PDF metin çıkarımını
-* CV önizleme üretimini
-* PDF içerisinden fotoğraf çıkarımını
-
-kapsar.
+* PDF metin çıkarımı
+* CV önizleme üretimi
+* PDF içerisinden görsel ve fotoğraf çıkarımı
+* Taslak bağlantısı erişim kuralları (süre dolması, onay sonrası erişim)
 
 ## Proje durumu
 
@@ -241,3 +256,5 @@ Uygulama uçtan uca çalışır durumdadır.
   taşınması gerekir.
 * CV önizlemesi üretimi Windows'a bağımlıdır; Linux veya macOS üzerinde farklı bir
   render kütüphanesi gerekir.
+* İstek sınırlaması uygulama belleğinde tutulur. Birden fazla sunucu örneğiyle
+  çalıştırılacaksa dağıtık bir sayaç (örneğin Redis) gerekir.

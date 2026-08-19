@@ -699,18 +699,6 @@ public class CvController : Controller
             .Where(s => s.CandidateProfileId == profile.Id)
             .ToListAsync(ct);
 
-        // Diskteki dosyalar da silinsin
-        foreach (var s in submissions)
-        {
-            _storage.Delete(s.StoredFileName);
-
-            if (!string.IsNullOrEmpty(s.PreviewImageFileName))
-                _storage.Delete(s.PreviewImageFileName);
-
-            if (!string.IsNullOrEmpty(s.PhotoFileName))
-                _storage.Delete(s.PhotoFileName);
-        }
-
         var notes = await _db.CandidateNotes
             .Where(n => n.CandidateProfileId == profile.Id)
             .ToListAsync(ct);
@@ -724,11 +712,32 @@ public class CvController : Controller
 
         await _db.SaveChangesAsync(ct);
 
+        foreach (var s in submissions)
+        {
+            SilVeYoksay(s.StoredFileName);
+            SilVeYoksay(s.PreviewImageFileName);
+            SilVeYoksay(s.PhotoFileName);
+        }
+
         _logger.LogInformation(
             "Başvuru aday tarafından silindi: {Reference}",
             profile.ApplicationReferenceNumber);
 
         return View("ApplicationDeleted");
+    }
+
+    private void SilVeYoksay(string? fileName)
+    {
+        if (string.IsNullOrEmpty(fileName)) return;
+
+        try
+        {
+            _storage.Delete(fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Silme sırasında dosya kaldırılamadı: {Dosya}", fileName);
+        }
     }
 
     private async Task<string> GenerateUniqueReferenceAsync(CancellationToken ct)
@@ -762,28 +771,29 @@ public class CvController : Controller
 
         if (names.Count == 0) return;
 
-        // Sözlükteki yazımlar kazanır: "REACT" girilse de "React" kaydedilir
-        var existing = await _db.Skills
+        var mevcutAdlar = await _db.Skills
             .AsNoTracking()
             .ToDictionaryAsync(s => s.Name, s => s.Name, StringComparer.OrdinalIgnoreCase, ct);
 
-        var added = new Dictionary<string, Skill>(StringComparer.OrdinalIgnoreCase);
+        var hedefAdlar = names
+            .Select(raw => ApplicationHelpers.NormalizeSkillName(raw, mevcutAdlar))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-        foreach (var raw in names)
+        var takipliSkills = await _db.Skills
+            .Where(s => hedefAdlar.Contains(s.Name))
+            .ToDictionaryAsync(s => s.Name, s => s, StringComparer.OrdinalIgnoreCase, ct);
+
+        foreach (var name in hedefAdlar)
         {
-            var name = ApplicationHelpers.NormalizeSkillName(raw, existing);
-
-            var skill = await _db.Skills
-                .FirstOrDefaultAsync(s => s.Name == name, ct);
-
-            if (skill is null && !added.TryGetValue(name, out skill))
+            if (!takipliSkills.TryGetValue(name, out var skill))
             {
                 skill = new Skill { Name = name };
                 _db.Skills.Add(skill);
-                added[name] = skill;
+                takipliSkills[name] = skill;
             }
 
-            profile.CandidateSkills.Add(new CandidateSkill { Skill = skill! });
+            profile.CandidateSkills.Add(new CandidateSkill { Skill = skill });
         }
     }
 

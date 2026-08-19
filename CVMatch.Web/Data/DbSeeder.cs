@@ -17,10 +17,11 @@ public static class DbSeeder
         var roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = sp.GetRequiredService<UserManager<IdentityUser>>();
         var config = sp.GetRequiredService<IConfiguration>();
+        var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
         await SeedCitiesAsync(db);
         await SeedSkillsAsync(db);
-        await SeedAdminAsync(roleManager, userManager, config);
+        await SeedAdminAsync(roleManager, userManager, config, logger);
     }
 
     private static async Task SeedCitiesAsync(ApplicationDbContext db)
@@ -67,7 +68,8 @@ public static class DbSeeder
     private static async Task SeedAdminAsync(
         RoleManager<IdentityRole> roleManager,
         UserManager<IdentityUser> userManager,
-        IConfiguration config)
+        IConfiguration config,
+        ILogger logger)
     {
         if (!await roleManager.RoleExistsAsync(AdminRole))
             await roleManager.CreateAsync(new IdentityRole(AdminRole));
@@ -76,19 +78,48 @@ public static class DbSeeder
         var password = config["SeedAdmin:Password"];
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-            return;
-
-        if (await userManager.FindByEmailAsync(email) is not null) return;
-
-        var user = new IdentityUser
         {
-            UserName = email,
-            Email = email,
-            EmailConfirmed = true
-        };
+            logger.LogWarning(
+                "SeedAdmin ayarları eksik; yönetici kullanıcısı oluşturulmadı. " +
+                "appsettings.Development.json içinde SeedAdmin:Email ve SeedAdmin:Password tanımlayın.");
+            return;
+        }
 
-        var result = await userManager.CreateAsync(user, password);
-        if (result.Succeeded)
-            await userManager.AddToRoleAsync(user, AdminRole);
+        var user = await userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            user = new IdentityUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(user, password);
+
+            if (!result.Succeeded)
+            {
+                var hatalar = string.Join("; ", result.Errors.Select(e => e.Description));
+
+                logger.LogError(
+                    "Yönetici kullanıcısı oluşturulamadı ({Email}): {Hatalar}", email, hatalar);
+
+                return;
+            }
+
+            logger.LogInformation("Yönetici kullanıcısı oluşturuldu: {Email}", email);
+        }
+
+        // Kullanıcı zaten vardı ama rolü eksikse tamamla
+        if (!await userManager.IsInRoleAsync(user, AdminRole))
+        {
+            var rolSonucu = await userManager.AddToRoleAsync(user, AdminRole);
+
+            if (rolSonucu.Succeeded)
+                logger.LogInformation("Yönetici rolü atandı: {Email}", email);
+            else
+                logger.LogError("Yönetici rolü atanamadı: {Email}", email);
+        }
     }
 }

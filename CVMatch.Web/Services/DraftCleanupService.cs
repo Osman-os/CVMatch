@@ -1,5 +1,6 @@
 using CVMatch.Web.Data;
 using CVMatch.Web.Models.Enums;
+using CVMatch.Web.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CVMatch.Web.Services;
@@ -59,32 +60,49 @@ public class DraftCleanupService : BackgroundService
 
         if (suresiDolan.Count == 0) return;
 
+                var silinecekler = new List<CvSubmission>();
+
         foreach (var s in suresiDolan)
         {
-            // Dosya silinemese bile kayıt temizlenmeli
-            TryDelete(storage, s.StoredFileName);
-            TryDelete(storage, s.PreviewImageFileName);
-            TryDelete(storage, s.PhotoFileName);
+            // Dosyalardan biri silinemezse kaydı bırak, sonraki turda tekrar denenir
+            var tumDosyalarSilindi =
+                TryDelete(storage, s.StoredFileName)
+                & TryDelete(storage, s.PreviewImageFileName)
+                & TryDelete(storage, s.PhotoFileName);
+
+            if (tumDosyalarSilindi)
+                silinecekler.Add(s);
         }
 
-        db.CvSubmissions.RemoveRange(suresiDolan);
+        if (silinecekler.Count == 0) return;
+
+        db.CvSubmissions.RemoveRange(silinecekler);
         await db.SaveChangesAsync(ct);
 
         _logger.LogInformation(
-            "Süresi dolmuş {Sayi} taslak silindi.", suresiDolan.Count);
+            "Süresi dolmuş {Sayi} taslak silindi.", silinecekler.Count);
+
+        var kalan = suresiDolan.Count - silinecekler.Count;
+        if (kalan > 0)
+        {
+            _logger.LogWarning(
+                "{Sayi} taslağın dosyaları silinemedi, kayıtları korundu.", kalan);
+        }
     }
 
-    private void TryDelete(IFileStorage storage, string? fileName)
+    private bool TryDelete(IFileStorage storage, string? fileName)
     {
-        if (string.IsNullOrEmpty(fileName)) return;
+        if (string.IsNullOrEmpty(fileName)) return true;
 
         try
         {
             storage.Delete(fileName);
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Dosya silinemedi: {Dosya}", fileName);
+            return false;
         }
     }
 }
