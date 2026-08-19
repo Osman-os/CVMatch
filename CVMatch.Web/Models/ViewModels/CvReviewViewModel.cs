@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using CVMatch.Web.Models.Enums;
+using System.Globalization;
 
 namespace CVMatch.Web.Models.ViewModels;
 
@@ -77,7 +78,7 @@ public class CvReviewViewModel
 
 public record CityOption(int Id, string Name);
 
-public class EducationInputModel
+public class EducationInputModel : IValidatableObject
 {
     [StringLength(200)]
     [Display(Name = "Okul")]
@@ -102,9 +103,11 @@ public class EducationInputModel
     public string? EndDate { get; set; }
 
     public bool IsCurrent { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+        => DateRules.Validate(StartDate, EndDate, IsCurrent, School);
 }
 
-public class WorkExperienceInputModel
+public class WorkExperienceInputModel : IValidatableObject
 {
     [StringLength(150)]
     [Display(Name = "Pozisyon")]
@@ -129,4 +132,53 @@ public class WorkExperienceInputModel
     public string? EndDate { get; set; }
 
     public bool IsCurrent { get; set; }
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+        => DateRules.Validate(StartDate, EndDate, IsCurrent, CompanyName);
+}
+
+// Eğitim ve iş deneyimi satırları için ortak tarih kuralları.
+internal static class DateRules
+{
+    public static IEnumerable<ValidationResult> Validate(
+        string? startDate, string? endDate, bool isCurrent, string? satirAdi)
+    {
+        var etiket = string.IsNullOrWhiteSpace(satirAdi) ? "Satır" : satirAdi;
+
+        // Boş satırlar zaten filtreleniyor
+        if (string.IsNullOrWhiteSpace(satirAdi))
+            yield break;
+
+        var basla = Parse(startDate);
+        var bitis = Parse(endDate);
+
+        if (!isCurrent && string.IsNullOrWhiteSpace(endDate))
+        {
+            yield return new ValidationResult(
+                $"{etiket}: Bitiş tarihi girin veya \"Devam Ediyor\" seçeneğini işaretleyin.");
+        }
+
+        if (basla is not null && bitis is not null && bitis < basla)
+        {
+            yield return new ValidationResult(
+                $"{etiket}: Bitiş tarihi başlangıç tarihinden önce olamaz.");
+        }
+
+        if (basla is not null && basla > DateTime.UtcNow)
+        {
+            yield return new ValidationResult(
+                $"{etiket}: Başlangıç tarihi gelecekte olamaz.");
+        }
+    }
+
+    private static DateTime? Parse(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+
+        return DateTime.TryParseExact(
+            value, "MM/yyyy", CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out var d)
+            ? d
+            : null;
+    }
 }

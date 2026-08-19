@@ -11,6 +11,7 @@ public class AdminCandidateListViewModel
     public EmploymentType? EmploymentType { get; set; }
     public ApplicationStatus? Status { get; set; }
     public List<int> SkillIds { get; set; } = new();
+    public int? MinDeneyimYil { get; set; }
 
     // Sayfalama
     public int Sayfa { get; set; } = 1;
@@ -30,8 +31,9 @@ public class AdminCandidateListViewModel
     public List<AdaySatiri> Adaylar { get; set; } = new();
 
     public bool FiltreVarMi =>
-        !string.IsNullOrWhiteSpace(Arama) || CityId.HasValue
-        || EmploymentType.HasValue || Status.HasValue || SkillIds.Count > 0;
+    !string.IsNullOrWhiteSpace(Arama) || CityId.HasValue
+        || EmploymentType.HasValue || Status.HasValue || SkillIds.Count > 0
+        || MinDeneyimYil.HasValue;
     
     public string? SecilenSehir { get; set; }
     public List<string> SecilenYetenekler { get; set; } = new();
@@ -45,6 +47,7 @@ public class AdminCandidateListViewModel
             if (CityId.HasValue) n++;
             if (EmploymentType.HasValue) n++;
             if (Status.HasValue) n++;
+            if (MinDeneyimYil.HasValue) n++;
             n += SkillIds.Count;
             return n;
         }

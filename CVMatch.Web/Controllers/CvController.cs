@@ -754,11 +754,7 @@ public class CvController : Controller
                 added[name] = skill;
             }
 
-            profile.CandidateSkills.Add(new CandidateSkill
-            {
-                Skill = skill!,
-                IsAiExtracted = true
-            });
+            profile.CandidateSkills.Add(new CandidateSkill { Skill = skill! });
         }
     }
 

@@ -79,6 +79,7 @@ public class AdminController : Controller
         EmploymentType? employmentType,
         ApplicationStatus? status,
         List<int>? skillIds,
+        int? minDeneyimYil,
         int sayfa = 1,
         CancellationToken ct = default)
     {
@@ -92,6 +93,7 @@ public class AdminController : Controller
             EmploymentType = employmentType,
             Status = status,
             SkillIds = skillIds,
+            MinDeneyimYil = minDeneyimYil,
             Sayfa = sayfa
         };
 
@@ -132,6 +134,12 @@ public class AdminController : Controller
 
         if (status.HasValue)
             query = query.Where(x => x.Status == status.Value);
+
+        if (minDeneyimYil.HasValue)
+        {
+            var asgariAy = minDeneyimYil.Value * 12;
+            query = query.Where(x => x.TotalExperienceMonths >= asgariAy);
+        }
 
         // Seçilen yeteneklerin HEPSİNE sahip adaylar; fazlası serbest
         foreach (var skillId in skillIds)

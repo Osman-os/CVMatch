@@ -82,11 +82,7 @@ public static class TestDataSeeder
             {
                 if (skills.TryGetValue(yetenek, out var skillId))
                 {
-                    profile.CandidateSkills.Add(new CandidateSkill
-                    {
-                        SkillId = skillId,
-                        IsAiExtracted = true
-                    });
+                    profile.CandidateSkills.Add(new CandidateSkill { SkillId = skillId });
                 }
             }
 
