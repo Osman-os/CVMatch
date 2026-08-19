@@ -20,7 +20,7 @@ public class CvController : Controller
 
     //Onaylanmış veya süresi dolmuş taslak bağlantısı çalışmamalı.
     private static bool TaslakGecerliMi(CvSubmission s) =>
-        s.Status != SubmissionStatus.Approved && s.ExpiresAt > DateTime.UtcNow;
+        ApplicationHelpers.DraftIsValid(s.Status, s.ExpiresAt);
     
     /// <summary>
     /// Elle gönderilen isteklerde tanımsız enum veya olmayan şehir gelebilir.

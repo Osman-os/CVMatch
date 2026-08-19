@@ -27,12 +27,14 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 * ASP.NET Core Identity (yalnızca yönetici girişi)
 * Anthropic Claude API — CV metninden yapılandırılmış veri çıkarımı
 * PdfPig — PDF metin ve görsel çıkarımı
+* PDFtoImage + SkiaSharp — CV ilk sayfasının JPEG önizlemesi
 * Bootstrap 5
 
 ## Kurulum
 
 ### Gereksinimler
 
+* Windows (PDF önizleme üretimi Windows'a bağımlıdır)
 * .NET 10 SDK
 * SQL Server LocalDB
 * Anthropic API anahtarı
@@ -237,3 +239,5 @@ Uygulama uçtan uca çalışır durumdadır.
 * Eşleştirme hesabı tüm aday havuzu üzerinde bellekte yapılır. Staj projesi ölçeğinde
   sorun oluşturmaz; çok büyük veri kümelerinde hesaplamanın veritabanı tarafına
   taşınması gerekir.
+* CV önizlemesi üretimi Windows'a bağımlıdır; Linux veya macOS üzerinde farklı bir
+  render kütüphanesi gerekir.

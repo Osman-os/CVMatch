@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using CVMatch.Web.Models.Enums;
 
 namespace CVMatch.Web.Services;
 
@@ -29,6 +30,13 @@ public static class ApplicationHelpers
 
         return HashEditToken(token);
     }
+
+    /// <summary>
+    /// Taslak bağlantısının hâlâ kullanılabilir olup olmadığını söyler.
+    /// Onaylanmış başvurunun taslağı ve süresi dolmuş taslak geçersizdir.
+    /// </summary>
+    public static bool DraftIsValid(SubmissionStatus status, DateTime expiresAt)
+        => status != SubmissionStatus.Approved && expiresAt > DateTime.UtcNow;
 
     /// <summary>
     /// Telefon numarasını yalnızca rakamlara indirger ve baştaki ülke kodunu atar.
