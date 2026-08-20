@@ -46,9 +46,6 @@ public class CvProcessingService : ICvProcessingService
             return;
         }
 
-        submission.Status = SubmissionStatus.Processing;
-        await _db.SaveChangesAsync(ct);
-
         try
         {
             var pdfBytes = await _storage.ReadAsync(submission.StoredFileName, ct);

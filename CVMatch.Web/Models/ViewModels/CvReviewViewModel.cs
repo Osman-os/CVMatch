@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace CVMatch.Web.Models.ViewModels;
 
-public class CvReviewViewModel
+public class CvReviewViewModel : IValidatableObject
 {
     public Guid Token { get; set; }
 
@@ -67,13 +67,38 @@ public class CvReviewViewModel
     public List<EducationInputModel> Educations { get; set; } = new();
     public List<WorkExperienceInputModel> WorkExperiences { get; set; } = new();
 
-    // Virgülle ayrılmış yetenek listesi (gizli alanda taşınır)
+    [StringLength(5000, ErrorMessage = "Yetenek listesi çok uzun.")]
     public string? SkillsCsv { get; set; }
 
     // Dropdown için
     public List<CityOption> Cities { get; set; } = new();
 
     public int TotalExperienceMonths => ExperienceYears * 12 + ExperienceMonths;
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {
+        var yetenekSayisi = (SkillsCsv ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Length;
+
+        if (yetenekSayisi > 50)
+        {
+            yield return new ValidationResult(
+                "En fazla 50 yetenek ekleyebilirsiniz.", new[] { nameof(SkillsCsv) });
+        }
+
+        if (Educations.Count > 20)
+        {
+            yield return new ValidationResult(
+                "En fazla 20 eğitim kaydı ekleyebilirsiniz.", new[] { nameof(Educations) });
+        }
+
+        if (WorkExperiences.Count > 30)
+        {
+            yield return new ValidationResult(
+                "En fazla 30 iş deneyimi ekleyebilirsiniz.", new[] { nameof(WorkExperiences) });
+        }
+    }
 }
 
 public record CityOption(int Id, string Name);

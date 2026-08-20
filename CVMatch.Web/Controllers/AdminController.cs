@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace CVMatch.Web.Controllers;
 
 [Authorize(Policy = "AdminOnly")]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _db;

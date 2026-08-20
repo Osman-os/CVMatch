@@ -44,7 +44,7 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // CV yükleme: her IP saatte 5 dosya
+    // CV yükleme: her IP saatte 20 dosya
     options.AddPolicy("upload", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
@@ -55,7 +55,7 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 
-    // AI çıkarımı tetikleme: her IP saatte 10 istek
+    // AI çıkarımı tetikleme: her IP saatte 30 istek
     options.AddPolicy("islem", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
@@ -66,7 +66,7 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 
-    // Yönetici girişi: kaba kuvvet denemelerine karşı
+    // Identity Razor Pages (giriş dahil): kaba kuvvet denemelerine karşı
     options.AddPolicy("giris", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",

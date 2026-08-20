@@ -5,9 +5,10 @@ using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 namespace CVMatch.Web.Services;
 
 public class PdfPigTextExtractor : IPdfTextExtractor
-{
-    // Bu eşiğin altındaki metin, taranmış belge sayılır
+{     
     private const int MinimumUsableLength = 100;
+
+    private const int MaxPagesToRead = 30;
 
     public PdfTextResult Extract(byte[] pdfBytes)
     {
@@ -16,7 +17,7 @@ public class PdfPigTextExtractor : IPdfTextExtractor
         var sb = new StringBuilder();
         var pageCount = document.NumberOfPages;
 
-        foreach (var page in document.GetPages())
+        foreach (var page in document.GetPages().Take(MaxPagesToRead))
         {
             var pageText = ContentOrderTextExtractor.GetText(page);
 

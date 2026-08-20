@@ -83,7 +83,7 @@ Yukarıdaki parola yalnızca örnektir. İlk çalıştırmadan önce kendi parol
 }
 ```
 
-Yüklenen CV'ler `wwwroot` dışında saklanır ve statik dosya olarak sunulmaz. Erişim yalnızca kontrollü action'lar üzerinden olur: aday tarafında geçerli taslak bağlantısı, yönetici tarafında Identity yetkilendirmesi gerekir.
+Yüklenen CV'ler `wwwroot` dışında saklanır ve statik dosya olarak sunulmaz. Erişim yalnızca kontrollü action'lar üzerinden olur: aday tarafında geçerli taslak bağlantısı, yönetici tarafında Identity yetkilendirmesi gerekir.s
 
 Belirtilen klasörün var olduğundan emin olun.
 
@@ -194,9 +194,10 @@ dakikada 10 istekle sınırlıdır.
 Yüklenen PDF'lerde dosya imzası doğrulanır, boyut 10 MB ile sınırlıdır ve metin
 çıkarımı en fazla 30 sayfa okur. Bir başvuruya en fazla 50 yetenek kaydedilir.
 
-Bir yüklemenin yalnızca tek bir kalıcı başvuruya bağlanabilmesi veritabanı
-seviyesinde benzersiz indeksle güvence altına alınır; eşzamanlı onay istekleri
-mükerrer kayıt oluşturamaz.
+Eşzamanlı istekler `CvSubmission.RowVersion` sürüm damgasıyla denetlenir. Aynı
+taslak için ikinci bir onay veya işleme isteği geldiğinde ikinci istek
+`DbUpdateConcurrencyException` alır; mükerrer başvuru kaydı ve tekrarlanan
+yapay zekâ çağrısı oluşmaz.
 
 ### Veri bütünlüğü
 
@@ -249,7 +250,7 @@ Uygulama uçtan uca çalışır durumdadır.
 ## Bilinen sınırlar
 
 * Taranmış veya yalnızca görüntü içeren CV'lerden metin çıkarılamaz. OCR proje kapsamı dışında tutulmuştur.
-* Mükerrer başvuru kontrolü e-posta adresi değiştirilerek aşılabilir. Aday tarafında kimlik doğrulaması bulunmadığından kesin engelleme mümkün değildir; kontrolün amacı kazara oluşan tekrarları azaltmaktır.
+* Mükerrer başvuru kontrolü hem e-posta hem telefon değiştirilerek aşılabilir. Aday tarafında kimlik doğrulaması bulunmadığından kesin engelleme mümkün değildir; kontrolün amacı kazara oluşan tekrarları azaltmaktır.
 * Yetenek adları serbest metin olarak girilebildiğinden, yetenek sözlüğünde bulunmayan farklı yazımlar ayrı kayıtlar oluşturabilir.
 * Eşleştirme hesabı tüm aday havuzu üzerinde bellekte yapılır. Staj projesi ölçeğinde
   sorun oluşturmaz; çok büyük veri kümelerinde hesaplamanın veritabanı tarafına
@@ -258,3 +259,6 @@ Uygulama uçtan uca çalışır durumdadır.
   render kütüphanesi gerekir.
 * İstek sınırlaması uygulama belleğinde tutulur. Birden fazla sunucu örneğiyle
   çalıştırılacaksa dağıtık bir sayaç (örneğin Redis) gerekir.
+* Başvuru silindiğinde önce veritabanı kayıtları, sonra diskteki dosyalar kaldırılır.
+  Dosya silme başarısız olursa kayıt zaten silinmiş olduğundan sahipsiz dosya diskte
+  kalabilir; bu durumda manuel temizlik gerekir.

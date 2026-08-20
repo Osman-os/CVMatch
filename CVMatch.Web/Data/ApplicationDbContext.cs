@@ -103,10 +103,10 @@ public class ApplicationDbContext : IdentityDbContext
 
             e.HasIndex(x => x.Token).IsUnique();
             e.HasIndex(x => new { x.Status, x.ExpiresAt });
-            // Bir yükleme yalnızca tek bir kalıcı başvuruya bağlanabilir
-            e.HasIndex(x => x.CandidateProfileId)
-             .IsUnique()
-             .HasFilter("[CandidateProfileId] IS NOT NULL");
+            e.HasIndex(x => x.CandidateProfileId);
+
+            // Eşzamanlı güncellemeleri yakalamak için sürüm damgası
+            e.Property(x => x.RowVersion).IsRowVersion();
 
             e.HasOne(x => x.CandidateProfile)
              .WithMany(c => c.CvSubmissions)

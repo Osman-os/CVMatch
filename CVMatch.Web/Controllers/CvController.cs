@@ -106,8 +106,17 @@ public class CvController : Controller
         };
 
         _db.CvSubmissions.Add(submission);
-        
-        await _db.SaveChangesAsync(ct);
+
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch
+        {
+            // Kayıt oluşmadıysa diskte sahipsiz dosya bırakma
+            try { _storage.Delete(storedFileName); } catch { /* yoksay */ }
+            throw;
+        }
 
         _logger.LogInformation("CV yüklendi. Kayıt: {Id}", submission.Id);
 
@@ -152,8 +161,26 @@ public class CvController : Controller
         if (submission is null) return NotFound();
         if (!TaslakGecerliMi(submission)) return NotFound();
 
-        if (submission.Status == SubmissionStatus.Uploaded)
+         if (submission.Status == SubmissionStatus.Uploaded)
+        {
+            // Durumu önce işaretle: iki paralel istek varsa ikincisi
+            // RowVersion çakışmasına düşer ve API çağrısı tekrarlanmaz
+            submission.Status = SubmissionStatus.Processing;
+
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                _logger.LogInformation(
+                    "İşleme zaten başlatılmış. SubmissionId: {Id}", submission.Id);
+
+                return Json(new { redirect = Url.Action(nameof(Processing), new { token }) });
+            }
+
             await _processing.ProcessAsync(submission.Id, ct);
+        }
 
         var guncel = await _db.CvSubmissions
             .AsNoTracking()
@@ -198,6 +225,7 @@ public class CvController : Controller
                 var data = JsonSerializer.Deserialize<ExtractedCvData>(submission.ExtractedJson);
                 if (data is not null)
                 {
+                    data.Normalize();
                     ExtractionMapper.Apply(vm, data);
 
                     // Aday daha önce seçtiyse onu kullan, yoksa AI'ın tahminini eşleştir
@@ -313,6 +341,7 @@ public class CvController : Controller
             return RedirectToAction(nameof(Review), new { token });
         }
 
+        data?.Normalize();
         if (data is null) return RedirectToAction(nameof(Review), new { token });
 
         var vm = new CvSummaryViewModel
@@ -342,6 +371,7 @@ public class CvController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Confirm(CvConsentInputModel consent, CancellationToken ct)
     {
         var submission = await _db.CvSubmissions
@@ -375,6 +405,8 @@ public class CvController : Controller
         var data = JsonSerializer.Deserialize<ExtractedCvData>(submission.ExtractedJson);
         if (data is null)
             return RedirectToAction(nameof(Review), new { token = consent.Token });
+
+        data.Normalize();
 
         // Mükerrer başvuru kontrolü: e-posta veya telefon eşleşmesi
         var email = data.Email?.Trim().ToLowerInvariant();
@@ -466,9 +498,9 @@ public class CvController : Controller
         {
             await _db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException)
+        catch (DbUpdateConcurrencyException)
         {
-            // Benzersiz indeks: aynı yükleme için ikinci bir profil oluşturulamaz
+            // Aynı taslak başka bir istekçe onaylanmış; ilk onay geçerli sayılır
             _logger.LogWarning(
                 "Eşzamanlı onay denemesi engellendi. SubmissionId: {Id}", submission.Id);
 
@@ -575,6 +607,7 @@ public class CvController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Edit(string key, CvReviewViewModel data, CancellationToken ct)
     {
         var profile = await BulEditProfiliAsync(key, ct);
@@ -808,6 +841,8 @@ public class CvController : Controller
 
         if (data is null)
             return RedirectToAction(nameof(Review), new { token = consent.Token });
+            
+        data.Normalize();
 
         var vm = new CvSummaryViewModel
         {
@@ -847,6 +882,7 @@ public class CvController : Controller
     }
 
     [HttpGet]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> File(Guid token, string type, CancellationToken ct)
     {
         var submission = await _db.CvSubmissions

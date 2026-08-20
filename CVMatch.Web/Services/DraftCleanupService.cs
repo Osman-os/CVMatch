@@ -52,6 +52,25 @@ public class DraftCleanupService : BackgroundService
 
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var storage = scope.ServiceProvider.GetRequiredService<IFileStorage>();
+    
+        var takilmaSiniri = DateTime.UtcNow.AddMinutes(-15);
+
+        var takilanlar = await db.CvSubmissions
+            .Where(s => s.Status == SubmissionStatus.Processing
+                        && s.UploadedAt <= takilmaSiniri)
+            .ToListAsync(ct);
+
+        if (takilanlar.Count > 0)
+        {
+            foreach (var s in takilanlar)
+                s.Status = SubmissionStatus.Uploaded;
+
+            await db.SaveChangesAsync(ct);
+
+            _logger.LogWarning(
+                "{Sayi} taslak işleme durumunda takılı kalmıştı, yeniden denenecek.",
+                takilanlar.Count);
+        }
 
         var suresiDolan = await db.CvSubmissions
             .Where(s => s.Status != SubmissionStatus.Approved
@@ -60,7 +79,7 @@ public class DraftCleanupService : BackgroundService
 
         if (suresiDolan.Count == 0) return;
 
-                var silinecekler = new List<CvSubmission>();
+        var silinecekler = new List<CvSubmission>();
 
         foreach (var s in suresiDolan)
         {

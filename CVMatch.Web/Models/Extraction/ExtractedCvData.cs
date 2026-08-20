@@ -45,6 +45,16 @@ public class ExtractedCvData
 
     [JsonPropertyName("skills")]
     public List<string> Skills { get; set; } = new();
+    public void Normalize()
+    {
+        Educations ??= new();
+        WorkExperiences ??= new();
+        Skills ??= new();
+
+        Educations.RemoveAll(e => e is null);
+        WorkExperiences.RemoveAll(w => w is null);
+        Skills.RemoveAll(string.IsNullOrWhiteSpace);
+    }
 }
 
 public class ExtractedEducation
