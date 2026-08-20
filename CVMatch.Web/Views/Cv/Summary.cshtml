@@ -7,6 +7,12 @@
 <partial name="_Steps" model="3" />
 
 <h1 class="h3 mb-1">Başvuru özeti</h1>
+
+@if (TempData["Bilgi"] is string bilgi)
+{
+    <div class="alert alert-warning">@bilgi</div>
+}
+
 <p class="text-secondary">
     Bilgilerinizi son kez kontrol edin. Onayladıktan sonra başvurunuz kaydedilecek.
 </p>

@@ -7,6 +7,12 @@
 <partial name="_Steps" model="2" />
 
 <h1 class="h3 mb-1">Bilgilerinizi kontrol edin</h1>
+
+@if (TempData["Bilgi"] is string bilgi)
+{
+    <div class="alert alert-warning">@bilgi</div>
+}
+
 <p class="text-secondary">
     CV'nizden çıkarılan bilgileri kontrol edin. Eksik veya hatalı alanları düzenleyebilirsiniz.
 </p>

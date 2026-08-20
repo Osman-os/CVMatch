@@ -63,6 +63,7 @@ public class CvProcessingService : ICvProcessingService
             if (!textResult.HasUsableText)
             {
                 submission.Status = SubmissionStatus.Failed;
+                submission.ProcessingStartedAt = null;
                 submission.ErrorMessage =
                     "CV'den metin okunamadı. Dosya taranmış bir belge olabilir.";
                 await _db.SaveChangesAsync(ct);
@@ -75,6 +76,7 @@ public class CvProcessingService : ICvProcessingService
             if (!extraction.Success)
             {
                 submission.Status = SubmissionStatus.Failed;
+                submission.ProcessingStartedAt = null;
                 submission.ErrorMessage = extraction.ErrorMessage;
                 await _db.SaveChangesAsync(ct);
                 return;
@@ -82,6 +84,7 @@ public class CvProcessingService : ICvProcessingService
 
             submission.ExtractedJson = extraction.RawJson;
             submission.Status = SubmissionStatus.AwaitingReview;
+            submission.ProcessingStartedAt = null;
             await _db.SaveChangesAsync(ct);
 
             _logger.LogInformation("CV işlendi: {Id}", submission.Id);
@@ -91,6 +94,7 @@ public class CvProcessingService : ICvProcessingService
             _logger.LogError(ex, "CV işlenirken hata: {Id}", submissionId);
 
             submission.Status = SubmissionStatus.Failed;
+            submission.ProcessingStartedAt = null;
             submission.ErrorMessage = "CV işlenirken beklenmeyen bir hata oluştu.";
             await _db.SaveChangesAsync(CancellationToken.None);
         }

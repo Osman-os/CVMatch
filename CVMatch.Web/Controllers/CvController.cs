@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace CVMatch.Web.Controllers;
 
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class CvController : Controller
 {
     // Onaylanmayan taslaklar bu süre sonunda temizlenir
@@ -75,7 +76,7 @@ public class CvController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [RequestSizeLimit(FileValidation.MaxPdfBytes + 1024)]
+    [RequestSizeLimit(FileValidation.MaxPdfBytes + 64 * 1024)]
     [EnableRateLimiting("upload")]
     public async Task<IActionResult> Upload(CvUploadViewModel model, CancellationToken ct)
     {
@@ -166,6 +167,7 @@ public class CvController : Controller
             // Durumu önce işaretle: iki paralel istek varsa ikincisi
             // RowVersion çakışmasına düşer ve API çağrısı tekrarlanmaz
             submission.Status = SubmissionStatus.Processing;
+            submission.ProcessingStartedAt = DateTime.UtcNow;
 
             try
             {
@@ -295,10 +297,23 @@ public class CvController : Controller
             return View(model);
         }
 
-        // Adayın düzenlediği hâli taslağa geri yaz
         submission.ExtractedJson = JsonSerializer.Serialize(ToExtractedData(model));
         submission.ReviewedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync(ct);
+
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _logger.LogWarning(
+                "Kontrol ekranında eşzamanlılık çakışması. SubmissionId: {Id}", submission.Id);
+
+            TempData["Bilgi"] =
+                "Bu başvuru başka bir sekmede güncellenmiş. Son hâli aşağıda; kontrol edip tekrar kaydedin.";
+
+            return RedirectToAction(nameof(Review), new { token = model.Token });
+        }
 
         return RedirectToAction(nameof(Summary), new { token = model.Token });
     }
@@ -500,11 +515,26 @@ public class CvController : Controller
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Aynı taslak başka bir istekçe onaylanmış; ilk onay geçerli sayılır
             _logger.LogWarning(
-                "Eşzamanlı onay denemesi engellendi. SubmissionId: {Id}", submission.Id);
+                "Onay sırasında eşzamanlılık çakışması. SubmissionId: {Id}", submission.Id);
 
-            return View("AlreadySubmitted");
+            var guncel = await _db.CvSubmissions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Token == consent.Token, ct);
+
+            if (guncel is null)
+                return View("DraftExpired");
+
+            if (guncel.Status == SubmissionStatus.Approved)
+                return View("AlreadySubmitted");
+
+            if (!TaslakGecerliMi(guncel))
+                return View("DraftExpired");
+
+            TempData["Bilgi"] =
+                "Başvurunuz başka bir sekmede güncellenmiş. Lütfen bilgileri kontrol edip tekrar onaylayın.";
+
+            return RedirectToAction(nameof(Summary), new { token = consent.Token });
         }
 
         _logger.LogInformation(

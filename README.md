@@ -83,7 +83,7 @@ Yukarıdaki parola yalnızca örnektir. İlk çalıştırmadan önce kendi parol
 }
 ```
 
-Yüklenen CV'ler `wwwroot` dışında saklanır ve statik dosya olarak sunulmaz. Erişim yalnızca kontrollü action'lar üzerinden olur: aday tarafında geçerli taslak bağlantısı, yönetici tarafında Identity yetkilendirmesi gerekir.s
+Yüklenen CV'ler `wwwroot` dışında saklanır ve statik dosya olarak sunulmaz. Erişim yalnızca kontrollü action'lar üzerinden olur: aday tarafında geçerli taslak bağlantısı, yönetici tarafında Identity yetkilendirmesi gerekir.
 
 Belirtilen klasörün var olduğundan emin olun.
 

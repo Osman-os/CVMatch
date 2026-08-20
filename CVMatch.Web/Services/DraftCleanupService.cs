@@ -57,13 +57,17 @@ public class DraftCleanupService : BackgroundService
 
         var takilanlar = await db.CvSubmissions
             .Where(s => s.Status == SubmissionStatus.Processing
-                        && s.UploadedAt <= takilmaSiniri)
+                        && s.ProcessingStartedAt != null
+                        && s.ProcessingStartedAt <= takilmaSiniri)
             .ToListAsync(ct);
 
         if (takilanlar.Count > 0)
         {
             foreach (var s in takilanlar)
+            {
                 s.Status = SubmissionStatus.Uploaded;
+                s.ProcessingStartedAt = null;
+            }
 
             await db.SaveChangesAsync(ct);
 

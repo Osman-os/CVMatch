@@ -77,14 +77,23 @@ public class CvReviewViewModel : IValidatableObject
     
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
     {
-        var yetenekSayisi = (SkillsCsv ?? "")
+        var yetenekler = (SkillsCsv ?? "")
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Length;
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-        if (yetenekSayisi > 50)
+        if (yetenekler.Count > 50)
         {
             yield return new ValidationResult(
                 "En fazla 50 yetenek ekleyebilirsiniz.", new[] { nameof(SkillsCsv) });
+        }
+
+        var uzunYetenek = yetenekler.FirstOrDefault(y => y.Length > 100);
+        if (uzunYetenek is not null)
+        {
+            yield return new ValidationResult(
+                $"Yetenek adı en fazla 100 karakter olabilir: \"{uzunYetenek[..30]}...\"",
+                new[] { nameof(SkillsCsv) });
         }
 
         if (Educations.Count > 20)

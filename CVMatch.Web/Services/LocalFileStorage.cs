@@ -20,8 +20,20 @@ public class LocalFileStorage : IFileStorage
         var storedFileName = $"{Guid.NewGuid():N}{extension}";
         var fullPath = BuildPath(storedFileName);
 
-        await using var fs = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write);
-        await content.CopyToAsync(fs, ct);
+        try
+        {
+            await using (var fs = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write))
+            {
+                await content.CopyToAsync(fs, ct);
+            }
+        }
+        catch
+        {
+            // Yarım yazılan dosya diskte kalmasın; adı dışarı dönmediği için
+            // başka hiçbir yerden temizlenemez
+            try { System.IO.File.Delete(fullPath); } catch { /* yoksay */ }
+            throw;
+        }
 
         return storedFileName;
     }

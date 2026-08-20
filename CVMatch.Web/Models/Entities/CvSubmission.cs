@@ -33,5 +33,6 @@ public class CvSubmission
 
     // Onaylanmayan taslakların temizlenmesi için
     public DateTime ExpiresAt { get; set; }
+    public DateTime? ProcessingStartedAt { get; set; }
     public byte[] RowVersion { get; set; } = null!;
 }
