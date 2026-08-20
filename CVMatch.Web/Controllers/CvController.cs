@@ -536,6 +536,19 @@ public class CvController : Controller
 
             return RedirectToAction(nameof(Summary), new { token = consent.Token });
         }
+        
+        catch (DbUpdateException ex)
+        {
+            // Başka bir aday aynı anda sözlükte olmayan aynı yeteneği eklemiş olabilir;
+            // Skill.Name benzersiz olduğu için ikinci kayıt çakışır
+            _logger.LogWarning(ex,
+                "Kayıt sırasında veritabanı çakışması. SubmissionId: {Id}", submission.Id);
+
+            ModelState.AddModelError(string.Empty,
+                "Kayıt sırasında geçici bir çakışma oluştu. Lütfen tekrar deneyin.");
+
+            return await BuildSummaryViewAsync(submission, consent, ct);
+        }
 
         _logger.LogInformation(
             "Başvuru tamamlandı. Referans: {Reference}",
