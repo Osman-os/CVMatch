@@ -19,6 +19,7 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 * İlan bazlı eşleştirme ve yetenek uyum skoru
 * Mükerrer başvuru kontrolü
 * İstek sınırlama (rate limiting) ile kötüye kullanım koruması
+* Panel üzerinden yönetici ekleme ve kaldırma
 
 ## Teknolojiler
 
@@ -138,7 +139,7 @@ CV yükle → işleniyor → bilgileri kontrol et → özet ve KVKK onayları �
 
 ### Yönetici tarafı
 
-Giriş → genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi → eşleştirme sonuçları
+Giriş → genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi → eşleştirme sonuçları → yönetici yönetimi
 
 ## Mimari kararlar
 
@@ -147,6 +148,12 @@ Giriş → genel bakış → aday listesi (filtreli) → aday detayı → ilan y
 ASP.NET Core Identity yalnızca yönetici girişi için kullanılır. Adayların sisteme kayıt olması veya giriş yapması gerekmez.
 
 Adaylar başvurularına, başvuru tamamlandıktan sonra kendilerine verilen düzenleme bağlantısıyla erişir.
+
+Yönetici hesapları yalnızca panel üzerinden, mevcut bir yönetici tarafından oluşturulur. 
+
+Identity'nin kayıt sayfası kapalıdır; panelden eklenen hesaplar e-posta doğrulaması beklemeden giriş yapabilir. 
+
+Sistemde her zaman en az bir yönetici bulunmalıdır.
 
 ### Taslak / onay ayrımı
 

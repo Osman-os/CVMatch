@@ -26,7 +26,7 @@
                     <span class="admin-nav-icon">▦</span> Genel Bakış
                 </a>
 
-                <a class="admin-nav-item @(controller == "Admin" && action != "Index" ? "active" : "")"
+                <a class="admin-nav-item @(controller == "Admin" && (action == "Candidates" || action == "Candidate") ? "active" : "")"
                    asp-controller="Admin" asp-action="Candidates">
                     <span class="admin-nav-icon">◍</span> Adaylar
                 </a>
@@ -34,6 +34,11 @@
                 <a class="admin-nav-item @(controller == "JobPostings" ? "active" : "")"
                    asp-controller="JobPostings" asp-action="Index">
                     <span class="admin-nav-icon">▤</span> İlanlar
+                </a>
+                
+                <a class="admin-nav-item @(controller == "Admin" && action == "Users" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Users">
+                    <span class="admin-nav-icon">◆</span> Yöneticiler
                 </a>
             </nav>
         </aside>

@@ -391,6 +391,117 @@ public class AdminController : Controller
         };
     }
 
+        [HttpGet]
+    public async Task<IActionResult> Users(CancellationToken ct)
+    {
+        var vm = new AdminUserListViewModel
+        {
+            Yoneticiler = await YoneticileriGetirAsync(ct)
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddUser(YeniYoneticiInputModel yeni, CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(nameof(Users), new AdminUserListViewModel
+            {
+                Yoneticiler = await YoneticileriGetirAsync(ct),
+                Yeni = yeni
+            });
+        }
+
+        var email = yeni.Email.Trim();
+
+        if (await _userManager.FindByEmailAsync(email) is not null)
+        {
+            ModelState.AddModelError(
+                nameof(yeni.Email), "Bu e-posta adresi zaten kayıtlı.");
+
+            return View(nameof(Users), new AdminUserListViewModel
+            {
+                Yoneticiler = await YoneticileriGetirAsync(ct),
+                Yeni = yeni
+            });
+        }
+
+        var user = new IdentityUser
+        {
+            UserName = email,
+            Email = email,
+            // Panelden eklenen yönetici doğrulama e-postası beklemez
+            EmailConfirmed = true
+        };
+
+        var sonuc = await _userManager.CreateAsync(user, yeni.Password);
+
+        if (!sonuc.Succeeded)
+        {
+            foreach (var hata in sonuc.Errors)
+                ModelState.AddModelError(string.Empty, hata.Description);
+
+            return View(nameof(Users), new AdminUserListViewModel
+            {
+                Yoneticiler = await YoneticileriGetirAsync(ct),
+                Yeni = yeni
+            });
+        }
+
+        await _userManager.AddToRoleAsync(user, DbSeeder.AdminRole);
+
+        TempData["Bilgi"] = $"{email} yönetici olarak eklendi.";
+        return RedirectToAction(nameof(Users));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveUser(string id, CancellationToken ct)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user is null) return NotFound();
+
+        // Kendini kaldıramaz
+        if (user.Id == _userManager.GetUserId(User))
+        {
+            TempData["Hata"] = "Kendi hesabınızı kaldıramazsınız.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        var yoneticiler = await _userManager.GetUsersInRoleAsync(DbSeeder.AdminRole);
+
+        // Sistemde en az bir yönetici kalmalı
+        if (yoneticiler.Count <= 1)
+        {
+            TempData["Hata"] = "Sistemdeki son yöneticiyi kaldıramazsınız.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        await _userManager.DeleteAsync(user);
+
+        TempData["Bilgi"] = $"{user.Email} kaldırıldı.";
+        return RedirectToAction(nameof(Users));
+    }
+
+    private async Task<List<YoneticiSatiri>> YoneticileriGetirAsync(CancellationToken ct)
+    {
+        var mevcutId = _userManager.GetUserId(User);
+        var kullanicilar = await _userManager.GetUsersInRoleAsync(DbSeeder.AdminRole);
+
+        return kullanicilar
+            .OrderBy(u => u.Email)
+            .Select(u => new YoneticiSatiri
+            {
+                Id = u.Id,
+                Email = u.Email ?? "(e-posta yok)",
+                KendisiMi = u.Id == mevcutId
+            })
+            .ToList();
+    }
+
     private async Task<IActionResult> DosyaDondurAsync(
         string storedFileName,
         string contentType,

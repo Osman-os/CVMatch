@@ -123,10 +123,10 @@ app.UseAuthorization();
 // Aday üyeliği yok; kayıt sayfası yalnızca yöneticiye açık
 app.Use(async (context, next) =>
 {
-    if (context.Request.Path.StartsWithSegments("/Identity/Account/Register")
-        && !context.User.IsInRole("Admin"))
+    // Yönetici ekleme kendi panelimizden yapılır; Identity'nin kayıt sayfası kapalı
+    if (context.Request.Path.StartsWithSegments("/Identity/Account/Register"))
     {
-        context.Response.Redirect("/Identity/Account/Login");
+        context.Response.Redirect("/Admin/Users");
         return;
     }
 

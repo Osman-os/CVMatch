@@ -1,0 +1,115 @@
+@model CVMatch.Web.Models.ViewModels.AdminUserListViewModel
+@{
+    ViewData["Title"] = "Yöneticiler";
+    ViewData["Breadcrumb"] = "Yönetici Paneli / Yöneticiler";
+}
+
+<h1 class="h3 mb-1">Yöneticiler</h1>
+<p class="text-secondary mb-4">
+    Yönetim paneline erişebilecek kullanıcıları yönetin.
+</p>
+
+@if (TempData["Bilgi"] is string bilgi)
+{
+    <div class="alert alert-success">@bilgi</div>
+}
+@if (TempData["Hata"] is string hata)
+{
+    <div class="alert alert-warning">@hata</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>E-posta</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var y in Model.Yoneticiler)
+                            {
+                                <tr>
+                                    <td>
+                                        @y.Email
+                                        @if (y.KendisiMi)
+                                        {
+                                            <span class="cvm-chip cvm-chip-blue ms-2">Siz</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        @if (!y.KendisiMi)
+                                        {
+                                            <form asp-action="RemoveUser" method="post" class="d-inline"
+                                                  onsubmit="return confirm('@y.Email yönetici listesinden kaldırılacak. Emin misiniz?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@y.Id" />
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger">Kaldır</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-secondary small mt-3">
+            @Model.Yoneticiler.Count yönetici tanımlı. Sistemde en az bir yönetici bulunmalıdır.
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Yeni Yönetici Ekle</h2>
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <form asp-action="AddUser" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label asp-for="Yeni.Email" class="form-label"></label>
+                        <input asp-for="Yeni.Email" class="form-control" type="email"
+                               placeholder="ad.soyad@kurum.com" />
+                        <span asp-validation-for="Yeni.Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Yeni.Password" class="form-label"></label>
+                        <input asp-for="Yeni.Password" class="form-control" />
+                        <span asp-validation-for="Yeni.Password" class="text-danger small"></span>
+                        <div class="form-text">
+                            En az 8 karakter; büyük harf, küçük harf, rakam ve simge içermelidir.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Yeni.ConfirmPassword" class="form-label"></label>
+                        <input asp-for="Yeni.ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="Yeni.ConfirmPassword" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Yönetici Ekle</button>
+                </form>
+
+                <div class="cvm-info-box mt-3">
+                    Eklenen yönetici doğrudan giriş yapabilir; e-posta doğrulaması istenmez.
+                    Parolayı ilgili kişiyle güvenli bir kanaldan paylaşın.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
