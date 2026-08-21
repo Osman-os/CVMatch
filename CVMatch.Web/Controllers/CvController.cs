@@ -544,10 +544,15 @@ public class CvController : Controller
             _logger.LogWarning(ex,
                 "Kayıt sırasında veritabanı çakışması. SubmissionId: {Id}", submission.Id);
 
-            ModelState.AddModelError(string.Empty,
-                "Kayıt sırasında geçici bir çakışma oluştu. Lütfen tekrar deneyin.");
+            // Kaydetme başarısız oldu ama bellekteki nesne değişmiş durumda
+            // (Status = Approved, ExtractedJson = null). Takibi temizleyip
+            // veritabanındaki gerçek hâli yeniden okumamız gerekiyor.
+            _db.ChangeTracker.Clear();
 
-            return await BuildSummaryViewAsync(submission, consent, ct);
+            TempData["Bilgi"] =
+                "Kayıt sırasında geçici bir sorun oluştu. Lütfen tekrar deneyin.";
+
+            return RedirectToAction(nameof(Summary), new { token = consent.Token });
         }
 
         _logger.LogInformation(

@@ -194,11 +194,10 @@ dakikada 10 istekle sınırlıdır.
 Yüklenen PDF'lerde dosya imzası doğrulanır, boyut 10 MB ile sınırlıdır ve metin
 çıkarımı en fazla 30 sayfa okur. Bir başvuruya en fazla 50 yetenek kaydedilir.
 
-Eşzamanlı istekler `CvSubmission.RowVersion` sürüm damgasıyla denetlenir. Aynı
-taslak için ikinci bir onay veya işleme isteği geldiğinde ikinci istek
-`DbUpdateConcurrencyException` alır; mükerrer başvuru kaydı ve tekrarlanan
-yapay zekâ çağrısı oluşmaz.
-
+Eşzamanlı istekler durum kontrolü ve `CvSubmission.RowVersion` sürüm damgası
+birlikte denetlenir: ikinci istek güncel durumu görüp işlemi atlar ya da aynı eski
+sürümle kaydetmeye çalışırsa concurrency çakışmasına düşer. Böylece mükerrer
+başvuru kaydı ve tekrarlanan yapay zekâ çağrısı önlenir.
 ### Veri bütünlüğü
 
 Tüm foreign key ilişkilerinde `DeleteBehavior.Restrict` kullanılır.

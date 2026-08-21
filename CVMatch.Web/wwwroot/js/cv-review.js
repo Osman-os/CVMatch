@@ -60,15 +60,22 @@
         container.addEventListener('click', function (e) {
             if (!e.target.classList.contains('remove-row')) return;
 
-            // Son satır silinmesin, temizlensin
             if (container.children.length === 1) {
-                container.children[0].querySelectorAll('input, textarea').forEach(function (el) {
+                const row = container.children[0];
+
+                row.querySelectorAll('input, textarea').forEach(function (el) {
                     if (el.type === 'checkbox') el.checked = false;
                     else if (el.type !== 'hidden') el.value = '';
                 });
-                container.children[0].querySelectorAll('select').forEach(function (s) {
+
+                row.querySelectorAll('select').forEach(function (s) {
                     s.selectedIndex = 0;
                 });
+
+                // "Devam Ediyor" işaretliyken silinirse bitiş tarihi pasif kalıyordu
+                const endDate = row.querySelector('.end-date');
+                if (endDate) endDate.disabled = false;
+
                 return;
             }
 
