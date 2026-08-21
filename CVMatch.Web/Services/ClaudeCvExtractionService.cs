@@ -62,8 +62,14 @@ public class ClaudeCvExtractionService : ICvExtractionService
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Claude API hatası: {Status} {Body}",
-                    response.StatusCode, responseBody);
+            var kisaHata = responseBody.Length > 500
+                ? responseBody[..500] + "…"
+                : responseBody;
+
+            _logger.LogError(
+                "Claude API hatası: {Status} {Body}",
+                response.StatusCode,
+                kisaHata);
                 return new CvExtractionResult(false, null, null,
                     $"AI servisi yanıt vermedi ({(int)response.StatusCode}).");
             }

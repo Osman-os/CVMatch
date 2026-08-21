@@ -452,17 +452,17 @@ public class CvController : Controller
         var profile = new CandidateProfile
         {
             ApplicationReferenceNumber = await GenerateUniqueReferenceAsync(ct),
-            FullName = data.FullName!,
-            Email = data.Email!,
-            PhoneNumber = data.PhoneNumber,
+            FullName = data.FullName!.Trim(),
+            Email = data.Email!.Trim(),
             PhoneNormalized = phone,
-            Address = data.Address,
+            PhoneNumber = Temizle(data.PhoneNumber),
+            Address = Temizle(data.Address),
             PhotoFileName = submission.PhotoFileName,
             CityId = data.CityId,
             TotalExperienceMonths = data.TotalExperienceMonths ?? 0,
             PreferredEmploymentType = data.PreferredEmploymentType!.Value,
-            LinkedInUrl = data.LinkedInUrl,
-            GitHubUrl = data.GitHubUrl,
+            LinkedInUrl = Temizle(data.LinkedInUrl),
+            GitHubUrl = Temizle(data.GitHubUrl),
             Status = ApplicationStatus.New,
             EditTokenHash = ApplicationHelpers.HashEditToken(editToken),
             EditTokenExpiresAt = now.Add(EditTokenLifetime),
@@ -474,8 +474,8 @@ public class CvController : Controller
         {
             profile.Educations.Add(new Education
             {
-                School = e.School!,
-                FieldOfStudy = e.FieldOfStudy,
+                School = e.School!.Trim(),
+                FieldOfStudy = Temizle(e.FieldOfStudy),
                 Level = Enum.TryParse<EducationLevel>(e.Level, true, out var lvl) ? lvl : null,
                 StartDate = ParseIsoLike(e.StartDate),
                 EndDate = e.IsCurrent ? null : ParseIsoLike(e.EndDate),
@@ -487,9 +487,9 @@ public class CvController : Controller
         {
             profile.WorkExperiences.Add(new WorkExperience
             {
-                CompanyName = w.CompanyName!,
-                Position = w.Position,
-                Description = w.Description,
+                CompanyName = w.CompanyName!.Trim(),
+                Position = Temizle(w.Position),
+                Description = Temizle(w.Description),
                 StartDate = ParseIsoLike(w.StartDate),
                 EndDate = w.IsCurrent ? null : ParseIsoLike(w.EndDate),
                 IsCurrent = w.IsCurrent
@@ -965,22 +965,25 @@ public class CvController : Controller
             .Select(c => new CityOption(c.Id, c.Name))
             .ToListAsync(ct);
 
+    private static string? Temizle(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private static ExtractedCvData ToExtractedData(CvReviewViewModel vm)
         => new()
         {
-            FullName = vm.FullName,
-            Email = vm.Email,
-            PhoneNumber = vm.PhoneNumber,
-            Address = vm.Address,
-            LinkedInUrl = vm.LinkedInUrl,
-            GitHubUrl = vm.GitHubUrl,
+            FullName = Temizle(vm.FullName),
+            Email = Temizle(vm.Email),
+            PhoneNumber = Temizle(vm.PhoneNumber),
+            Address = Temizle(vm.Address),
+            LinkedInUrl = Temizle(vm.LinkedInUrl),
+            GitHubUrl = Temizle(vm.GitHubUrl),
             CityId = vm.CityId,
             PreferredEmploymentType = vm.PreferredEmploymentType,
             TotalExperienceMonths = vm.TotalExperienceMonths,
             Educations = vm.Educations.Select(e => new ExtractedEducation
             {
-                School = e.School,
-                FieldOfStudy = e.FieldOfStudy,
+                School = Temizle(e.School),
+                FieldOfStudy = Temizle(e.FieldOfStudy),
                 Level = e.Level?.ToString(),
                 StartDate = ToIsoLike(e.StartDate),
                 EndDate = e.IsCurrent ? null : ToIsoLike(e.EndDate),
@@ -988,9 +991,9 @@ public class CvController : Controller
             }).ToList(),
             WorkExperiences = vm.WorkExperiences.Select(w => new ExtractedWorkExperience
             {
-                CompanyName = w.CompanyName,
-                Position = w.Position,
-                Description = w.Description,
+                CompanyName = Temizle(w.CompanyName),
+                Position = Temizle(w.Position),
+                Description = Temizle(w.Description),
                 StartDate = ToIsoLike(w.StartDate),
                 EndDate = w.IsCurrent ? null : ToIsoLike(w.EndDate),
                 IsCurrent = w.IsCurrent
