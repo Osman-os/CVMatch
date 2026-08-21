@@ -18,6 +18,11 @@
     <div class="alert alert-success">@bilgi</div>
 }
 
+@if (TempData["Hata"] is string hata)
+{
+    <div class="alert alert-warning">@hata</div>
+}
+
 <div class="alert alert-info small">
     Değişiklikleriniz kaydettiğiniz anda geçerli olur.
     Bu bağlantı @Model.EditTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy") tarihine kadar geçerlidir.

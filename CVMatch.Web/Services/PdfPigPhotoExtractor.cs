@@ -10,6 +10,7 @@ public class PdfPigPhotoExtractor : IPdfPhotoExtractor
     // Vesikalık portre veya kareye yakındır
     private const double MinAspectRatio = 0.5;   // genişlik / yükseklik
     private const double MaxAspectRatio = 1.3;
+    private const long MaxPixels = 25_000_000;   
 
     // Yalnızca ilk sayfalara bak; fotoğraf sonlarda olmaz
     private const int MaxPagesToScan = 2;
@@ -42,6 +43,13 @@ public class PdfPigPhotoExtractor : IPdfPhotoExtractor
 
                     if (width < MinDimension || height < MinDimension)
                         continue;
+                    
+                    if ((long)width * height > MaxPixels)
+                    {
+                        _logger.LogInformation(
+                            "Görsel çok büyük olduğu için atlandı: {W}x{H}", width, height);
+                        continue;
+                    }
 
                     var aspect = (double)width / height;
                     if (aspect < MinAspectRatio || aspect > MaxAspectRatio)

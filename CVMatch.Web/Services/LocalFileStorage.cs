@@ -42,8 +42,17 @@ public class LocalFileStorage : IFileStorage
         => await File.ReadAllBytesAsync(BuildPath(storedFileName), ct);
 
     public Task<Stream> OpenReadAsync(string storedFileName, CancellationToken ct = default)
-        => Task.FromResult<Stream>(
-            new FileStream(BuildPath(storedFileName), FileMode.Open, FileAccess.Read));
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var fullPath = BuildPath(storedFileName);
+
+        Stream stream = new FileStream(
+            fullPath, FileMode.Open, FileAccess.Read, FileShare.Read,
+            bufferSize: 4096, useAsync: true);
+
+        return Task.FromResult(stream);
+    }
 
     public bool Exists(string storedFileName)
         => File.Exists(BuildPath(storedFileName));

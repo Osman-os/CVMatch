@@ -763,7 +763,22 @@ public class CvController : Controller
 
         await AttachSkillsAsync(profile, yetenekler, ct);
 
-        await _db.SaveChangesAsync(ct);
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogWarning(ex,
+                "Düzenleme kaydedilirken veritabanı çakışması. ProfileId: {Id}", profile.Id);
+
+            _db.ChangeTracker.Clear();
+
+            TempData["Hata"] =
+                "Kayıt sırasında geçici bir sorun oluştu. Lütfen tekrar deneyin.";
+
+            return RedirectToAction(nameof(Edit), new { key });
+        }
 
         TempData["Bilgi"] = "Başvurunuz güncellendi.";
         return RedirectToAction(nameof(Edit), new { key });
