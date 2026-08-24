@@ -43,9 +43,8 @@
     <div class="d-flex align-items-center gap-3">
         @if (Model.HasPhoto)
         {
-            <img src="@Url.Action("CandidateFile", new { id = Model.Id, type = "photo" })"
-                 class="rounded-circle border" alt="@Model.FullName"
-                 style="width: 56px; height: 56px; object-fit: cover;" />
+            <img src="@Url.Action("CandidateFile", new { id = Model.Id, type = "photo" })" class="rounded-circle border"
+                 alt="@Model.FullName" style="width: 56px; height: 56px; object-fit: cover;" />
         }
         else
         {
@@ -284,7 +283,7 @@
                     <div class="text-secondary small text-break mb-2">@Model.OriginalFileName</div>
 
                     <a asp-action="CandidateFile" asp-route-id="@Model.Id" asp-route-type="pdf"
-                       target="_blank" class="btn btn-outline-secondary btn-sm w-100">PDF'i İndir</a>
+                       class="btn btn-outline-secondary btn-sm w-100">PDF'i İndir</a>
                 }
 
                 <hr />

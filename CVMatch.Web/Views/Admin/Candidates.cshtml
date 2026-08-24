@@ -4,6 +4,33 @@
     ViewData["Title"] = "Adaylar";
     ViewData["Breadcrumb"] = "Yönetici Paneli / Adaylar";
 
+    string SayfaLinki(int hedefSayfa)
+    {
+        var parcalar = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(Model.Arama))
+            parcalar.Add("arama=" + Uri.EscapeDataString(Model.Arama));
+
+        if (Model.CityId.HasValue)
+            parcalar.Add("cityId=" + Model.CityId.Value);
+
+        if (Model.EmploymentType.HasValue)
+            parcalar.Add("employmentType=" + Model.EmploymentType.Value);
+
+        if (Model.Status.HasValue)
+            parcalar.Add("status=" + Model.Status.Value);
+
+        if (Model.MinDeneyimYil.HasValue)
+            parcalar.Add("minDeneyimYil=" + Model.MinDeneyimYil.Value);
+
+        foreach (var skillId in Model.SkillIds)
+            parcalar.Add("skillIds=" + skillId);
+
+        parcalar.Add("sayfa=" + hedefSayfa);
+
+        return Url.Action("Candidates") + "?" + string.Join("&", parcalar);
+    }
+
     string DurumMetni(ApplicationStatus s) => s switch
     {
         ApplicationStatus.New => "Yeni",
@@ -230,28 +257,14 @@ else
         {
             <div class="btn-group">
                 <a class="btn btn-outline-secondary btn-sm @(Model.OncekiVar ? "" : "disabled")"
-                   asp-action="Candidates"
-                   asp-route-arama="@Model.Arama"
-                   asp-route-cityId="@Model.CityId"
-                   asp-route-employmentType="@Model.EmploymentType"
-                   asp-route-status="@Model.Status"
-                   asp-route-skillIds="@Model.SkillIds"
-                   asp-route-minDeneyimYil="@Model.MinDeneyimYil"
-                   asp-route-sayfa="@(Model.Sayfa - 1)">Önceki</a>
+                   href="@SayfaLinki(Model.Sayfa - 1)">Önceki</a>
 
                 <span class="btn btn-outline-secondary btn-sm disabled">
                     @Model.Sayfa / @Model.ToplamSayfa
                 </span>
 
                 <a class="btn btn-outline-secondary btn-sm @(Model.SonrakiVar ? "" : "disabled")"
-                   asp-action="Candidates"
-                   asp-route-arama="@Model.Arama"
-                   asp-route-cityId="@Model.CityId"
-                   asp-route-employmentType="@Model.EmploymentType"
-                   asp-route-status="@Model.Status"
-                   asp-route-skillIds="@Model.SkillIds"
-                   asp-route-minDeneyimYil="@Model.MinDeneyimYil"
-                   asp-route-sayfa="@(Model.Sayfa + 1)">Sonraki</a>
+                   href="@SayfaLinki(Model.Sayfa + 1)">Sonraki</a>
             </div>
         }
     </div>

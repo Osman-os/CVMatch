@@ -29,7 +29,9 @@ public class SonBasvuruSatiri
             if (TotalExperienceMonths <= 0) return "—";
             var yil = TotalExperienceMonths / 12;
             var ay = TotalExperienceMonths % 12;
-            return ay == 0 ? $"{yil} yıl" : $"{yil} yıl {ay} ay";
+            if (yil == 0) return $"{ay} ay";
+            if (ay == 0) return $"{yil} yıl";
+            return $"{yil} yıl {ay} ay";
         }
     }
 }

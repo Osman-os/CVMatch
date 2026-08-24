@@ -45,7 +45,7 @@
                                         @if (!y.KendisiMi)
                                         {
                                             <form asp-action="RemoveUser" method="post" class="d-inline"
-                                                  onsubmit="return confirm('@y.Email yönetici listesinden kaldırılacak. Emin misiniz?');">
+                                                    onsubmit="return confirm('Bu yönetici listeden kaldırılacak. Emin misiniz?');">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@y.Id" />
                                                 <button type="submit"

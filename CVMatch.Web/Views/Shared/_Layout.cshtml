@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,21 +11,23 @@
     <link rel="stylesheet" href="~/css/public.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CVMatch.Web.styles.css" asp-append-version="true" />
 </head>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-light cvm-navbar">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-controller="Cv" asp-action="Index">CVMatch</a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse" aria-label="Menü">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-label="Menü">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 justify-content-end">
                         <li class="nav-item">
-                            <a class="nav-link" href="#nasil-calisir">Nasıl Çalışır</a>
+                            <a class="nav-link" asp-controller="Cv" asp-action="Index"
+                               asp-fragment="nasil-calisir">Nasıl Çalışır</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -57,4 +60,5 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>
