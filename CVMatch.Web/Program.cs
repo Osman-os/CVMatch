@@ -3,11 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using CVMatch.Web.Data;
 using CVMatch.Web.Services;
 using System.Threading.RateLimiting;
+using System.Globalization;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var kultur = new CultureInfo("tr-TR");
+CultureInfo.DefaultThreadCurrentCulture = kultur;
+CultureInfo.DefaultThreadCurrentUICulture = kultur;
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));

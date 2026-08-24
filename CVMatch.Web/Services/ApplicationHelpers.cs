@@ -18,6 +18,15 @@ public static class ApplicationHelpers
 
         return $"CVM-{DateTime.UtcNow.Year}-{new string(suffix)}";
     }
+    public static string EgitimDuzeyiAdi(EducationLevel? duzey) => duzey switch
+    {
+        EducationLevel.HighSchool => "Lise",
+        EducationLevel.AssociateDegree => "Ön Lisans",
+        EducationLevel.BachelorDegree => "Lisans",
+        EducationLevel.MasterDegree => "Yüksek Lisans",
+        EducationLevel.Doctorate => "Doktora",
+        _ => ""
+    };
 
     /// <summary>
     /// Adayın elindeki ham anahtarı doğrular ve karşılık gelen özeti döner.

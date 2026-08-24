@@ -1,5 +1,6 @@
 @model CVMatch.Web.Models.ViewModels.AdminCandidateDetailViewModel
 @using CVMatch.Web.Models.Enums
+@using CVMatch.Web.Services
 @{
     ViewData["Title"] = Model.FullName;
     ViewData["Breadcrumb"] = $"Yönetici Paneli / Adaylar / {Model.FullName}";
@@ -160,6 +161,10 @@
                             <div>
                                 <div class="fw-semibold">@e.School</div>
                                 <div class="text-secondary small">@e.FieldOfStudy</div>
+                                @if (e.Level.HasValue)
+                                {
+                                    <div class="text-secondary small">@ApplicationHelpers.EgitimDuzeyiAdi(e.Level)</div>
+                                }
                             </div>
                             <div class="text-secondary small text-nowrap">
                                 @Tarih(e.StartDate) &ndash; @(e.IsCurrent ? "Devam ediyor" : Tarih(e.EndDate))

@@ -32,7 +32,7 @@
     @Html.AntiForgeryToken()
     <input type="hidden" name="key" value="@Model.Key" />
 
-        <div asp-validation-summary="All" class="alert alert-danger"></div>
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
 
     @await Html.PartialAsync("_CvFormFields", Model.Data)
 
@@ -62,8 +62,9 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         window.initialSkills = @Html.Raw(
-            System.Text.Json.JsonSerializer.Serialize(
-                (Model.Data.SkillsCsv ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries)));
+                            System.Text.Json.JsonSerializer.Serialize(
+                                    (Model.Data.SkillsCsv ?? "").Split(',',
+                                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
     </script>
     <script src="/js/cv-review.js"></script>
 }

@@ -1,4 +1,5 @@
 @model CVMatch.Web.Models.ViewModels.CvSummaryViewModel
+@using CVMatch.Web.Services
 @{
     ViewData["Title"] = "Başvuru özeti";
     ViewData["PageClass"] = "cvm-page-wide";
@@ -83,6 +84,10 @@
                         <div class="mb-3 pb-3 border-bottom">
                             <div class="fw-semibold">@e.School</div>
                             <div class="text-secondary small">@e.FieldOfStudy</div>
+                            @if (e.Level.HasValue)
+                            {
+                                <div class="text-secondary small">@ApplicationHelpers.EgitimDuzeyiAdi(e.Level)</div>
+                            }
                             <div class="text-secondary small">
                                 @(e.StartDate ?? "—")
                                 &ndash;

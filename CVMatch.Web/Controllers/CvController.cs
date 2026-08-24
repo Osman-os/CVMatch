@@ -708,7 +708,7 @@ public class CvController : Controller
         if (cakisan)
         {
             ModelState.AddModelError(string.Empty,
-     "Bu e-posta adresi veya telefon numarası başka bir başvuruda kullanılıyor.");
+                "Bu e-posta adresi veya telefon numarası başka bir başvuruda kullanılıyor.");
 
             data.Cities = await GetCitiesAsync(ct);
 

@@ -203,8 +203,8 @@ Yüklenen PDF'lerde dosya imzası doğrulanır, boyut 10 MB ile sınırlıdır v
 
 Eşzamanlı istekler durum kontrolü ve `CvSubmission.RowVersion` sürüm damgası
 birlikte denetlenir: ikinci istek güncel durumu görüp işlemi atlar ya da aynı eski
-sürümle kaydetmeye çalışırsa concurrency çakışmasına düşer. Böylece mükerrer
-başvuru kaydı ve tekrarlanan yapay zekâ çağrısı önlenir.
+sürümle kaydetmeye çalışırsa concurrency çakışmasına düşer. Böylece aynı taslak
+üzerinde mükerrer kayıt oluşturma ve tekrarlanan yapay zekâ çağrıları önlenir.
 ### Veri bütünlüğü
 
 Tüm foreign key ilişkilerinde `DeleteBehavior.Restrict` kullanılır.
