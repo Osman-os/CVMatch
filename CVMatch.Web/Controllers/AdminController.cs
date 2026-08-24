@@ -46,7 +46,7 @@ public class AdminController : Controller
 
             AktifIlan = await _db.JobPostings
                 .CountAsync(x => x.Status == JobPostingStatus.Active, ct),
-            
+
             TaslakIlan = await _db.JobPostings
                 .CountAsync(x => x.Status == JobPostingStatus.Draft, ct),
 
@@ -194,7 +194,7 @@ public class AdminController : Controller
                 Secili = skillIds.Contains(s.Id)
             })
             .ToListAsync(ct);
-        
+
         if (cityId.HasValue)
         {
             vm.SecilenSehir = await _db.Cities
@@ -325,7 +325,7 @@ public class AdminController : Controller
             TempData["Hata"] = "Not boş olamaz.";
             return RedirectToAction(nameof(Candidate), new { id });
         }
-        
+
         if (content.Trim().Length > 2000)
         {
             TempData["Hata"] = "Not en fazla 2000 karakter olabilir.";
@@ -391,7 +391,7 @@ public class AdminController : Controller
         };
     }
 
-        [HttpGet]
+    [HttpGet]
     public async Task<IActionResult> Users(CancellationToken ct)
     {
         var vm = new AdminUserListViewModel
@@ -420,7 +420,8 @@ public class AdminController : Controller
         if (await _userManager.FindByEmailAsync(email) is not null)
         {
             ModelState.AddModelError(
-                nameof(yeni.Email), "Bu e-posta adresi zaten kayıtlı.");
+                "Yeni.Email",
+                "Bu e-posta adresi zaten kayıtlı.");
 
             return View(nameof(Users), new AdminUserListViewModel
             {
@@ -451,12 +452,25 @@ public class AdminController : Controller
             });
         }
 
-        await _userManager.AddToRoleAsync(user, DbSeeder.AdminRole);
+        var rolSonucu = await _userManager.AddToRoleAsync(user, DbSeeder.AdminRole);
+
+        if (!rolSonucu.Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
+
+            foreach (var hata in rolSonucu.Errors)
+                ModelState.AddModelError(string.Empty, hata.Description);
+
+            return View(nameof(Users), new AdminUserListViewModel
+            {
+                Yoneticiler = await YoneticileriGetirAsync(ct),
+                Yeni = yeni
+            });
+        }
 
         TempData["Bilgi"] = $"{email} yönetici olarak eklendi.";
         return RedirectToAction(nameof(Users));
     }
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveUser(string id, CancellationToken ct)
@@ -480,7 +494,13 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Users));
         }
 
-        await _userManager.DeleteAsync(user);
+        var sonuc = await _userManager.DeleteAsync(user);
+
+        if (!sonuc.Succeeded)
+        {
+            TempData["Hata"] = "Yönetici hesabı kaldırılamadı.";
+            return RedirectToAction(nameof(Users));
+        }
 
         TempData["Bilgi"] = $"{user.Email} kaldırıldı.";
         return RedirectToAction(nameof(Users));

@@ -60,26 +60,37 @@
         const form = document.getElementById('startForm');
 
         if (form) {
-            const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+            const token =
+                form.querySelector('input[name="__RequestVerificationToken"]').value;
 
             fetch(form.action, {
                 method: 'POST',
-                headers: { 'RequestVerificationToken': token },
+                headers: {
+                    'RequestVerificationToken': token
+                },
                 body: new FormData(form)
             })
-            .then(r => {
-                if (!r.ok) throw new Error('İstek başarısız');
-                return r.json();
-            })
-            .then(data => {
-                clearInterval(zamanlayici);
-                window.location.href = data.redirect;
-            })
-            .catch(() => {
-                clearInterval(zamanlayici);
-                document.getElementById('durumMetni').textContent =
-                    'Bir sorun oluştu. Sayfayı yenilemeyi deneyin.';
-            });
+                .then(r => {
+                    if (!r.ok)
+                        throw new Error('İstek başarısız');
+
+                    return r.json();
+                })
+                .then(data => {
+                    clearInterval(zamanlayici);
+                    window.location.href = data.redirect;
+                })
+                .catch(() => {
+                    clearInterval(zamanlayici);
+
+                    document.getElementById('durumMetni').textContent =
+                        'Bir sorun oluştu. Sayfayı yenilemeyi deneyin.';
+                });
+        }
+        else {
+            setTimeout(() => {
+                window.location.reload();
+            }, 4000);
         }
     </script>
 }

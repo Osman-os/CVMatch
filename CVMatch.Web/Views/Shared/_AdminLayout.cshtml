@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/admin.css" />
 </head>
+
 <body class="admin-body">
 
     <div class="admin-shell">
@@ -31,11 +33,11 @@
                     <span class="admin-nav-icon">◍</span> Adaylar
                 </a>
 
-                <a class="admin-nav-item @(controller == "JobPostings" ? "active" : "")"
-                   asp-controller="JobPostings" asp-action="Index">
+                <a class="admin-nav-item @(controller == "JobPostings" ? "active" : "")" asp-controller="JobPostings"
+                   asp-action="Index">
                     <span class="admin-nav-icon">▤</span> İlanlar
                 </a>
-                
+
                 <a class="admin-nav-item @(controller == "Admin" && action == "Users" ? "active" : "")"
                    asp-controller="Admin" asp-action="Users">
                     <span class="admin-nav-icon">◆</span> Yöneticiler
@@ -58,9 +60,10 @@
                 </div>
 
                 <div class="admin-user">
-                    <span class="admin-avatar">SY</span>
-                    <span class="admin-user-name">Sistem Yöneticisi</span>
-
+                    <span class="admin-avatar">Y</span>
+                    <span class="admin-user-name">
+                        @User.Identity?.Name
+                    </span>
                     <form asp-area="Identity" asp-page="/Account/Logout"
                           asp-route-returnUrl="@Url.Action("Index", "Cv")" method="post" class="d-inline">
                         <button type="submit" class="admin-logout">Çıkış Yap</button>
@@ -80,4 +83,5 @@
     <script src="~/js/site.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>
