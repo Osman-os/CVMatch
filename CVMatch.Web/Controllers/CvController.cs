@@ -133,6 +133,9 @@ public class CvController : Controller
         if (submission is null)
             return NotFound();
 
+        if (submission.Status == SubmissionStatus.Approved)
+            return View("AlreadySubmitted");
+
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");
 
@@ -210,6 +213,9 @@ public class CvController : Controller
             .FirstOrDefaultAsync(x => x.Token == token, ct);
 
         if (submission is null) return NotFound();
+
+        if (submission.Status == SubmissionStatus.Approved)
+            return View("AlreadySubmitted");
 
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");

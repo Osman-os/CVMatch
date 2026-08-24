@@ -151,6 +151,12 @@ public class AdminController : Controller
 
         vm.ToplamKayit = await query.CountAsync(ct);
 
+        if (sayfa > vm.ToplamSayfa)
+        {
+            sayfa = vm.ToplamSayfa;
+            vm.Sayfa = sayfa;
+        }
+
         vm.Adaylar = await query
             .OrderByDescending(x => x.SubmittedAt)
             .Skip((sayfa - 1) * vm.SayfaBoyutu)
