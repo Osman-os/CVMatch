@@ -16,14 +16,14 @@ public class CvController : Controller
 {
     // Onaylanmayan taslaklar bu süre sonunda temizlenir
     private static readonly TimeSpan DraftLifetime = TimeSpan.FromHours(24);
-    
+
     // Aday bu süre boyunca başvurusunu düzenleyebilir
     private static readonly TimeSpan EditTokenLifetime = TimeSpan.FromDays(30);
 
     //Onaylanmış veya süresi dolmuş taslak bağlantısı çalışmamalı.
     private static bool TaslakGecerliMi(CvSubmission s) =>
         ApplicationHelpers.DraftIsValid(s.Status, s.ExpiresAt);
-    
+
     /// <summary>
     /// Elle gönderilen isteklerde tanımsız enum veya olmayan şehir gelebilir.
     /// Hatalar ModelState'e eklenir, çağıran metot ModelState.IsValid ile kontrol eder.
@@ -88,7 +88,7 @@ public class CvController : Controller
         }
 
         var file = model.CvFile!;
-        
+
         string storedFileName;
         await using (var stream = file.OpenReadStream())
         {
@@ -132,7 +132,7 @@ public class CvController : Controller
 
         if (submission is null)
             return NotFound();
-        
+
         if (!TaslakGecerliMi(submission))
             return View("DraftExpired");
 
@@ -162,7 +162,7 @@ public class CvController : Controller
         if (submission is null) return NotFound();
         if (!TaslakGecerliMi(submission)) return NotFound();
 
-         if (submission.Status == SubmissionStatus.Uploaded)
+        if (submission.Status == SubmissionStatus.Uploaded)
         {
             // Durumu önce işaretle: iki paralel istek varsa ikincisi
             // RowVersion çakışmasına düşer ve API çağrısı tekrarlanmaz
@@ -181,12 +181,17 @@ public class CvController : Controller
                 return Json(new { redirect = Url.Action(nameof(Processing), new { token }) });
             }
 
-            await _processing.ProcessAsync(submission.Id, ct);
+
+            await _processing.ProcessAsync(
+                submission.Id,
+                CancellationToken.None);
         }
 
         var guncel = await _db.CvSubmissions
-            .AsNoTracking()
-            .FirstAsync(x => x.Token == token, ct);
+        .AsNoTracking()
+        .FirstAsync(
+            x => x.Token == token,
+            CancellationToken.None);
 
         var hedef = guncel.Status switch
         {
@@ -237,7 +242,7 @@ public class CvController : Controller
             }
             catch (JsonException ex)
             {
-                    _logger.LogWarning(ex, "Taslak JSON çözümlenemedi. SubmissionId: {Id}", submission.Id);
+                _logger.LogWarning(ex, "Taslak JSON çözümlenemedi. SubmissionId: {Id}", submission.Id);
             }
         }
         else
@@ -338,7 +343,7 @@ public class CvController : Controller
         if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
             return RedirectToAction(nameof(Processing), new { token });
 
-                if (string.IsNullOrWhiteSpace(submission.ExtractedJson))
+        if (string.IsNullOrWhiteSpace(submission.ExtractedJson))
             return RedirectToAction(nameof(Review), new { token });
 
         // Kontrol ekranı doğrulamadan geçmediyse özete geçilemez
@@ -352,7 +357,7 @@ public class CvController : Controller
         }
         catch (JsonException ex)
         {
-                _logger.LogWarning(ex, "Özet için taslak JSON çözümlenemedi. SubmissionId: {Id}", submission.Id);
+            _logger.LogWarning(ex, "Özet için taslak JSON çözümlenemedi. SubmissionId: {Id}", submission.Id);
             return RedirectToAction(nameof(Review), new { token });
         }
 
@@ -397,7 +402,7 @@ public class CvController : Controller
         // Zaten onaylanmışsa özete dön
         if (submission.Status == SubmissionStatus.Approved)
             return View("AlreadySubmitted");
-            
+
         if (submission.ExpiresAt <= DateTime.UtcNow)
             return View("DraftExpired");
 
@@ -536,7 +541,7 @@ public class CvController : Controller
 
             return RedirectToAction(nameof(Summary), new { token = consent.Token });
         }
-        
+
         catch (DbUpdateException ex)
         {
             // Başka bir aday aynı anda sözlükte olmayan aynı yeteneği eklemiş olabilir;
@@ -904,7 +909,7 @@ public class CvController : Controller
 
         if (data is null)
             return RedirectToAction(nameof(Review), new { token = consent.Token });
-            
+
         data.Normalize();
 
         var vm = new CvSummaryViewModel

@@ -477,6 +477,7 @@ public class AdminController : Controller
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user is null) return NotFound();
+        if (!await _userManager.IsInRoleAsync(user, DbSeeder.AdminRole)) return NotFound();
 
         // Kendini kaldıramaz
         if (user.Id == _userManager.GetUserId(User))
