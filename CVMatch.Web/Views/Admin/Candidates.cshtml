@@ -96,7 +96,7 @@
             @if (Model.MinDeneyimYil.HasValue)
             {
                 <span class="cvm-filter-chip">
-                    Deneyim: @(Model.MinDeneyimYil == 0 ? "Tümü" : $"{Model.MinDeneyimYil}+ yıl")
+                    Deneyim: @Model.MinDeneyimYil+ yıl
                 </span>
             }
             
@@ -138,7 +138,6 @@
             <h3 class="h6 text-secondary">Deneyim</h3>
             <select name="minDeneyimYil" class="form-select mb-4">
                 <option value="">Tümü</option>
-                <option value="0" selected="@(Model.MinDeneyimYil == 0)">Deneyimsiz dahil</option>
                 <option value="1" selected="@(Model.MinDeneyimYil == 1)">1 yıl ve üzeri</option>
                 <option value="2" selected="@(Model.MinDeneyimYil == 2)">2 yıl ve üzeri</option>
                 <option value="3" selected="@(Model.MinDeneyimYil == 3)">3 yıl ve üzeri</option>
