@@ -708,9 +708,15 @@ public class CvController : Controller
         if (cakisan)
         {
             ModelState.AddModelError(string.Empty,
-                "Bu e-posta adresi veya telefon numarası başka bir başvuruda kullanılıyor.");
+     "Bu e-posta adresi veya telefon numarası başka bir başvuruda kullanılıyor.");
 
             data.Cities = await GetCitiesAsync(ct);
+
+            if (data.Educations.Count == 0)
+                data.Educations.Add(new EducationInputModel());
+
+            if (data.WorkExperiences.Count == 0)
+                data.WorkExperiences.Add(new WorkExperienceInputModel());
 
             return View(new CvEditViewModel
             {
