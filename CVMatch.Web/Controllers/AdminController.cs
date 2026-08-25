@@ -398,6 +398,86 @@ public class AdminController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> Skills(CancellationToken ct)
+    {
+        return View(new AdminSkillListViewModel
+        {
+            Yetenekler = await YetenekleriGetirAsync(ct)
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddSkill(YeniYetenekInputModel yeni, CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(nameof(Skills), new AdminSkillListViewModel
+            {
+                Yetenekler = await YetenekleriGetirAsync(ct),
+                Yeni = yeni
+            });
+        }
+
+        var ad = yeni.Name!.Trim();
+
+        // Büyük/küçük harf farkı yeni kayıt saymaz
+        if (await _db.Skills.AnyAsync(x => x.Name.ToLower() == ad.ToLower(), ct))
+        {
+            ModelState.AddModelError("Yeni.Name", "Bu yetenek zaten kayıtlı.");
+
+            return View(nameof(Skills), new AdminSkillListViewModel
+            {
+                Yetenekler = await YetenekleriGetirAsync(ct),
+                Yeni = yeni
+            });
+        }
+
+        _db.Skills.Add(new Skill { Name = ad });
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Bilgi"] = $"\"{ad}\" yetenek listesine eklendi.";
+        return RedirectToAction(nameof(Skills));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteSkill(int id, CancellationToken ct)
+    {
+        var yetenek = await _db.Skills
+            .Include(x => x.CandidateSkills)
+            .Include(x => x.JobPostingSkills)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        if (yetenek is null) return NotFound();
+
+        if (yetenek.CandidateSkills.Count > 0 || yetenek.JobPostingSkills.Count > 0)
+        {
+            TempData["Hata"] = "Aday veya ilanlarda kullanılan yetenek silinemez.";
+            return RedirectToAction(nameof(Skills));
+        }
+
+        _db.Skills.Remove(yetenek);
+        await _db.SaveChangesAsync(ct);
+
+        TempData["Bilgi"] = $"\"{yetenek.Name}\" kaldırıldı.";
+        return RedirectToAction(nameof(Skills));
+    }
+
+    private async Task<List<YetenekSatiri>> YetenekleriGetirAsync(CancellationToken ct)
+        => await _db.Skills
+            .AsNoTracking()
+            .OrderBy(x => x.Name)
+            .Select(x => new YetenekSatiri
+            {
+                Id = x.Id,
+                Name = x.Name,
+                AdaySayisi = x.CandidateSkills.Count,
+                IlanSayisi = x.JobPostingSkills.Count
+            })
+            .ToListAsync(ct);
+
+    [HttpGet]
     public async Task<IActionResult> Users(CancellationToken ct)
     {
         var vm = new AdminUserListViewModel

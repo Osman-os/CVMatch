@@ -129,8 +129,6 @@ Uygulama ilk açılışta:
 
 veritabanına ekler.
 
-Geliştirme ortamında ayrıca 12 kurgusal test adayı oluşturulur. Bu kayıtlar `@ornek.test` uzantılı e-posta adresleriyle işaretlenir.
-
 ## Ekran akışı
 
 ### Aday tarafı

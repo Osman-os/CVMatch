@@ -23,7 +23,8 @@
         _ => "cvm-chip-gray"
     };
 
-    string Tarih(DateOnly? d) => d?.ToString("MM/yyyy") ?? "—";
+        string Tarih(DateOnly? d) =>
+        d?.ToString("MM/yyyy", System.Globalization.CultureInfo.InvariantCulture) ?? "—";
 
     var basHarfler = string.Join("", Model.FullName
         .Split(' ', StringSplitOptions.RemoveEmptyEntries)

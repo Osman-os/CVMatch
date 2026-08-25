@@ -38,6 +38,11 @@
                     <span class="admin-nav-icon">▤</span> İlanlar
                 </a>
 
+                <a class="admin-nav-item @(controller == "Admin" && action == "Skills" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Skills">
+                    <span class="admin-nav-icon">✦</span> Yetenekler
+                </a>
+
                 <a class="admin-nav-item @(controller == "Admin" && action == "Users" ? "active" : "")"
                    asp-controller="Admin" asp-action="Users">
                     <span class="admin-nav-icon">◆</span> Yöneticiler

@@ -8,6 +8,7 @@ using CVMatch.Web.Models.Extraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Globalization;
 
 namespace CVMatch.Web.Controllers;
 
@@ -618,8 +619,8 @@ public class CvController : Controller
                         School = e.School,
                         FieldOfStudy = e.FieldOfStudy,
                         Level = e.Level,
-                        StartDate = e.StartDate?.ToString("MM/yyyy"),
-                        EndDate = e.EndDate?.ToString("MM/yyyy"),
+                        StartDate = e.StartDate?.ToString("MM/yyyy", CultureInfo.InvariantCulture),
+                        EndDate = e.EndDate?.ToString("MM/yyyy", CultureInfo.InvariantCulture),
                         IsCurrent = e.IsCurrent
                     })
                     .ToList(),
@@ -630,8 +631,8 @@ public class CvController : Controller
                         CompanyName = w.CompanyName,
                         Position = w.Position,
                         Description = w.Description,
-                        StartDate = w.StartDate?.ToString("MM/yyyy"),
-                        EndDate = w.EndDate?.ToString("MM/yyyy"),
+                        StartDate = w.StartDate?.ToString("MM/yyyy", CultureInfo.InvariantCulture),
+                        EndDate = w.EndDate?.ToString("MM/yyyy", CultureInfo.InvariantCulture),
                         IsCurrent = w.IsCurrent
                     })
                     .ToList()
