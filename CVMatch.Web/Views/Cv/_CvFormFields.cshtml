@@ -130,12 +130,14 @@
 
         <div class="mb-3">
             <label asp-for="LinkedInUrl" class="form-label"></label>
-            <input asp-for="LinkedInUrl" class="form-control" />
+            <input asp-for="LinkedInUrl" class="form-control"
+                   placeholder="linkedin.com/in/kullanici" />
             <span asp-validation-for="LinkedInUrl" class="text-danger small"></span>
         </div>
 
         <div class="mb-0">
-            <label asp-for="GitHubUrl" class="form-label"></label>
+            <input asp-for="GitHubUrl" class="form-control"
+                   placeholder="github.com/kullanici" />
             <input asp-for="GitHubUrl" class="form-control" />
             <span asp-validation-for="GitHubUrl" class="text-danger small"></span>
         </div>

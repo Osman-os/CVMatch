@@ -350,6 +350,8 @@ public class CvController : Controller
                 .FirstOrDefaultAsync(ct)
             : null;
 
+        model.LinkedInUrl = ApplicationHelpers.NormalizeUrl(model.LinkedInUrl);
+        model.GitHubUrl = ApplicationHelpers.NormalizeUrl(model.GitHubUrl);
         await DogrulamaEkleAsync(model, ct);
 
         if (!ModelState.IsValid)
@@ -794,8 +796,8 @@ public class CvController : Controller
         profile.PhoneNormalized = ApplicationHelpers.NormalizePhone(data.PhoneNumber);
         profile.Address = string.IsNullOrWhiteSpace(data.Address) ? null : data.Address.Trim();
         profile.CityId = data.CityId;
-        profile.LinkedInUrl = string.IsNullOrWhiteSpace(data.LinkedInUrl) ? null : data.LinkedInUrl.Trim();
-        profile.GitHubUrl = string.IsNullOrWhiteSpace(data.GitHubUrl) ? null : data.GitHubUrl.Trim();
+        profile.LinkedInUrl = ApplicationHelpers.NormalizeUrl(data.LinkedInUrl);
+        profile.GitHubUrl = ApplicationHelpers.NormalizeUrl(data.GitHubUrl);
         profile.TotalExperienceMonths = data.TotalExperienceMonths;
         profile.UpdatedAt = DateTime.UtcNow;
 

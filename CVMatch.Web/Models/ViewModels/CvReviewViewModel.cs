@@ -53,14 +53,14 @@ public class CvReviewViewModel : IValidatableObject
     [Display(Name = "Toplam Deneyim — Ay")]
     public int ExperienceMonths { get; set; }
 
-    [RegularExpression(@"^https://[^\s]+\.[^\s]+$",
-        ErrorMessage = "Bağlantı https:// ile başlamalıdır. Örnek: https://linkedin.com/in/kullanici")]
+    [RegularExpression(@"^(https://)?[\w.-]+\.[A-Za-z]{2,}(/[^\s]*)?$",
+        ErrorMessage = "Geçerli bir bağlantı girin. Örnek: linkedin.com/in/kullanici")]
     [StringLength(300)]
     [Display(Name = "LinkedIn Bağlantısı")]
     public string? LinkedInUrl { get; set; }
 
-    [RegularExpression(@"^https://[^\s]+\.[^\s]+$",
-        ErrorMessage = "Bağlantı https:// ile başlamalıdır. Örnek: https://github.com/kullanici")]
+    [RegularExpression(@"^(https://)?[\w.-]+\.[A-Za-z]{2,}(/[^\s]*)?$",
+        ErrorMessage = "Geçerli bir bağlantı girin. Örnek: github.com/kullanici")]
     [StringLength(300)]
     [Display(Name = "GitHub Bağlantısı")]
     public string? GitHubUrl { get; set; }

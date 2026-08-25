@@ -28,10 +28,17 @@ public static class ApplicationHelpers
         _ => ""
     };
 
-    /// <summary>
-    /// Adayın elindeki ham anahtarı doğrular ve karşılık gelen özeti döner.
-    /// Anahtar geçersiz biçimdeyse null döner.
-    /// </summary>
+    public static string? NormalizeUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+
+        var temiz = url.Trim();
+
+        return temiz.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            ? temiz
+            : "https://" + temiz;
+    }
+
     public static string? TryHashEditKey(string? rawKey)
     {
         if (string.IsNullOrWhiteSpace(rawKey)) return null;
@@ -40,17 +47,9 @@ public static class ApplicationHelpers
         return HashEditToken(token);
     }
 
-    /// <summary>
-    /// Taslak bağlantısının hâlâ kullanılabilir olup olmadığını söyler.
-    /// Onaylanmış başvurunun taslağı ve süresi dolmuş taslak geçersizdir.
-    /// </summary>
     public static bool DraftIsValid(SubmissionStatus status, DateTime expiresAt)
         => status != SubmissionStatus.Approved && expiresAt > DateTime.UtcNow;
 
-    /// <summary>
-    /// Telefon numarasını yalnızca rakamlara indirger ve baştaki ülke kodunu atar.
-    /// "+90 532 456 78 90" ve "0532 456 78 90" aynı sonucu verir.
-    /// </summary>
     public static string? NormalizePhone(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw)) return null;
@@ -71,10 +70,6 @@ public static class ApplicationHelpers
         return Convert.ToHexString(bytes);
     }
 
-    /// <summary>
-    /// Yetenek adını sözlükteki yazımla hizalar.
-    /// Sözlükte yoksa ve giriş tamamı küçük/büyük harfse ilk harfi büyütür.
-    /// </summary>
     public static string NormalizeSkillName(string raw, IReadOnlyDictionary<string, string> existingSkills)
     {
         var trimmed = raw.Trim();
