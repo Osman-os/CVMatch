@@ -1,0 +1,108 @@
+@model CVMatch.Web.Models.ViewModels.CvUploadViewModel
+@{
+    ViewData["Title"] = "CV Yükle";
+}
+
+<div class="cvm-upload-wrap">
+
+    <a asp-action="Index" class="text-secondary small d-inline-block mb-3">← Tüm ilanlar</a>
+    
+    <h1 class="h3 mb-1">CV'nizi yükleyin</h1>
+    <p class="text-secondary mb-4">
+        PDF biçimindeki CV'nizi ekleyin. Bilgileriniz otomatik çıkarılacak,
+        göndermeden önce kontrol edebileceksiniz.
+    </p>
+
+    <div class="card mb-3">
+        <div class="card-body p-4">
+            <div class="text-secondary small mb-1">Başvurduğunuz ilan</div>
+            <h2 class="h5 mb-1">@Model.IlanBasligi</h2>
+            <div class="text-secondary small">
+                @(Model.IlanSehri ?? "Konum belirtilmemiş") ·
+                @(Model.IlanTuru == CVMatch.Web.Models.Enums.EmploymentType.Internship ? "Staj" : "Tam Zamanlı")
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-4">
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
+
+            <form asp-action="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="JobPostingId" />
+
+                <label class="cvm-dropzone" id="dropzone">
+                    <span class="cvm-dropzone-icon">🗎</span>
+                    <span class="fw-semibold d-block mb-1">CV'nizi buraya bırakın</span>
+                    <span class="text-secondary small d-block mb-3">veya</span>
+
+                    <span class="btn btn-outline-primary btn-sm" id="pickBtn">PDF Seç</span>
+
+                    <input type="file" name="CvFile" id="cvFile"
+                           accept="application/pdf" class="d-none" required />
+
+                    <span class="text-secondary small d-block mt-3" id="fileInfo">
+                        PDF · En fazla 10 MB
+                    </span>
+                </label>
+
+                <button type="submit" class="btn btn-primary w-100 mt-4" id="submitBtn" disabled>
+                    CV'yi Yükle
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const dosyaInput = document.getElementById('cvFile');
+        const gonderBtn = document.getElementById('submitBtn');
+        const bilgi = document.getElementById('fileInfo');
+        const alan = document.getElementById('dropzone');
+
+        function dosyaSecildi(dosya) {
+            if (!dosya) return;
+            const mb = (dosya.size / 1048576).toFixed(1);
+            bilgi.textContent = `${dosya.name} · ${mb} MB`;
+            bilgi.classList.add('text-dark');
+            gonderBtn.disabled = false;
+        }
+
+        dosyaInput.addEventListener('change', () => dosyaSecildi(dosyaInput.files[0]));
+
+        // Sürükle bırak
+        ['dragenter', 'dragover'].forEach(olay => {
+            alan.addEventListener(olay, e => {
+                e.preventDefault();
+                alan.classList.add('dragging');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(olay => {
+            alan.addEventListener(olay, e => {
+                e.preventDefault();
+                alan.classList.remove('dragging');
+            });
+        });
+
+        alan.addEventListener('drop', e => {
+            const dosya = e.dataTransfer.files[0];
+            if (dosya && dosya.type === 'application/pdf') {
+                dosyaInput.files = e.dataTransfer.files;
+                dosyaSecildi(dosya);
+            }
+        });
+
+        document.getElementById('uploadForm')?.addEventListener('submit', function () {
+            gonderBtn.disabled = true;
+            gonderBtn.textContent = 'Yükleniyor...';
+        });
+    </script>
+}

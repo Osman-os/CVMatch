@@ -159,7 +159,7 @@ body {
 
 /* Yükleme kartı */
 .cvm-upload-wrap {
-    max-width: 480px;
+    max-width: 680px;
     margin: 0 auto;
 }
 
@@ -167,7 +167,7 @@ body {
     display: block;
     width: 100%;
     text-align: center;
-    padding: 36px 24px;
+    padding: 64px 24px;
     border: 2px dashed #d7e0ee;
     border-radius: 14px;
     background: #fbfcfe;
@@ -183,7 +183,7 @@ body {
 
 .cvm-dropzone-icon {
     display: block;
-    font-size: 2rem;
+    font-size: 3rem;
     color: var(--cvm-primary);
     margin-bottom: 10px;
 }

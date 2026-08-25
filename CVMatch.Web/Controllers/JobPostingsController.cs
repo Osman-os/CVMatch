@@ -28,8 +28,12 @@ public class JobPostingsController : Controller
         string? arama,
         EmploymentType? employmentType,
         JobPostingStatus? status,
-        CancellationToken ct)
+        bool kapalilariGoster = false,
+        int sayfa = 1,
+        CancellationToken ct = default)
     {
+        if (sayfa < 1) sayfa = 1;
+
         var query = _db.JobPostings.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(arama))
@@ -44,27 +48,45 @@ public class JobPostingsController : Controller
         if (status.HasValue)
             query = query.Where(x => x.Status == status.Value);
 
+        // Durum filtresi seçilmemişse kapalı ilanlar varsayılan olarak gizlenir
+        else if (!kapalilariGoster)
+            query = query.Where(x => x.Status != JobPostingStatus.Closed);
+
         var vm = new JobPostingListViewModel
         {
             Arama = arama,
             EmploymentType = employmentType,
             Status = status,
-
-            Ilanlar = await query
-                .OrderByDescending(x => x.CreatedAt)
-                .Select(x => new IlanSatiri
-                {
-                    Id = x.Id,
-                    Title = x.Title,
-                    CityName = x.City != null ? x.City.Name : null,
-                    EmploymentType = x.EmploymentType,
-                    Status = x.Status,
-                    MinExperienceYears = x.MinExperienceYears,
-                    SkillCount = x.JobPostingSkills.Count,
-                    CreatedAt = x.CreatedAt
-                })
-                .ToListAsync(ct)
+            KapalilariGoster = kapalilariGoster,
+            Sayfa = sayfa
         };
+
+        vm.ToplamKayit = await query.CountAsync(ct);
+
+        // Elle yazılan veya eskimiş bağlantıdaki aşırı sayfa numarası boş liste üretmesin
+        if (sayfa > vm.ToplamSayfa)
+        {
+            sayfa = vm.ToplamSayfa;
+            vm.Sayfa = sayfa;
+        }
+
+        vm.Ilanlar = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((sayfa - 1) * vm.SayfaBoyutu)
+            .Take(vm.SayfaBoyutu)
+            .Select(x => new IlanSatiri
+            {
+                Id = x.Id,
+                Title = x.Title,
+                CityName = x.City != null ? x.City.Name : null,
+                EmploymentType = x.EmploymentType,
+                Status = x.Status,
+                MinExperienceYears = x.MinExperienceYears,
+                SkillCount = x.JobPostingSkills.Count,
+                BasvuranSayisi = x.Candidates.Count,
+                CreatedAt = x.CreatedAt
+            })
+            .ToListAsync(ct);
 
         return View(vm);
     }
@@ -198,9 +220,11 @@ public class JobPostingsController : Controller
 
     [HttpGet]
     public async Task<IActionResult> Match(
-        int id, int? asgariSkor, string? turFiltresi, CancellationToken ct)
+        int id, int? asgariSkor, string? turFiltresi, bool? sadeceBasvuranlar,
+        CancellationToken ct)
     {
-        var vm = await _matching.MatchAsync(id, asgariSkor ?? 1, turFiltresi ?? "uyumlu", ct);
+        var vm = await _matching.MatchAsync(
+            id, asgariSkor ?? 1, turFiltresi ?? "uyumlu", sadeceBasvuranlar ?? true, ct);
         if (vm is null) return NotFound();
 
         // Eşleştirme yalnızca yayındaki ilanlar için yapılır

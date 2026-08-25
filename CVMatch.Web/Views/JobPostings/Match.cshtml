@@ -43,6 +43,35 @@
             Minimum Deneyim: <strong>@(Model.MinExperienceYears == 0 ? "—" : $"{Model.MinExperienceYears} yıl")</strong>
         </div>
 
+        <div class="mt-3 pt-3 border-top d-flex align-items-center gap-3 flex-wrap">
+            <span class="text-secondary small">
+                Bu ilana <strong>@Model.BasvuranSayisi</strong> başvuru yapılmış.
+            </span>
+
+            @if (Model.SadeceBasvuranlar)
+            {
+                <a asp-action="Match" asp-route-id="@Model.JobPostingId"
+                   asp-route-asgariSkor="@Model.AsgariSkor"
+                   asp-route-turFiltresi="@Model.TurFiltresi"
+                   asp-route-sadeceBasvuranlar="false"
+                   class="btn btn-sm btn-outline-secondary">
+                    Tüm aday havuzunda ara
+                </a>
+            }
+            else
+            {
+                <span class="cvm-chip cvm-chip-amber">Tüm havuz gösteriliyor</span>
+
+                <a asp-action="Match" asp-route-id="@Model.JobPostingId"
+                   asp-route-asgariSkor="@Model.AsgariSkor"
+                   asp-route-turFiltresi="@Model.TurFiltresi"
+                   asp-route-sadeceBasvuranlar="true"
+                   class="btn btn-sm btn-outline-secondary">
+                    Yalnızca başvuranları göster
+                </a>
+            }
+        </div>
+
         @if (Model.YetenekTanimliMi)
         {
             <div class="row g-4 align-items-start">
@@ -105,19 +134,27 @@
 
 <form method="get" asp-action="Match" class="cvm-toolbar mb-3">
     <input type="hidden" name="id" value="@Model.JobPostingId" />
+    <input type="hidden" name="sadeceBasvuranlar" value="@Model.SadeceBasvuranlar.ToString().ToLowerInvariant()" />
 
     <span class="cvm-toolbar-count">@Model.Adaylar.Count aday bulundu</span>
 
     <div class="d-flex align-items-center gap-3 flex-wrap">
-        <div class="d-flex align-items-center gap-2">
-            <label class="text-secondary small mb-0">Tür Uyumu</label>
-            <select name="turFiltresi" class="form-select form-select-sm" style="width: auto;"
-                    onchange="this.form.submit()">
-                <option value="tumu" selected="@(Model.TurFiltresi == "tumu")">Tümü</option>
-                <option value="uyumlu" selected="@(Model.TurFiltresi == "uyumlu")">Uyumlu</option>
-                <option value="uyumsuz" selected="@(Model.TurFiltresi == "uyumsuz")">Uyumsuz</option>
-            </select>
-        </div>
+        @if (!Model.SadeceBasvuranlar)
+        {
+            <div class="d-flex align-items-center gap-2">
+                <label class="text-secondary small mb-0">Tür Uyumu</label>
+                <select name="turFiltresi" class="form-select form-select-sm" style="width: auto;"
+                        onchange="this.form.submit()">
+                    <option value="tumu" selected="@(Model.TurFiltresi == "tumu")">Tümü</option>
+                    <option value="uyumlu" selected="@(Model.TurFiltresi == "uyumlu")">Uyumlu</option>
+                    <option value="uyumsuz" selected="@(Model.TurFiltresi == "uyumsuz")">Uyumsuz</option>
+                </select>
+            </div>
+        }
+        else
+        {
+            <input type="hidden" name="turFiltresi" value="@Model.TurFiltresi" />
+        }
 
         <div class="d-flex align-items-center gap-2">
             <label class="text-secondary small mb-0">Asgari Uyum</label>
@@ -171,9 +208,12 @@ else
                                 @(a.DeneyimYeterli ? "Deneyim uygun" : "Deneyim yetersiz")
                             </span>
 
-                            <span class="cvm-chip @(a.TurUyumlu ? "cvm-chip-green" : "cvm-chip-red")">
-                                @(a.TurUyumlu ? "Tür uyumlu" : "Tür uyumsuz")
-                            </span>
+                            @if (!Model.SadeceBasvuranlar)
+                            {
+                                <span class="cvm-chip @(a.TurUyumlu ? "cvm-chip-green" : "cvm-chip-red")">
+                                    @(a.TurUyumlu ? "Tür uyumlu" : "Tür uyumsuz")
+                                </span>
+                            }
                         </div>
                     </div>
 
@@ -231,7 +271,7 @@ else
         {
             <text>@Model.GizlenenSayisi aday uyum eşiğinin altında kaldığı için gizlendi.</text>
         }
-        @if (Model.TurFiltresi == "tumu" && Model.TurUyumsuzSayisi > 0)
+        @if (!Model.SadeceBasvuranlar && Model.TurFiltresi == "tumu" && Model.TurUyumsuzSayisi > 0)
         {
             <text>@Model.TurUyumsuzSayisi adayın başvuru türü bu ilanla uyuşmuyor.</text>
         }

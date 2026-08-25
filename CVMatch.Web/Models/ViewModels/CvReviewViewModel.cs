@@ -19,7 +19,6 @@ public class CvReviewViewModel : IValidatableObject
     [Display(Name = "Ad Soyad")]
     public string? FullName { get; set; }
 
-    [Required(ErrorMessage = "Başvuru türü seçmeniz gerekmektedir.")]
     [Display(Name = "Başvuru Türü")]
     public EmploymentType? PreferredEmploymentType { get; set; }
 

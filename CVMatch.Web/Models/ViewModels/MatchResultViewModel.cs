@@ -27,6 +27,9 @@ public class MatchResultViewModel
 
     public int GizlenenSayisi { get; set; }
 
+    public bool SadeceBasvuranlar { get; set; } = true;
+    public int BasvuranSayisi { get; set; }
+
     public int ZorunluSayisi => Aranan.Count(x => x.Zorunlu);
     public int TercihSayisi => Aranan.Count(x => !x.Zorunlu);
 

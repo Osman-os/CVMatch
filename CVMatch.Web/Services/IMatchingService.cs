@@ -8,5 +8,6 @@ public interface IMatchingService
         int jobPostingId,
         int asgariSkor = 1,
         string turFiltresi = "uyumlu",
+        bool sadeceBasvuranlar = true,
         CancellationToken ct = default);
 }

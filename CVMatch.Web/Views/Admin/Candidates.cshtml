@@ -190,7 +190,7 @@ else
                     <thead>
                         <tr>
                             <th>Aday</th>
-                            <th>Başvuru Türü</th>
+                            <th>Başvurduğu İlan</th>
                             <th>Şehir</th>
                             <th>Deneyim</th>
                             <th>Yetenekler</th>
@@ -212,7 +212,8 @@ else
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td style="max-width: 200px;">
+                                    <div class="small">@(a.IlanBasligi ?? "İlansız başvuru")</div>
                                     <span class="cvm-chip @(a.PreferredEmploymentType == EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
                                         @(a.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "İş")
                                     </span>

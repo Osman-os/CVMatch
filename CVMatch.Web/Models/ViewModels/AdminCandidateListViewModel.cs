@@ -70,6 +70,7 @@ public class AdaySatiri
     public string? CityName { get; set; }
     public int TotalExperienceMonths { get; set; }
     public EmploymentType PreferredEmploymentType { get; set; }
+    public string? IlanBasligi { get; set; }
     public ApplicationStatus Status { get; set; }
     public DateTime SubmittedAt { get; set; }
     public List<string> Skills { get; set; } = new();

@@ -1,6 +1,6 @@
-@model CVMatch.Web.Models.ViewModels.CvUploadViewModel
+@model CVMatch.Web.Models.ViewModels.CvHomeViewModel
 @{
-    ViewData["Title"] = "CV Yükle";
+    ViewData["Title"] = "Açık İlanlar";
 }
 
 @if (User.Identity?.IsAuthenticated == true)
@@ -12,10 +12,10 @@
 }
 
 <div class="cvm-hero">
-    <h1>CV'nizi yükleyin, başvurunuzu kolayca oluşturun</h1>
+    <h1>Açık pozisyonlarımıza başvurun</h1>
     <p>
-        Staj veya tam zamanlı iş başvurunuz için CV'nizi PDF olarak yükleyin.
-        Bilgilerinizi kontrol edin, başvuru türünüzü seçin ve onaylayın.
+        Size uygun ilanı seçin, CV'nizi PDF olarak yükleyin.
+        Bilgilerinizi kontrol edip onaylayın; başvurunuz tamamlanır.
     </p>
 
     <div class="cvm-hero-badges">
@@ -25,41 +25,77 @@
     </div>
 </div>
 
-<div class="cvm-upload-wrap">
-    <div class="card">
-        <div class="card-body p-4">
-
-            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-            {
-                <div class="alert alert-danger">@Model.ErrorMessage</div>
-            }
-
-            <form asp-action="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
-                @Html.AntiForgeryToken()
-
-                <label class="cvm-dropzone" id="dropzone">
-                    <span class="cvm-dropzone-icon">🗎</span>
-                    <span class="fw-semibold d-block mb-1">CV'nizi buraya bırakın</span>
-                    <span class="text-secondary small d-block mb-3">veya</span>
-
-                    <span class="btn btn-outline-primary btn-sm" id="pickBtn">PDF Seç</span>
-
-                    <input type="file" name="CvFile" id="cvFile"
-                           accept="application/pdf" class="d-none" required />
-
-                    <span class="text-secondary small d-block mt-3" id="fileInfo">
-                        PDF · En fazla 10 MB
-                    </span>
-                </label>
-
-                <button type="submit" class="btn btn-primary w-100 mt-4" id="submitBtn" disabled>
-                    CV'yi Yükle
-                </button>
-            </form>
-
+<section class="mb-5">
+    @if (Model.Ilanlar.Count == 0)
+    {
+        <div class="card">
+            <div class="card-body p-5 text-center">
+                <h2 class="h5 mb-2">Şu anda açık ilan bulunmuyor</h2>
+                <p class="text-secondary mb-0">
+                    Yeni pozisyonlar açıldığında bu sayfada listelenecek.
+                </p>
+            </div>
         </div>
-    </div>
-</div>
+    }
+    else
+    {
+        <h2 class="h4 mb-3">Açık İlanlar</h2>
+
+        <div class="row g-3">
+            @foreach (var ilan in Model.Ilanlar)
+            {
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body p-4 d-flex flex-column">
+
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <h3 class="h5 mb-0">@ilan.Title</h3>
+                                <span class="cvm-chip @(ilan.EmploymentType == CVMatch.Web.Models.Enums.EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
+                                    @ilan.TurMetni
+                                </span>
+                            </div>
+
+                            <div class="text-secondary small mb-3">
+                                @(ilan.CityName ?? "Konum belirtilmemiş") · @ilan.DeneyimMetni
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(ilan.Description))
+                            {
+                                <p class="small mb-3" style="white-space: pre-line;">@ilan.Description</p>
+                            }
+
+                            @if (ilan.ZorunluYetenekler.Count > 0)
+                            {
+                                <div class="mb-2">
+                                    <div class="text-secondary small mb-1">Aranan yetenekler</div>
+                                    @foreach (var y in ilan.ZorunluYetenekler)
+                                    {
+                                        <span class="cvm-chip cvm-chip-blue">@y</span>
+                                    }
+                                </div>
+                            }
+
+                            @if (ilan.TercihYetenekler.Count > 0)
+                            {
+                                <div class="mb-2">
+                                    <div class="text-secondary small mb-1">Tercih edilen</div>
+                                    @foreach (var y in ilan.TercihYetenekler)
+                                    {
+                                        <span class="cvm-chip">@y</span>
+                                    }
+                                </div>
+                            }
+
+                            <a asp-action="Apply" asp-route-id="@ilan.Id"
+                               class="btn btn-primary w-100 mt-auto">Bu İlana Başvur</a>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>
 
 <section class="cvm-how" id="nasil-calisir">
     <h2 class="h4 text-center mb-1">Nasıl Çalışır?</h2>
@@ -70,9 +106,10 @@
             <div class="card h-100">
                 <div class="card-body p-4">
                     <span class="cvm-step-num">1</span>
-                    <h3 class="h6">CV'nizi yükleyin</h3>
+                    <h3 class="h6">İlanı seçin, CV'nizi yükleyin</h3>
                     <p class="text-secondary small mb-0">
-                        PDF biçimindeki CV'nizi sisteme ekleyin. Üyelik veya parola gerekmez.
+                        Başvurmak istediğiniz ilanı seçip PDF biçimindeki CV'nizi ekleyin.
+                        Üyelik veya parola gerekmez.
                     </p>
                 </div>
             </div>
@@ -84,8 +121,7 @@
                     <span class="cvm-step-num">2</span>
                     <h3 class="h6">Bilgilerinizi kontrol edin</h3>
                     <p class="text-secondary small mb-0">
-                        CV'nizden çıkarılan bilgileri gözden geçirin, başvuru türünüzü seçin
-                        ve eksikleri tamamlayın.
+                        CV'nizden çıkarılan bilgileri gözden geçirin ve eksikleri tamamlayın.
                     </p>
                 </div>
             </div>
@@ -105,50 +141,3 @@
         </div>
     </div>
 </section>
-
-@section Scripts {
-    <script>
-        const dosyaInput = document.getElementById('cvFile');
-        const gonderBtn = document.getElementById('submitBtn');
-        const bilgi = document.getElementById('fileInfo');
-        const alan = document.getElementById('dropzone');
-
-        function dosyaSecildi(dosya) {
-            if (!dosya) return;
-            const mb = (dosya.size / 1048576).toFixed(1);
-            bilgi.textContent = `${dosya.name} · ${mb} MB`;
-            bilgi.classList.add('text-dark');
-            gonderBtn.disabled = false;
-        }
-
-        dosyaInput.addEventListener('change', () => dosyaSecildi(dosyaInput.files[0]));
-
-        // Sürükle bırak
-        ['dragenter', 'dragover'].forEach(olay => {
-            alan.addEventListener(olay, e => {
-                e.preventDefault();
-                alan.classList.add('dragging');
-            });
-        });
-
-        ['dragleave', 'drop'].forEach(olay => {
-            alan.addEventListener(olay, e => {
-                e.preventDefault();
-                alan.classList.remove('dragging');
-            });
-        });
-
-        alan.addEventListener('drop', e => {
-            const dosya = e.dataTransfer.files[0];
-            if (dosya && dosya.type === 'application/pdf') {
-                dosyaInput.files = e.dataTransfer.files;
-                dosyaSecildi(dosya);
-            }
-        });
-
-        document.getElementById('uploadForm')?.addEventListener('submit', function () {
-            gonderBtn.disabled = true;
-            gonderBtn.textContent = 'Yükleniyor...';
-        });
-    </script>
-}

@@ -31,13 +31,6 @@ public class CvController : Controller
     /// </summary>
     private async Task DogrulamaEkleAsync(CvReviewViewModel data, CancellationToken ct)
     {
-        if (data.PreferredEmploymentType.HasValue
-            && !Enum.IsDefined(data.PreferredEmploymentType.Value))
-        {
-            ModelState.AddModelError(
-                nameof(data.PreferredEmploymentType), "Geçersiz başvuru türü.");
-        }
-
         if (data.CityId.HasValue
             && !await _db.Cities.AnyAsync(c => c.Id == data.CityId.Value, ct))
         {
@@ -72,8 +65,57 @@ public class CvController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index()
-        => View(new CvUploadViewModel());
+    public async Task<IActionResult> Index(CancellationToken ct)
+    {
+        var ilanlar = await _db.JobPostings
+            .AsNoTracking()
+            .Where(x => x.Status == JobPostingStatus.Active)
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => new JobPostingCardViewModel
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                CityName = x.City != null ? x.City.Name : null,
+                EmploymentType = x.EmploymentType,
+                MinExperienceYears = x.MinExperienceYears,
+                ZorunluYetenekler = x.JobPostingSkills
+                    .Where(s => s.IsRequired)
+                    .Select(s => s.Skill.Name)
+                    .OrderBy(n => n)
+                    .ToList(),
+                TercihYetenekler = x.JobPostingSkills
+                    .Where(s => !s.IsRequired)
+                    .Select(s => s.Skill.Name)
+                    .OrderBy(n => n)
+                    .ToList()
+            })
+            .ToListAsync(ct);
+
+        return View(new CvHomeViewModel { Ilanlar = ilanlar });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Apply(int id, CancellationToken ct)
+    {
+        var ilan = await AktifIlanGetirAsync(id, ct);
+        if (ilan is null) return View("JobPostingUnavailable");
+
+        return View(new CvUploadViewModel
+        {
+            JobPostingId = ilan.Id,
+            IlanBasligi = ilan.Title,
+            IlanSehri = ilan.City?.Name,
+            IlanTuru = ilan.EmploymentType
+        });
+    }
+
+    /// <summary>İlanı yalnızca aktifse döndürür; kapalı ilana başvuru alınmaz.</summary>
+    private Task<JobPosting?> AktifIlanGetirAsync(int id, CancellationToken ct)
+        => _db.JobPostings
+            .AsNoTracking()
+            .Include(x => x.City)
+            .FirstOrDefaultAsync(x => x.Id == id && x.Status == JobPostingStatus.Active, ct);
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -81,11 +123,18 @@ public class CvController : Controller
     [EnableRateLimiting("upload")]
     public async Task<IActionResult> Upload(CvUploadViewModel model, CancellationToken ct)
     {
+        var ilan = await AktifIlanGetirAsync(model.JobPostingId, ct);
+        if (ilan is null) return View("JobPostingUnavailable");
+
+        model.IlanBasligi = ilan.Title;
+        model.IlanSehri = ilan.City?.Name;
+        model.IlanTuru = ilan.EmploymentType;
+
         var validation = FileValidation.ValidatePdf(model.CvFile);
         if (!validation.IsValid)
         {
             model.ErrorMessage = validation.ErrorMessage;
-            return View(nameof(Index), model);
+            return View(nameof(Apply), model);
         }
 
         var file = model.CvFile!;
@@ -104,7 +153,8 @@ public class CvController : Controller
             FileSizeBytes = file.Length,
             Status = SubmissionStatus.Uploaded,
             UploadedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.Add(DraftLifetime)
+            ExpiresAt = DateTime.UtcNow.Add(DraftLifetime),
+            JobPostingId = ilan.Id
         };
 
         _db.CvSubmissions.Add(submission);
@@ -291,6 +341,14 @@ public class CvController : Controller
         model.WorkExperiences = model.WorkExperiences
             .Where(w => !string.IsNullOrWhiteSpace(w.CompanyName))
             .ToList();
+        
+        model.PreferredEmploymentType = submission.JobPostingId is int ilanId
+            ? await _db.JobPostings
+                .AsNoTracking()
+                .Where(j => j.Id == ilanId)
+                .Select(j => (EmploymentType?)j.EmploymentType)
+                .FirstOrDefaultAsync(ct)
+            : null;
 
         await DogrulamaEkleAsync(model, ct);
 
@@ -471,8 +529,10 @@ public class CvController : Controller
             Address = Temizle(data.Address),
             PhotoFileName = submission.PhotoFileName,
             CityId = data.CityId,
+            JobPostingId = submission.JobPostingId,
             TotalExperienceMonths = data.TotalExperienceMonths ?? 0,
-            PreferredEmploymentType = data.PreferredEmploymentType!.Value,
+            PreferredEmploymentType =
+            data.PreferredEmploymentType ?? EmploymentType.FullTime,
             LinkedInUrl = Temizle(data.LinkedInUrl),
             GitHubUrl = Temizle(data.GitHubUrl),
             Status = ApplicationStatus.New,
@@ -736,7 +796,6 @@ public class CvController : Controller
         profile.CityId = data.CityId;
         profile.LinkedInUrl = string.IsNullOrWhiteSpace(data.LinkedInUrl) ? null : data.LinkedInUrl.Trim();
         profile.GitHubUrl = string.IsNullOrWhiteSpace(data.GitHubUrl) ? null : data.GitHubUrl.Trim();
-        profile.PreferredEmploymentType = data.PreferredEmploymentType!.Value;
         profile.TotalExperienceMonths = data.TotalExperienceMonths;
         profile.UpdatedAt = DateTime.UtcNow;
 

@@ -23,6 +23,10 @@ public class CandidateProfile
     public int? CityId { get; set; }
     public City? City { get; set; }
 
+    // Onay anında başvurudan kopyalanır
+    public int? JobPostingId { get; set; }
+    public JobPosting? JobPosting { get; set; }
+
     // Ay bazında saklanır, ekranda "1 yıl 2 ay" olarak gösterilir
     public int TotalExperienceMonths { get; set; }
 

@@ -257,7 +257,7 @@ Uygulama uçtan uca çalışır durumdadır.
 
 * Taranmış veya yalnızca görüntü içeren CV'lerden metin çıkarılamaz. OCR proje kapsamı dışında tutulmuştur.
 * Mükerrer başvuru kontrolü hem e-posta hem telefon değiştirilerek aşılabilir. Aday tarafında kimlik doğrulaması bulunmadığından kesin engelleme mümkün değildir; kontrolün amacı kazara oluşan tekrarları azaltmaktır.
-* Yetenek adları serbest metin olarak girilebildiğinden, yetenek sözlüğünde bulunmayan farklı yazımlar ayrı kayıtlar oluşturabilir.
+* Yetenek adları serbest metin olarak girilebildiğinden, yetenek sözlüğünde bulunmayan farklı yazımlar ayrı kayıtlar oluşturabilir. Yönetici panelindeki yetenek ekranından kullanımda olmayan kayıtlar temizlenebilir.
 * Eşleştirme hesabı tüm aday havuzu üzerinde bellekte yapılır. Staj projesi ölçeğinde
   sorun oluşturmaz; çok büyük veri kümelerinde hesaplamanın veritabanı tarafına
   taşınması gerekir.

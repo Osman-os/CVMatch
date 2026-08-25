@@ -1,0 +1,243 @@
+[33m8810c99[m README: proje aciklamasi, kurulum adimlari ve mimari kararlar
+[1mdiff --git a/README.md b/README.md[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4980bc8[m
+[1m--- /dev/null[m
+[1m+++ b/README.md[m
+[36m@@ -0,0 +1,236 @@[m
+[32m+[m[32m# CVMatch[m
+[32m+[m
+[32m+[m[32mCV yükleme, yapay zekâ destekli bilgi çıkarımı ve ilan-aday eşleştirme platformu.[m
+[32m+[m[32mStaj projesi olarak geliştirilmiştir.[m
+[32m+[m
+[32m+[m[32m## Ne yapar?[m
+[32m+[m
+[32m+[m[32mAdaylar üyelik açmadan CV'lerini PDF olarak yükler. Sistem CV metnini Claude API ile işleyip kişisel bilgileri, eğitim geçmişini, iş deneyimini ve yetenekleri çıkarır. Aday bu bilgileri kontrol edip düzelttikten sonra başvurusunu onaylar.[m
+[32m+[m
+[32m+[m[32mYöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları oluşturur ve ilanlara uygun adayları yetenek uyumuna göre skorlanmış biçimde görüntüler.[m
+[32m+[m
+[32m+[m[32m### Öne çıkan özellikler[m
+[32m+[m
+[32m+[m[32m* PDF'den metin ve vesikalık fotoğraf çıkarımı[m
+[32m+[m[32m* Claude API ile yapılandırılmış veri çıkarımı (eğitim, deneyim, yetenek ve iletişim)[m
+[32m+[m[32m* Adayın çıkarılan bilgileri onaylamadan önce düzenleyebildiği kontrol ekranı[m
+[32m+[m[32m* KVKK onay kutuları ve başvuru sonrası düzenleme/silme hakkı[m
+[32m+[m[32m* Yetenek, şehir, durum ve başvuru türüne göre filtrelenebilen aday listesi[m
+[32m+[m[32m* İlan bazlı eşleştirme ve yetenek uyum skoru[m
+[32m+[m[32m* Mükerrer başvuru kontrolü[m
+[32m+[m
+[32m+[m[32m## Teknolojiler[m
+[32m+[m
+[32m+[m[32m* .NET 10 / ASP.NET Core MVC[m
+[32m+[m[32m* Entity Framework Core[m
+[32m+[m[32m* SQL Server LocalDB[m
+[32m+[m[32m* ASP.NET Core Identity (yalnızca yönetici girişi)[m
+[32m+[m[32m* Anthropic Claude API — CV metninden yapılandırılmış veri çıkarımı[m
+[32m+[m[32m* PdfPig — PDF metin ve görsel çıkarımı[m
+[32m+[m[32m* Bootstrap 5[m
+[32m+[m
+[32m+[m[32m## Kurulum[m
+[32m+[m
+[32m+[m[32m### Gereksinimler[m
+[32m+[m
+[32m+[m[32m* .NET 10 SDK[m
+[32m+[m[32m* SQL Server LocalDB[m
+[32m+[m[32m* Anthropic API anahtarı[m
+[32m+[m
+[32m+[m[32m### 1. Depoyu klonlayın[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mgit clone https://github.com/Osman-os/CVMatch.git[m
+[32m+[m[32mcd CVMatch[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### 2. Yapılandırma dosyasını oluşturun[m
+[32m+[m
+[32m+[m[32m`CVMatch.Web/appsettings.Development.json` dosyasını oluşturun:[m
+[32m+[m
+[32m+[m[32m```json[m
+[32m+[m[32m{[m
+[32m+[m[32m  "SeedAdmin": {[m
+[32m+[m[32m    "Email": "admin@cvmatch.local",[m
+[32m+[m[32m    "Password": "ORNEK-PAROLA-DEGISTIRIN"[m
+[32m+[m[32m  },[m
+[32m+[m[32m  "Anthropic": {[m
+[32m+[m[32m    "ApiKey": "sk-ant-...",[m
+[32m+[m[32m    "Model": "claude-sonnet-5",[m
+[32m+[m[32m    "BaseUrl": "https://api.anthropic.com/v1/messages"[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mYukarıdaki parola yalnızca örnektir. İlk çalıştırmadan önce kendi parolanızla değiştirin.[m
+[32m+[m
+[32m+[m[32m`appsettings.Development.json` dosyası `.gitignore` içindedir ve depoya gönderilmez.[m
+[32m+[m
+[32m+[m[32m`Model` değeri kullanılan Claude model kimliğidir. Farklı bir model kullanmak isterseniz bu alanı kullandığınız model kimliğiyle değiştirebilirsiniz.[m
+[32m+[m
+[32m+[m[32m### 3. Dosya depolama yolunu ayarlayın[m
+[32m+[m
+[32m+[m[32m`CVMatch.Web/appsettings.json` içinde `FileStorage` bölümünü ayarlayın:[m
+[32m+[m
+[32m+[m[32m```json[m
+[32m+[m[32m{[m
+[32m+[m[32m  "FileStorage": {[m
+[32m+[m[32m    "RootPath": "C:\\CVMatchStorage"[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mYüklenen CV'ler `wwwroot` dışında saklanır ve yalnızca yetkilendirilmiş action'lar üzerinden servis edilir.[m
+[32m+[m
+[32m+[m[32mBelirtilen klasörün var olduğundan emin olun.[m
+[32m+[m
+[32m+[m[32m### 4. Bağımlılıkları yükleyin ve projeyi derleyin[m
+[32m+[m
+[32m+[m[32mProje kök dizininde:[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mdotnet restore[m
+[32m+[m[32mdotnet build[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### 5. Veritabanını oluşturun[m
+[32m+[m
+[32m+[m[32mProje kök dizininde:[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mdotnet ef database update --project CVMatch.Web --startup-project CVMatch.Web[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m`dotnet ef` komutu sisteminizde bulunmuyorsa önce EF Core CLI aracını yükleyin:[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mdotnet tool install --global dotnet-ef[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mArdından veritabanı komutunu tekrar çalıştırın.[m
+[32m+[m
+[32m+[m[32m### 6. Uygulamayı çalıştırın[m
+[32m+[m
+[32m+[m[32mProje kök dizininde:[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mdotnet run --project CVMatch.Web[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mUygulama ilk açılışta:[m
+[32m+[m
+[32m+[m[32m* 81 şehri[m
+[32m+[m[32m* 40 yeteneği[m
+[32m+[m[32m* Yönetici kullanıcısını[m
+[32m+[m
+[32m+[m[32mveritabanına ekler.[m
+[32m+[m
+[32m+[m[32mGeliştirme ortamında ayrıca 12 kurgusal test adayı oluşturulur. Bu kayıtlar `@ornek.test` uzantılı e-posta adresleriyle işaretlenir.[m
+[32m+[m
+[32m+[m[32m## Ekran akışı[m
+[32m+[m
+[32m+[m[32m### Aday tarafı[m
+[32m+[m
+[32m+[m[32mCV yükle → işleniyor → bilgileri kontrol et → özet ve KVKK onayları → başvuru tamamlandı → düzenleme bağlantısıyla düzenle veya sil[m
+[32m+[m
+[32m+[m[32m### Yönetici tarafı[m
+[32m+[m
+[32m+[m[32mGiriş → genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi → eşleştirme sonuçları[m
+[32m+[m
+[32m+[m[32m## Mimari kararlar[m
+[32m+[m
+[32m+[m[32m### Aday üyeliği yoktur[m
+[32m+[m
+[32m+[m[32mASP.NET Core Identity yalnızca yönetici girişi için kullanılır. Adayların sisteme kayıt olması veya giriş yapması gerekmez.[m
+[32m+[m
+[32m+[m[32mAdaylar başvurularına, başvuru tamamlandıktan sonra kendilerine verilen düzenleme bağlantısıyla erişir.[m
+[32m+[m
+[32m+[m[32m### Taslak / onay ayrımı[m
+[32m+[m
+[32m+[m[32mYapay zekâ tarafından çıkarılan bilgiler doğrudan kalıcı aday kayıtlarına yazılmaz.[m
+[32m+[m
+[32m+[m[32mAday bilgileri onaylayana kadar çıkarım sonucu `CvSubmission.ExtractedJson` alanında taslak olarak tutulur.[m
+[32m+[m
+[32m+[m[32mAday başvuruyu onayladığında `CandidateProfile` ve ilişkili kayıtlar oluşturulur.[m
+[32m+[m
+[32m+[m[32mBu sayede hatalı veya eksik bir yapay zekâ çıkarımı doğrudan kalıcı veri kirliliğine yol açmaz.[m
+[32m+[m
+[32m+[m[32m### Düzenleme anahtarı hash'lenerek saklanır[m
+[32m+[m
+[32m+[m[32mHam düzenleme anahtarı yalnızca başvuru tamamlandı ekranında bir kez gösterilir.[m
+[32m+[m
+[32m+[m[32mVeritabanında anahtarın SHA-256 özeti saklanır. Düzenleme bağlantısı 30 gün boyunca geçerlidir.[m
+[32m+[m
+[32m+[m[32mKaybedilen düzenleme anahtarı yeniden oluşturulamaz veya kurtarılamaz.[m
+[32m+[m
+[32m+[m[32m### Eşleştirme skoru veritabanında tutulmaz[m
+[32m+[m
+[32m+[m[32mEşleştirme skorları her istekte yeniden hesaplanır.[m
+[32m+[m
+[32m+[m[32mSkor yalnızca yetenek uyumundan oluşur:[m
+[32m+[m
+[32m+[m[32m* Zorunlu yetenekler: 2 puan[m
+[32m+[m[32m* Tercih edilen yetenekler: 1 puan[m
+[32m+[m
+[32m+[m[32mŞehir, deneyim ve çalışma türü uyumu skoru etkilemez. Bu bilgiler yöneticinin karar vermesini kolaylaştırmak amacıyla ayrıca gösterilir.[m
+[32m+[m
+[32m+[m[32mBu yapı sayesinde ilan gereksinimleri değiştirildiğinde adayların eşleştirme skorları da otomatik olarak güncellenir.[m
+[32m+[m
+[32m+[m[32m### Mükerrer başvuru kontrolü[m
+[32m+[m
+[32m+[m[32mAynı e-posta adresi veya normalleştirilmiş telefon numarasıyla, düzenleme süresi henüz dolmamış bir başvuru bulunuyorsa yeni kayıt oluşturulmaz.[m
+[32m+[m
+[32m+[m[32mDüzenleme süresi dolmuş başvurular yeni başvuru yapılmasını engellemez. Böylece adayın kalıcı olarak yeni başvuru yapmasının önüne geçilmez.[m
+[32m+[m
+[32m+[m[32m### Veri bütünlüğü[m
+[32m+[m
+[32m+[m[32mTüm foreign key ilişkilerinde `DeleteBehavior.Restrict` kullanılır.[m
+[32m+[m
+[32m+[m[32mEnum değerleri veritabanı kararlılığı için 1'den başlar.[m
+[32m+[m
+[32m+[m[32m## Proje yapısı[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mCVMatch.Web/[m
+[32m+[m[32m├── Controllers/       Cv, Admin, JobPostings, Home[m
+[32m+[m[32m├── Data/              DbContext, migration'lar, seed[m
+[32m+[m[32m├── Models/[m
+[32m+[m[32m│   ├── Entities/      Veritabanı varlıkları[m
+[32m+[m[32m│   ├── Enums/         Durum ve tür sabitleri[m
+[32m+[m[32m│   ├── Extraction/    Yapay zekâ çıktı şeması[m
+[32m+[m[32m│   ├── Validation/    Özel doğrulama öznitelikleri[m
+[32m+[m[32m│   └── ViewModels/    Görünüm modelleri[m
+[32m+[m[32m├── Services/          Dosya depolama, PDF işleme, çıkarım, eşleştirme[m
+[32m+[m[32m├── Views/             Razor görünümleri[m
+[32m+[m[32m└── wwwroot/css/       admin.css (yönetim), public.css (aday)[m
+[32m+[m
+[32m+[m[32mCVMatch.Tests/         PDF metin ve görsel çıkarım testleri[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## Testler[m
+[32m+[m
+[32m+[m[32mProje kök dizininde:[m
+[32m+[m
+[32m+[m[32m```bash[m
+[32m+[m[32mdotnet test[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mTest projesi:[m
+[32m+[m
+[32m+[m[32m* PDF metin çıkarımını[m
+[32m+[m[32m* CV önizleme üretimini[m
+[32m+[m[32m* PDF içerisinden fotoğraf çıkarımını[m
+[32m+[m
+[32m+[m[32mkapsar.[m
+[32m+[m
+[32m+[m[32m## Proje durumu[m
+[32m+[m
+[32m+[m[32mAday başvuru akışı, yönetici paneli ve ilan-aday eşleştirmesi tamamlanmıştır.[m
+[32m+[m
+[32m+[m[32mUygulama uçtan uca çalışır durumdadır.[m
+[32m+[m
+[32m+[m[32m## Bilinen sınırlar[m
+[32m+[m
+[32m+[m[32m* Taranmış veya yalnızca görüntü içeren CV'lerden metin çıkarılamaz. OCR proje kapsamı dışında tutulmuştur.[m
+[32m+[m[32m* Mükerrer başvuru kontrolü e-posta adresi değiştirilerek aşılabilir. Aday tarafında kimlik doğrulaması bulunmadığından kesin engelleme mümkün değildir; kontrolün amacı kazara oluşan tekrarları azaltmaktır.[m
+[32m+[m[32m* Yetenek adları serbest metin olarak girilebildiğinden, yetenek sözlüğünde bulunmayan farklı yazımlar ayrı kayıtlar oluşturabilir.[m

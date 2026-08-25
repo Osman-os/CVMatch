@@ -11,6 +11,10 @@ public class CvSubmission
     public int? CandidateProfileId { get; set; }
     public CandidateProfile? CandidateProfile { get; set; }
 
+    // Adayın başvurduğu ilan; eski kayıtlarda null olabilir
+    public int? JobPostingId { get; set; }
+    public JobPosting? JobPosting { get; set; }
+
     // Adayın inceleme ekranına dönebilmesi için URL'de taşınan anahtar
     public Guid Token { get; set; }
 

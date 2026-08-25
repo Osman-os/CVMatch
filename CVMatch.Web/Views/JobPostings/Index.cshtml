@@ -19,6 +19,27 @@
         JobPostingStatus.Closed => "cvm-chip-gray",
         _ => "cvm-chip-gray"
     };
+    
+    string IlanSayfaLinki(int hedefSayfa)
+    {
+        var parcalar = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(Model.Arama))
+            parcalar.Add("arama=" + Uri.EscapeDataString(Model.Arama));
+
+        if (Model.EmploymentType.HasValue)
+            parcalar.Add("employmentType=" + Model.EmploymentType.Value);
+
+        if (Model.Status.HasValue)
+            parcalar.Add("status=" + Model.Status.Value);
+
+        if (Model.KapalilariGoster)
+            parcalar.Add("kapalilariGoster=true");
+
+        parcalar.Add("sayfa=" + hedefSayfa);
+
+        return Url.Action("Index") + "?" + string.Join("&", parcalar);
+    }
 }
 
 @if (TempData["Hata"] is string hata)
@@ -60,7 +81,12 @@
             }
         </select>
 
-        <button type="submit" class="btn btn-outline-secondary">Ara</button>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="kapalilariGoster" value="true"
+                   id="kapaliGoster" checked="@Model.KapalilariGoster"
+                   onchange="this.form.submit()" />
+            <label class="form-check-label small" for="kapaliGoster">Kapalıları da göster</label>
+        </div>
 
         @if (Model.FiltreVarMi)
         {
@@ -92,6 +118,7 @@ else
                             <th>Şehir</th>
                             <th>Minimum Deneyim</th>
                             <th>Yetenek</th>
+                            <th>Başvuru</th>
                             <th>İlan Durumu</th>
                             <th class="text-end">İşlemler</th>
                         </tr>
@@ -116,6 +143,17 @@ else
                                     @(i.MinExperienceYears == 0 ? "—" : $"{i.MinExperienceYears} yıl")
                                 </td>
                                 <td class="small text-secondary">@i.SkillCount</td>
+                                <td>
+                                    @if (i.BasvuranSayisi == 0)
+                                    {
+                                        <span class="text-secondary small">—</span>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Match" asp-route-id="@i.Id"
+                                           class="fw-semibold text-decoration-none">@i.BasvuranSayisi</a>
+                                    }
+                                </td>
                                 <td><span class="cvm-chip @DurumSinifi(i.Status)">@DurumMetni(i.Status)</span></td>
                                 <td class="text-end text-nowrap">
                                     <a asp-action="Edit" asp-route-id="@i.Id"
@@ -123,10 +161,18 @@ else
 
                                     <span class="text-secondary mx-1">|</span>
 
-                                                                        @if (i.Status == JobPostingStatus.Active)
+                                    @if (i.Status == JobPostingStatus.Active)
                                     {
                                         <a asp-action="Match" asp-route-id="@i.Id"
                                            class="small text-decoration-none">Eşleştirme Sonuçları</a>
+
+                                        <span class="text-secondary mx-1">|</span>
+
+                                        <button type="button"
+                                                class="btn btn-link btn-sm p-0 align-baseline text-decoration-none js-link-kopyala"
+                                                data-url="@Url.Action("Apply", "Cv", new { id = i.Id }, Context.Request.Scheme)">
+                                            Bağlantıyı Kopyala
+                                        </button>
                                     }
                                     else
                                     {
@@ -160,7 +206,46 @@ else
         </div>
     </div>
 
-    <div class="text-secondary small mt-3">
-        @Model.Ilanlar.Count ilan listeleniyor.
+    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+        <span class="text-secondary small">
+            Toplam @Model.ToplamKayit ilan · @Model.Ilanlar.Count tanesi listeleniyor
+        </span>
+
+        @if (Model.ToplamSayfa > 1)
+        {
+            <div class="btn-group">
+                <a class="btn btn-outline-secondary btn-sm @(Model.OncekiVar ? "" : "disabled")"
+                   href="@IlanSayfaLinki(Model.Sayfa - 1)">Önceki</a>
+
+                <span class="btn btn-outline-secondary btn-sm disabled">
+                    @Model.Sayfa / @Model.ToplamSayfa
+                </span>
+
+                <a class="btn btn-outline-secondary btn-sm @(Model.SonrakiVar ? "" : "disabled")"
+                   href="@IlanSayfaLinki(Model.Sayfa + 1)">Sonraki</a>
+            </div>
+        }
     </div>
+    
+    @section Scripts {
+    <script>
+        document.querySelectorAll('.js-link-kopyala').forEach(function (dugme) {
+            dugme.addEventListener('click', async function () {
+                const adres = this.dataset.url;
+                const eskiMetin = this.textContent;
+
+                try {
+                    await navigator.clipboard.writeText(adres);
+                    this.textContent = 'Kopyalandı';
+                } catch {
+                    // Güvenli olmayan bağlamda pano API'si çalışmaz
+                    window.prompt('Bağlantıyı kopyalayın:', adres);
+                    return;
+                }
+
+                setTimeout(() => { this.textContent = eskiMetin; }, 2000);
+            });
+        });
+    </script>
+}
 }

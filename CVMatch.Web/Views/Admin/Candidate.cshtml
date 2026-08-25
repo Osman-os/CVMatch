@@ -103,7 +103,12 @@
                 </div>
                 <div class="cvm-detail-row">
                     <span class="cvm-detail-label">Başvuru Türü</span>
-                    <span>@(Model.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı İş")</span>
+                    <span>
+                        @(Model.IlanBasligi ?? "İlansız başvuru")
+                        <span class="text-secondary small">
+                            (@(Model.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "Tam Zamanlı"))
+                        </span>
+                    </span>
                 </div>
                 <div class="cvm-detail-row">
                     <span class="cvm-detail-label">Şehir</span>

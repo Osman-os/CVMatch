@@ -11,6 +11,17 @@ public class JobPostingListViewModel
     public string? Arama { get; set; }
     public EmploymentType? EmploymentType { get; set; }
     public JobPostingStatus? Status { get; set; }
+    public int Sayfa { get; set; } = 1;
+    public int SayfaBoyutu { get; set; } = 20;
+    public int ToplamKayit { get; set; }
+
+    public int ToplamSayfa =>
+        ToplamKayit == 0 ? 1 : (int)Math.Ceiling(ToplamKayit / (double)SayfaBoyutu);
+
+    public bool OncekiVar => Sayfa > 1;
+    public bool SonrakiVar => Sayfa < ToplamSayfa;
+
+    public bool KapalilariGoster { get; set; }
 
     public bool FiltreVarMi =>
         !string.IsNullOrWhiteSpace(Arama) || EmploymentType.HasValue || Status.HasValue;
@@ -25,6 +36,7 @@ public class IlanSatiri
     public JobPostingStatus Status { get; set; }
     public int MinExperienceYears { get; set; }
     public int SkillCount { get; set; }
+    public int BasvuranSayisi { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

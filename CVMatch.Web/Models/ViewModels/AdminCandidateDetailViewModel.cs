@@ -17,6 +17,7 @@ public class AdminCandidateDetailViewModel
 
     public int TotalExperienceMonths { get; set; }
     public EmploymentType PreferredEmploymentType { get; set; }
+    public string? IlanBasligi { get; set; }
     public ApplicationStatus Status { get; set; }
 
     public DateTime SubmittedAt { get; set; }

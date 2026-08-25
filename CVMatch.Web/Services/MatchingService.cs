@@ -17,6 +17,7 @@ public class MatchingService : IMatchingService
         int jobPostingId,
         int asgariSkor = 1,
         string turFiltresi = "uyumlu",
+        bool sadeceBasvuranlar = true,
         CancellationToken ct = default)
     {
         var ilan = await _db.JobPostings
@@ -50,16 +51,24 @@ public class MatchingService : IMatchingService
             Status = ilan.Status,
             Aranan = aranan,
             AsgariSkor = asgariSkor,
-            TurFiltresi = turFiltresi
+            TurFiltresi = turFiltresi,
+            SadeceBasvuranlar = sadeceBasvuranlar
         };
+
+        vm.BasvuranSayisi = await _db.CandidateProfiles
+            .AsNoTracking()
+            .CountAsync(x => x.JobPostingId == jobPostingId, ct);
 
         if (aranan.Count == 0) return vm;
 
         var toplamPuan = aranan.Sum(y => y.Zorunlu ? ZorunluAgirlik : TercihAgirlik);
 
-        // Çalışma türü filtre olarak uygulanır, skoru etkilemez
-        var adaylar = await _db.CandidateProfiles
-            .AsNoTracking()
+        var adayQuery = _db.CandidateProfiles.AsNoTracking();
+
+        if (sadeceBasvuranlar)
+            adayQuery = adayQuery.Where(x => x.JobPostingId == jobPostingId);
+
+        var adaylar = await adayQuery
             .Select(x => new
             {
                 x.Id,

@@ -64,6 +64,13 @@ public class ApplicationDbContext : IdentityDbContext
              .WithMany(c => c.Candidates)
              .HasForeignKey(x => x.CityId)
              .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(x => x.JobPostingId);
+
+            e.HasOne(x => x.JobPosting)
+             .WithMany(j => j.Candidates)
+             .HasForeignKey(x => x.JobPostingId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         // ---------- Education ----------
@@ -111,6 +118,13 @@ public class ApplicationDbContext : IdentityDbContext
             e.HasOne(x => x.CandidateProfile)
              .WithMany(c => c.CvSubmissions)
              .HasForeignKey(x => x.CandidateProfileId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(x => x.JobPostingId);
+
+            e.HasOne(x => x.JobPosting)
+             .WithMany(j => j.CvSubmissions)
+             .HasForeignKey(x => x.JobPostingId)
              .OnDelete(DeleteBehavior.Restrict);
         });
 

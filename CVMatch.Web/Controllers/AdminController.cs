@@ -170,6 +170,7 @@ public class AdminController : Controller
                 CityName = x.City != null ? x.City.Name : null,
                 TotalExperienceMonths = x.TotalExperienceMonths,
                 PreferredEmploymentType = x.PreferredEmploymentType,
+                IlanBasligi = x.JobPosting != null ? x.JobPosting.Title : null,
                 Status = x.Status,
                 SubmittedAt = x.SubmittedAt,
                 Skills = x.CandidateSkills

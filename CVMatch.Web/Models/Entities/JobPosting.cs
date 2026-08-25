@@ -21,4 +21,6 @@ public class JobPosting
     public DateTime? UpdatedAt { get; set; }
 
     public ICollection<JobPostingSkill> JobPostingSkills { get; set; } = new List<JobPostingSkill>();
+    public ICollection<CvSubmission> CvSubmissions { get; set; } = new List<CvSubmission>();
+    public ICollection<CandidateProfile> Candidates { get; set; } = new List<CandidateProfile>();
 }
