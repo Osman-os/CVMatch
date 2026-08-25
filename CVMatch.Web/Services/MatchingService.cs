@@ -17,7 +17,7 @@ public class MatchingService : IMatchingService
         int jobPostingId,
         int asgariSkor = 1,
         string turFiltresi = "uyumlu",
-                CancellationToken ct = default)
+        CancellationToken ct = default)
     {
         var ilan = await _db.JobPostings
             .AsNoTracking()
