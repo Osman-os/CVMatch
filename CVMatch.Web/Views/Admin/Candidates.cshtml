@@ -51,7 +51,7 @@
 }
 
 <h1 class="h3 mb-1">Adaylar</h1>
-<p class="text-secondary mb-4">Başvuruları arayın, filtreleyin ve inceleyin.</p>
+<p class="text-secondary mb-4">Adayları arayın, filtreleyin ve inceleyin.</p>
 
 <form method="get" asp-action="Candidates" id="filterForm">
 
@@ -190,7 +190,7 @@ else
                     <thead>
                         <tr>
                             <th>Aday</th>
-                            <th>Başvurduğu İlan</th>
+                            <th>Başvurduğu İlanlar</th>
                             <th>Şehir</th>
                             <th>Deneyim</th>
                             <th>Yetenekler</th>
@@ -212,11 +212,19 @@ else
                                         </div>
                                     </div>
                                 </td>
-                                <td style="max-width: 200px;">
-                                    <div class="small">@(a.IlanBasligi ?? "İlansız başvuru")</div>
-                                    <span class="cvm-chip @(a.PreferredEmploymentType == EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
-                                        @(a.PreferredEmploymentType == EmploymentType.Internship ? "Staj" : "İş")
-                                    </span>
+                                <td style="max-width: 240px;">
+                                    @foreach (var b in a.Basvurular)
+                                    {
+                                        <div class="mb-1">
+                                            <a asp-action="Candidate" asp-route-id="@b.CandidateId"
+                                               class="small text-decoration-none">
+                                                @(b.IlanBasligi ?? "İlansız başvuru")
+                                            </a>
+                                            <span class="cvm-chip @(b.Tur == EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
+                                                @(b.Tur == EmploymentType.Internship ? "Staj" : "İş")
+                                            </span>
+                                        </div>
+                                    }
                                 </td>
                                 <td>@(a.CityName ?? "—")</td>
                                 <td class="small text-secondary">@a.DeneyimMetni</td>
@@ -248,7 +256,7 @@ else
 
     <div class="d-flex justify-content-between align-items-center mt-3">
         <span class="text-secondary small">
-            @Model.ToplamKayit adaydan
+            @Model.ToplamKayit kişiden
             @((Model.Sayfa - 1) * Model.SayfaBoyutu + 1)–@(Math.Min(Model.Sayfa * Model.SayfaBoyutu, Model.ToplamKayit))
             arası gösteriliyor
         </span>

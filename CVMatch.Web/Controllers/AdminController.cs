@@ -149,7 +149,11 @@ public class AdminController : Controller
             query = query.Where(x => x.CandidateSkills.Any(cs => cs.SkillId == id));
         }
 
-        vm.ToplamKayit = await query.CountAsync(ct);
+        var temsilciIdler = query
+            .GroupBy(x => x.Email)
+            .Select(g => g.Max(x => x.Id));
+
+        vm.ToplamKayit = await temsilciIdler.CountAsync(ct);
 
         if (sayfa > vm.ToplamSayfa)
         {
@@ -157,7 +161,9 @@ public class AdminController : Controller
             vm.Sayfa = sayfa;
         }
 
-        vm.Adaylar = await query
+        vm.Adaylar = await _db.CandidateProfiles
+            .AsNoTracking()
+            .Where(x => temsilciIdler.Contains(x.Id))
             .OrderByDescending(x => x.SubmittedAt)
             .Skip((sayfa - 1) * vm.SayfaBoyutu)
             .Take(vm.SayfaBoyutu)
@@ -170,7 +176,6 @@ public class AdminController : Controller
                 CityName = x.City != null ? x.City.Name : null,
                 TotalExperienceMonths = x.TotalExperienceMonths,
                 PreferredEmploymentType = x.PreferredEmploymentType,
-                IlanBasligi = x.JobPosting != null ? x.JobPosting.Title : null,
                 Status = x.Status,
                 SubmittedAt = x.SubmittedAt,
                 Skills = x.CandidateSkills
@@ -179,6 +184,34 @@ public class AdminController : Controller
                     .ToList()
             })
             .ToListAsync(ct);
+    
+        var epostalar = vm.Adaylar.Select(a => a.Email).ToList();
+
+        var basvurular = await query
+            .Where(x => epostalar.Contains(x.Email))
+            .Select(x => new
+            {
+                x.Email,
+                x.Id,
+                x.SubmittedAt,
+                x.PreferredEmploymentType,
+                Baslik = x.JobPosting != null ? x.JobPosting.Title : null
+            })
+            .ToListAsync(ct);
+
+        foreach (var aday in vm.Adaylar)
+        {
+            aday.Basvurular = basvurular
+                .Where(b => string.Equals(b.Email, aday.Email, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(b => b.SubmittedAt)
+                .Select(b => new BasvuruOzeti
+                {
+                    CandidateId = b.Id,
+                    IlanBasligi = b.Baslik,
+                    Tur = b.PreferredEmploymentType
+                })
+                .ToList();
+        }    
 
         vm.Cities = await _db.Cities
             .AsNoTracking()
@@ -233,6 +266,7 @@ public class AdminController : Controller
                 PhoneNumber = x.PhoneNumber,
                 Address = x.Address,
                 CityName = x.City != null ? x.City.Name : null,
+                IlanBasligi = x.JobPosting != null ? x.JobPosting.Title : null,
                 LinkedInUrl = x.LinkedInUrl,
                 GitHubUrl = x.GitHubUrl,
                 TotalExperienceMonths = x.TotalExperienceMonths,

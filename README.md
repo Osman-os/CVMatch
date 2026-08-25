@@ -256,7 +256,9 @@ Uygulama uçtan uca çalışır durumdadır.
 ## Bilinen sınırlar
 
 * Taranmış veya yalnızca görüntü içeren CV'lerden metin çıkarılamaz. OCR proje kapsamı dışında tutulmuştur.
-* Mükerrer başvuru kontrolü hem e-posta hem telefon değiştirilerek aşılabilir. Aday tarafında kimlik doğrulaması bulunmadığından kesin engelleme mümkün değildir; kontrolün amacı kazara oluşan tekrarları azaltmaktır.
+* Mükerrer başvuru kontrolü aynı ilan için yapılır; aday farklı ilanlara ayrı ayrı başvurabilir. Kontrol hem e-posta hem telefon değiştirilerek aşılabilir. Aday tarafında kimlik doğrulaması bulunmadığından kesin engelleme mümkün değildir; kontrolün amacı kazara oluşan tekrarları azaltmaktır.
+* Aday kaydı ile başvuru aynı varlıkta (`CandidateProfile`) tutulur. Bu yapı, adayın tek bir havuza başvurduğu ilk tasarımdan gelir. İlan bazlı başvuruya geçildiğinde, aynı kişi birden fazla ilana başvurduğunda kişisel bilgileri, yetenekleri, eğitim ve deneyim kayıtları her başvuru için ayrı ayrı saklanır hâle gelmiştir. Yönetici panelindeki aday listesi bu kayıtları e-postaya göre gruplayarak tek satırda gösterir, ancak veritabanındaki tekrar sürer: aday bir başvurusunu düzenlediğinde diğer başvurusundaki bilgiler güncellenmez.
+* Bunun doğru çözümü kişi ile başvurunun ayrı varlıklara bölünmesidir (`CandidateProfile` kişiyi, ayrı bir `Application` varlığı kişi–ilan bağını tutar). Bu değişiklik yeni bir varlık, veri taşıma ve eşleştirme ile yönetici panelinin önemli bölümünün yeniden yazılmasını gerektirdiğinden proje kapsamı dışında bırakılmıştır.
 * Yetenek adları serbest metin olarak girilebildiğinden, yetenek sözlüğünde bulunmayan farklı yazımlar ayrı kayıtlar oluşturabilir. Yönetici panelindeki yetenek ekranından kullanımda olmayan kayıtlar temizlenebilir.
 * Eşleştirme hesabı tüm aday havuzu üzerinde bellekte yapılır. Staj projesi ölçeğinde
   sorun oluşturmaz; çok büyük veri kümelerinde hesaplamanın veritabanı tarafına

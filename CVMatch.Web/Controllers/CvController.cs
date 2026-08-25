@@ -499,21 +499,21 @@ public class CvController : Controller
         var email = data.Email?.Trim().ToLowerInvariant();
         var phone = ApplicationHelpers.NormalizePhone(data.PhoneNumber);
 
-        var mevcut = await _db.CandidateProfiles
+        var ayniIlanaBasvurmus = await _db.CandidateProfiles
             .AsNoTracking()
             .Where(x => x.EditTokenExpiresAt > DateTime.UtcNow)
-            .Where(x =>
+            .Where(x => x.JobPostingId == submission.JobPostingId)
+            .AnyAsync(x =>
                 (email != null && x.Email.ToLower() == email) ||
-                (phone != null && x.PhoneNormalized == phone))
-            .Select(x => x.ApplicationReferenceNumber)
-            .FirstOrDefaultAsync(ct);
+                (phone != null && x.PhoneNormalized == phone), ct);
 
-        if (mevcut is not null)
+        if (ayniIlanaBasvurmus)
         {
+            // Referans numarası gösterilmez; başkasının başvurusu sorgulanamasın
             ModelState.AddModelError(string.Empty,
-                $"Bu iletişim bilgileriyle yapılmış bir başvurunuz zaten var ({mevcut}). " +
+                "Bu ilana bu iletişim bilgileriyle yapılmış aktif bir başvuru bulunuyor. " +
                 "Bilgilerinizi düzenleme bağlantınızla güncelleyebilirsiniz. " +
-                "Bağlantıya erişemiyorsanız başvuru numaranızla [İLETİŞİM-EPOSTA] adresine yazın.");
+                "Bağlantıya erişemiyorsanız [İLETİŞİM-EPOSTA] adresine yazın.");
 
             return await BuildSummaryViewAsync(submission, consent, ct);
         }
@@ -729,6 +729,7 @@ public class CvController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("islem")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Edit(string key, CvReviewViewModel data, CancellationToken ct)
     {

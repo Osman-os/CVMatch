@@ -149,12 +149,15 @@ public class MatchingService : IMatchingService
         // Tür uyumu artık filtre, skoru etkilemiyor
         vm.TurUyumsuzSayisi = vm.Adaylar.Count(a => !a.TurUyumlu);
 
-        vm.Adaylar = turFiltresi switch
+        if (!sadeceBasvuranlar)
         {
-            "uyumlu" => vm.Adaylar.Where(a => a.TurUyumlu).ToList(),
-            "uyumsuz" => vm.Adaylar.Where(a => !a.TurUyumlu).ToList(),
-            _ => vm.Adaylar
-        };
+            vm.Adaylar = turFiltresi switch
+            {
+                "uyumlu" => vm.Adaylar.Where(a => a.TurUyumlu).ToList(),
+                "uyumsuz" => vm.Adaylar.Where(a => !a.TurUyumlu).ToList(),
+                _ => vm.Adaylar
+            };
+        }
 
         return vm;
     }

@@ -182,6 +182,22 @@ public class JobPostingsController : Controller
             ilan.JobPostingSkills.Clear();
         }
 
+        if (vm.Id != 0 && ilan.EmploymentType != vm.EmploymentType)
+        {
+            var basvuruVar = await _db.CandidateProfiles
+                .AnyAsync(x => x.JobPostingId == ilan.Id, ct);
+
+            if (basvuruVar)
+            {
+                ModelState.AddModelError(nameof(vm.EmploymentType),
+                    "Bu ilana başvuru yapılmış; çalışma türü değiştirilemez. " +
+                    "Farklı tür için yeni ilan oluşturun.");
+
+                await ListeleriDoldurAsync(vm, ct);
+                return View(nameof(Edit), vm);
+            }
+        }
+
         ilan.Title = vm.Title.Trim();
         ilan.EmploymentType = vm.EmploymentType;
         ilan.Description = string.IsNullOrWhiteSpace(vm.Description) ? null : vm.Description.Trim();

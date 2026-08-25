@@ -70,7 +70,7 @@ public class AdaySatiri
     public string? CityName { get; set; }
     public int TotalExperienceMonths { get; set; }
     public EmploymentType PreferredEmploymentType { get; set; }
-    public string? IlanBasligi { get; set; }
+    public List<BasvuruOzeti> Basvurular { get; set; } = new();
     public ApplicationStatus Status { get; set; }
     public DateTime SubmittedAt { get; set; }
     public List<string> Skills { get; set; } = new();
@@ -98,4 +98,11 @@ public class AdaySatiri
             return (parcalar[0][..1] + parcalar[^1][..1]).ToUpperInvariant();
         }
     }
+}
+
+public class BasvuruOzeti
+{
+    public int CandidateId { get; set; }
+    public string? IlanBasligi { get; set; }
+    public EmploymentType Tur { get; set; }
 }

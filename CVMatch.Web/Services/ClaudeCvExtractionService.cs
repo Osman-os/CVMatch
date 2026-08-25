@@ -41,7 +41,7 @@ public class ClaudeCvExtractionService : ICvExtractionService
             var requestBody = new
             {
                 model = _model,
-                max_tokens = 4000,
+                max_tokens = 8000,
                 system = SystemPrompt + $"\n\nBugünün tarihi: {DateTime.UtcNow:yyyy-MM-dd}",
                 messages = new[]
                 {
@@ -75,9 +75,19 @@ public class ClaudeCvExtractionService : ICvExtractionService
                     $"AI servisi yanıt vermedi ({(int)response.StatusCode}).");
             }
 
-            var rawJson = ExtractTextContent(responseBody);
+                        var rawJson = ExtractTextContent(responseBody);
             if (string.IsNullOrWhiteSpace(rawJson))
-                return new CvExtractionResult(false, null, null, "AI servisinden boş yanıt geldi.");
+            {
+                var kisaGovde = responseBody.Length > 500
+                    ? responseBody[..500] + "…"
+                    : responseBody;
+
+                _logger.LogError(
+                    "Claude yanıtında metin bloğu yok. Gövde: {Body}", kisaGovde);
+
+                return new CvExtractionResult(false, null, null,
+                    "AI servisinden boş yanıt geldi.");
+            }
 
             rawJson = StripCodeFences(rawJson);
 
@@ -192,6 +202,17 @@ public class ClaudeCvExtractionService : ICvExtractionService
 
         startDate ve endDate: "yyyy-MM" biçiminde. Yalnızca yıl biliniyorsa ay yerine
         01 yaz (2019 → "2019-01"). Bilinmiyorsa null.
+
+        TARİH EŞLEŞTİRME KURALI: Bir tarih yalnızca aynı kaydın kendi satırında veya
+        başlığının hemen yanında yazıyorsa o kayda aittir. Metinde yakın görünen bir
+        tarihi, başka bir kaydın tarihi olabileceği için asla ödünç alma. Özellikle
+        şu hataya düşme: tarihi yazılmamış bir iş deneyiminin altında veya üstünde
+        bir eğitim kaydının tarihi bulunabilir; bu tarih o iş deneyimine ait değildir.
+        Bir kaydın tarihi belirsizse startDate ve endDate alanlarını null bırak.
+        Tarihi olmayan bir kaydı yine de listeye ekle; yalnızca tarih alanları boş kalsın.
+
+        Aynı kural totalExperienceMonths için de geçerlidir: tarihi belirsiz olan
+        deneyimleri toplama dahil etme.
 
         isCurrent: Devam eden eğitim veya iş için true. "Devam ediyor", "Present",
         "Halen" gibi ifadeler bunu gösterir. true ise endDate null olmalı.
