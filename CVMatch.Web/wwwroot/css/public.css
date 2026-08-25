@@ -11,6 +11,9 @@
 body {
     background: var(--cvm-bg);
     color: var(--cvm-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Üst menü */
@@ -46,8 +49,8 @@ body {
     max-width: 1140px;
     margin: 0 auto;
     padding: 40px 24px;
+    flex: 1 0 auto;   
 }
-
 /* Kahraman bölüm */
 .cvm-hero {
     text-align: center;

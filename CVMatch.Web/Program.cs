@@ -103,8 +103,9 @@ app.Services.GetRequiredService<IFileStorage>();
 
 await DbSeeder.SeedAsync(app.Services);
 
-if (app.Environment.IsDevelopment())
-    await TestDataSeeder.SeedAsync(app.Services);
+// Örnek aday üretimi kapalı; veri seti elle yüklenen CV'lerden oluşuyor
+//if (app.Environment.IsDevelopment())
+//    await TestDataSeeder.SeedAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
