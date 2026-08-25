@@ -19,6 +19,7 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 * İlan bazlı eşleştirme ve yetenek uyum skoru
 * Mükerrer başvuru kontrolü
 * İstek sınırlama (rate limiting) ile kötüye kullanım koruması
+* Panel üzerinden yetenek sözlüğü yönetimi
 * Panel üzerinden yönetici ekleme ve kaldırma
 
 ## Teknolojiler
@@ -137,7 +138,7 @@ CV yükle → işleniyor → bilgileri kontrol et → özet ve KVKK onayları �
 
 ### Yönetici tarafı
 
-Giriş → genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi → eşleştirme sonuçları → yönetici yönetimi
+Giriş → genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi → eşleştirme sonuçları → yetenek yönetimi → yönetici yönetimi
 
 ## Mimari kararlar
 

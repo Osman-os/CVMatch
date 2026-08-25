@@ -16,8 +16,8 @@ public class MatchingService : IMatchingService
     public async Task<MatchResultViewModel?> MatchAsync(
         int jobPostingId,
         int asgariSkor = 1,
-        string turFiltresi = "tumu",
-        CancellationToken ct = default)
+        string turFiltresi = "uyumlu",
+                CancellationToken ct = default)
     {
         var ilan = await _db.JobPostings
             .AsNoTracking()
@@ -124,7 +124,7 @@ public class MatchingService : IMatchingService
             .OrderByDescending(a => a.Skor)
             .ThenByDescending(a => a.TotalExperienceMonths)
             .ToList();
-        
+
         // Özet sayılar filtrelerden önce hesaplanır
         var skorlu = vm.Adaylar.Where(a => a.Skor > 0).ToList();
 

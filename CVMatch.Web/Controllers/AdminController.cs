@@ -421,6 +421,17 @@ public class AdminController : Controller
 
         var ad = yeni.Name!.Trim();
 
+        if (string.IsNullOrWhiteSpace(ad))
+        {
+            ModelState.AddModelError("Yeni.Name", "Yetenek adı boş olamaz.");
+
+            return View(nameof(Skills), new AdminSkillListViewModel
+            {
+                Yetenekler = await YetenekleriGetirAsync(ct),
+                Yeni = yeni
+            });
+        }
+
         // Büyük/küçük harf farkı yeni kayıt saymaz
         if (await _db.Skills.AnyAsync(x => x.Name.ToLower() == ad.ToLower(), ct))
         {
