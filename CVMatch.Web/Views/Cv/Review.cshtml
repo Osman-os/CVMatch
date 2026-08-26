@@ -40,6 +40,11 @@ else
 <form asp-action="Review" method="post" id="reviewForm">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Token" />
+    
+    @for (var i = 0; i < Model.UncertainFields.Count; i++)
+    {
+        <input type="hidden" asp-for="UncertainFields[i]" />
+    }
 
     <div class="row g-4">
         <div class="col-lg-7 cvm-form-col">

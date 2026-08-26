@@ -179,7 +179,7 @@
         const eslesme = {
             fullName: '[name="FullName"]',
             email: '[name="Email"]',
-            phone: '[name="Phone"]',
+            phoneNumber: '[name="PhoneNumber"]',
             city: '[name="CityId"]',
             address: '[name="Address"]',
             totalExperienceMonths: '[name="ExperienceYears"], [name="ExperienceMonths"]',

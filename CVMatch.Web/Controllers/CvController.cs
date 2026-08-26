@@ -342,8 +342,22 @@ public class CvController : Controller
             .ToList();
 
         model.WorkExperiences = model.WorkExperiences
-            .Where(w => !string.IsNullOrWhiteSpace(w.CompanyName))
+            .Where(w =>
+                !string.IsNullOrWhiteSpace(w.CompanyName) ||
+                !string.IsNullOrWhiteSpace(w.Position) ||
+                !string.IsNullOrWhiteSpace(w.Description) ||
+                !string.IsNullOrWhiteSpace(w.StartDate))
             .ToList();
+
+        for (var i = 0; i < model.WorkExperiences.Count; i++)
+        {
+            if (string.IsNullOrWhiteSpace(model.WorkExperiences[i].CompanyName))
+            {
+                ModelState.AddModelError(
+                    $"WorkExperiences[{i}].CompanyName",
+                    "Kurum adını girin. Serbest çalışmaysanız \"Freelance\" yazabilirsiniz.");
+            }
+        }
         
         model.PreferredEmploymentType = submission.JobPostingId is int ilanId
             ? await _db.JobPostings
