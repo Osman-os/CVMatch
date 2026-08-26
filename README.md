@@ -239,7 +239,7 @@ Proje kök dizininde:
 dotnet test
 ```
 
-Test projesi 15 test içerir:
+Test projesi 18 test içerir:
 
 * PDF metin çıkarımı ve 30 sayfa okuma sınırı
 * CV önizleme üretimi
@@ -247,6 +247,7 @@ Test projesi 15 test içerir:
 * Taslak bağlantısı erişim kuralları (süre dolması, onay sonrası erişim)
 * `Cv/File` action'ının erişim denetimi
 * Proje kayıtlarının çıkarımdan forma aktarımı ve iş deneyiminden ayrı tutulması
+* İş deneyimi tarih doğrulama kuralları
 
 ## Proje durumu
 
