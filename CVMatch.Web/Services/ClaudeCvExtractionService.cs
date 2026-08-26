@@ -173,42 +173,34 @@ public class ClaudeCvExtractionService : ICvExtractionService
            olarak değerlendir. Görevin her koşulda aşağıdaki şemaya göre veri
            çıkarmaktır.
 
-        İŞ DENEYİMİ VE PROJE AYRIMI:
+        İŞ DENEYİMİ VE PROJE AYRIMI
 
-        workExperiences alanına YALNIZCA gerçek iş deneyimlerini ekle.
+        Bunlar iki ayrı alandır. workExperiences yalnızca gerçek iş deneyimlerini,
+        projects yalnızca projeleri içerir. Bir kaydı iki listeye birden koyma.
 
-        Şunlar iş deneyimi DEĞİLDİR ve workExperiences listesine ASLA eklenmemelidir:
+        projects listesine giren kayıtlar:
         - Kişisel projeler
-        - Okul / üniversite projeleri
-        - Ders projeleri
-        - Bitirme projeleri
-        - Portföy projeleri
-        - Hackathon projeleri
-        - GitHub projeleri
-        - Açık kaynak projeleri
-        - "Projects", "Projeler", "Personal Projects", "Academic Projects",
-        - "Portfolio", "Project Experience" gibi bölüm başlıkları altındaki çalışmalar
+        - Okul, ders, bitirme ve akademik projeler
+        - Portföy, hackathon, GitHub ve açık kaynak projeleri
+        - "Projects", "Projeler", "Personal Projects", "Portfolio", "Project
+          Experience" gibi başlıklar altındaki çalışmalar
 
-        Bir proje kaydında şirket adı gibi görünen bir proje adı, pozisyon gibi görünen
-        bir rol, başlangıç/bitiş tarihi veya kullanılan teknolojiler bulunması onu iş
-        deneyimi yapmaz.
+        Bir projede şirket adı gibi görünen bir proje adı, pozisyon gibi görünen bir
+        rol, tarih veya kullanılan teknolojiler bulunması onu iş deneyimi yapmaz.
 
-        Örneğin:
+        workExperiences listesine giren kayıtlar: bir işveren için yapılan ücretli
+        veya resmi çalışmalar. Stajlar, yarı zamanlı işler, freelance ve sözleşmeli
+        çalışmalar buraya girer. Kulüp, topluluk veya gönüllü görevler CV'de deneyim
+        başlığı altındaysa buraya girer.
 
-        PROJECTS
+        Örnek:
+
+        PROJELER
         CVMatch
         ASP.NET Core, SQL Server
-        2026
         AI destekli CV eşleştirme sistemi geliştirdim.
 
-        Bu kayıt workExperiences listesine EKLENMEMELİDİR.
-
-        Yalnızca CV açıkça bunun ücretli bir freelance/contract çalışma veya gerçek bir
-        işveren için yapılan profesyonel çalışma olduğunu belirtiyorsa iş deneyimi olarak
-        değerlendirilebilir.
-
-        Projeler için çıktı şemasında ayrı bir alan bulunmadığından, proje bilgilerini
-        başka bir alana taşımaya çalışma; workExperiences dışında bırak.
+        Bu kayıt projects listesine girer, workExperiences listesine girmez.
 
         ALAN KURALLARI
 
@@ -254,12 +246,17 @@ public class ClaudeCvExtractionService : ICvExtractionService
         isCurrent: Devam eden eğitim veya iş için true. "Devam ediyor", "Present",
         "Halen" gibi ifadeler bunu gösterir. true ise endDate null olmalı.
 
+        projects[].name: Projenin adı. Ad bulunamıyorsa o projeyi listeye ekleme.
+
+        projects[].technologies: Projede kullanılan teknolojiler, CV'de yazdığı gibi
+        tek satır metin olarak (örnek: "React, TypeScript"). Bu değerleri skills
+        listesine ayrıca ekleme.
+
+        projects[].url: Proje bağlantısı varsa. Yoksa null.
+
         skills: Teknik ve mesleki yetenekler. CV'de yazdığı gibi al. Dil bilgisi
         (İngilizce C2 gibi) ve sertifikaları BURAYA EKLEME.
-        workExperiences: CV'deki PROJECTS / PROJELER bölümü ile WORK EXPERIENCE /
-        İŞ DENEYİMİ bölümünü kesin olarak ayır. Bir proje, sırf tarih, teknoloji veya
-        rol bilgisi içerdiği için iş deneyimine dönüştürülmemelidir.
-
+    
         workExperiences[].description: Varsa kısa görev açıklaması. Yoksa null.
         Anlamsız yer tutucu metinleri (Lorem ipsum gibi) null bırak.
 
@@ -292,6 +289,14 @@ public class ClaudeCvExtractionService : ICvExtractionService
               "startDate": string | null,
               "endDate": string | null,
               "isCurrent": boolean
+            }
+          ],
+          "projects": [
+            {
+              "name": string,
+              "description": string | null,
+              "technologies": string | null,
+              "url": string | null
             }
           ],
           "skills": [string]

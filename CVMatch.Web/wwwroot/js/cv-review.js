@@ -79,7 +79,7 @@
                 return;
             }
 
-            e.target.closest('.education-row, .experience-row').remove();
+            e.target.closest('.education-row, .experience-row, .project-row').remove();
             reindex(container, prefix);
         });
 
@@ -87,7 +87,7 @@
         container.addEventListener('change', function (e) {
             if (!e.target.classList.contains('is-current')) return;
 
-            const row = e.target.closest('.education-row, .experience-row');
+            const row = e.target.closest('.education-row, .experience-row, .project-row');
             const endDate = row.querySelector('.end-date');
             if (!endDate) return;
 
@@ -98,6 +98,7 @@
 
     setupList('educationList', 'addEducationTop', 'Educations');
     setupList('experienceList', 'addExperienceTop', 'WorkExperiences');
+    setupList('projectList', 'addProjectTop', 'Projects');
 
     // ---------- Yetenek etiketleri ----------
 

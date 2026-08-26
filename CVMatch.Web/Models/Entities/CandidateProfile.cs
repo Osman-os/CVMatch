@@ -51,6 +51,7 @@ public class CandidateProfile
     public ICollection<CandidateSkill> CandidateSkills { get; set; } = new List<CandidateSkill>();
     public ICollection<Education> Educations { get; set; } = new List<Education>();
     public ICollection<WorkExperience> WorkExperiences { get; set; } = new List<WorkExperience>();
+    public ICollection<Project> Projects { get; set; } = new List<Project>();
     public ICollection<CvSubmission> CvSubmissions { get; set; } = new List<CvSubmission>();
     public ICollection<CandidateNote> Notes { get; set; } = new List<CandidateNote>();
 }

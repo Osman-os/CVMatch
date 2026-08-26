@@ -42,6 +42,14 @@ public static class ExtractionMapper
             IsCurrent = w.IsCurrent
         }).ToList();
 
+        vm.Projects = data.Projects.Select(p => new ProjectInputModel
+        {
+            Name = p.Name,
+            Description = p.Description,
+            Technologies = p.Technologies,
+            Url = p.Url
+        }).ToList();
+
         vm.SkillsCsv = string.Join(",", data.Skills.Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 

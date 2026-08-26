@@ -43,16 +43,21 @@ public class ExtractedCvData
     [JsonPropertyName("workExperiences")]
     public List<ExtractedWorkExperience> WorkExperiences { get; set; } = new();
 
+    [JsonPropertyName("projects")]
+    public List<ExtractedProject> Projects { get; set; } = new();
+
     [JsonPropertyName("skills")]
     public List<string> Skills { get; set; } = new();
     public void Normalize()
     {
         Educations ??= new();
         WorkExperiences ??= new();
+        Projects ??= new();
         Skills ??= new();
 
         Educations.RemoveAll(e => e is null);
         WorkExperiences.RemoveAll(w => w is null);
+        Projects.RemoveAll(p => p is null);
         Skills.RemoveAll(string.IsNullOrWhiteSpace);
     }
 }
@@ -100,4 +105,19 @@ public class ExtractedWorkExperience
 
     [JsonPropertyName("isCurrent")]
     public bool IsCurrent { get; set; }
+}
+
+public class ExtractedProject
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("technologies")]
+    public string? Technologies { get; set; }
+
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 }

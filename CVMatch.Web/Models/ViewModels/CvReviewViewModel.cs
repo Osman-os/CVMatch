@@ -67,6 +67,7 @@ public class CvReviewViewModel : IValidatableObject
 
     public List<EducationInputModel> Educations { get; set; } = new();
     public List<WorkExperienceInputModel> WorkExperiences { get; set; } = new();
+    public List<ProjectInputModel> Projects { get; set; } = new();
 
     [StringLength(5000, ErrorMessage = "Yetenek listesi çok uzun.")]
     public string? SkillsCsv { get; set; }
@@ -107,6 +108,12 @@ public class CvReviewViewModel : IValidatableObject
         {
             yield return new ValidationResult(
                 "En fazla 30 iş deneyimi ekleyebilirsiniz.", new[] { nameof(WorkExperiences) });
+        }
+        
+        if (Projects.Count > 20)
+        {
+            yield return new ValidationResult(
+                "En fazla 20 proje ekleyebilirsiniz.", new[] { nameof(Projects) });
         }
     }
 }
@@ -170,6 +177,27 @@ public class WorkExperienceInputModel : IValidatableObject
     
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
         => DateRules.Validate(StartDate, EndDate, IsCurrent, CompanyName);
+}
+
+public class ProjectInputModel
+{
+    [StringLength(200)]
+    [Display(Name = "Proje Adı")]
+    public string? Name { get; set; }
+
+    [StringLength(300)]
+    [Display(Name = "Kullanılan Teknolojiler")]
+    public string? Technologies { get; set; }
+
+    [StringLength(300)]
+    [RegularExpression(@"^(https://)?[\w.-]+\.[A-Za-z]{2,}(/[^\s]*)?$",
+        ErrorMessage = "Geçerli bir bağlantı girin. Örnek: github.com/kullanici/proje")]
+    [Display(Name = "Proje Bağlantısı")]
+    public string? Url { get; set; }
+
+    [StringLength(1000)]
+    [Display(Name = "Açıklama")]
+    public string? Description { get; set; }
 }
 
 // Eğitim ve iş deneyimi satırları için ortak tarih kuralları.

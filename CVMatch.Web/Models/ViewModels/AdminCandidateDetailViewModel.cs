@@ -27,6 +27,7 @@ public class AdminCandidateDetailViewModel
     public List<string> Skills { get; set; } = new();
     public List<EgitimSatiri> Educations { get; set; } = new();
     public List<DeneyimSatiri> WorkExperiences { get; set; } = new();
+    public List<ProjeSatiri> Projects { get; set; } = new();
     public List<NotSatiri> Notes { get; set; } = new();
 
     // En son yüklenen CV
@@ -69,6 +70,14 @@ public class DeneyimSatiri
     public DateOnly? StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
     public bool IsCurrent { get; set; }
+}
+
+public class ProjeSatiri
+{
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public string? Technologies { get; set; }
+    public string? Url { get; set; }
 }
 
 public class NotSatiri

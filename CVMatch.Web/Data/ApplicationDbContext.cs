@@ -14,6 +14,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<CandidateProfile> CandidateProfiles => Set<CandidateProfile>();
     public DbSet<Education> Educations => Set<Education>();
+    public DbSet<Project> Projects => Set<Project>();
     public DbSet<WorkExperience> WorkExperiences => Set<WorkExperience>();
     public DbSet<CvSubmission> CvSubmissions => Set<CvSubmission>();
     public DbSet<Skill> Skills => Set<Skill>();
@@ -95,6 +96,20 @@ public class ApplicationDbContext : IdentityDbContext
 
             e.HasOne(x => x.CandidateProfile)
              .WithMany(c => c.WorkExperiences)
+             .HasForeignKey(x => x.CandidateProfileId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ---------- Project ----------
+        builder.Entity<Project>(e =>
+        {
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.Technologies).HasMaxLength(300);
+            e.Property(x => x.Url).HasMaxLength(300);
+
+            e.HasOne(x => x.CandidateProfile)
+             .WithMany(c => c.Projects)
              .HasForeignKey(x => x.CandidateProfileId)
              .OnDelete(DeleteBehavior.Restrict);
         });

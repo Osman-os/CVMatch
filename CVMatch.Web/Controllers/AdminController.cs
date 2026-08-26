@@ -307,6 +307,17 @@ public class AdminController : Controller
                     })
                     .ToList(),
 
+                Projects = x.Projects
+                    .OrderBy(p => p.Id)
+                    .Select(p => new ProjeSatiri
+                    {
+                        Name = p.Name,
+                        Description = p.Description,
+                        Technologies = p.Technologies,
+                        Url = p.Url
+                    })
+                    .ToList(),
+
                 Notes = x.Notes
                     .OrderByDescending(n => n.CreatedAt)
                     .Select(n => new NotSatiri

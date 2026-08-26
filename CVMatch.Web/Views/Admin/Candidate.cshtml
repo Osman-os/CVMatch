@@ -210,6 +210,38 @@
             </div>
         </div>
 
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Projeler</h2>
+                @if (Model.Projects.Count == 0)
+                {
+                    <p class="text-secondary mb-0">Proje kaydı yok.</p>
+                }
+                else
+                {
+                    @foreach (var p in Model.Projects)
+                    {
+                        <div class="mb-4">
+                            <div class="fw-semibold">@p.Name</div>
+                            @if (!string.IsNullOrWhiteSpace(p.Technologies))
+                            {
+                                <div class="cvm-company">@p.Technologies</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(p.Url))
+                            {
+                                <a href="@p.Url" target="_blank" rel="noopener"
+                                   class="small text-decoration-none">@p.Url</a>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(p.Description))
+                            {
+                                <div class="small mt-1">@p.Description</div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
         @if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl) || !string.IsNullOrWhiteSpace(Model.GitHubUrl))
         {
             <div class="card mb-4">

@@ -126,6 +126,38 @@
                         </div>
                     }
                 }
+                        </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Projeler</h2>
+
+                @if (Model.Data.Projects.Count == 0)
+                {
+                    <p class="text-secondary mb-0">Proje girilmedi.</p>
+                }
+                else
+                {
+                    @foreach (var p in Model.Data.Projects)
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="fw-semibold">@p.Name</div>
+                            @if (!string.IsNullOrWhiteSpace(p.Technologies))
+                            {
+                                <div class="text-secondary small">@p.Technologies</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(p.Url))
+                            {
+                                <div class="text-secondary small">@p.Url</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(p.Description))
+                            {
+                                <div class="small mt-1">@p.Description</div>
+                            }
+                        </div>
+                    }
+                }
             </div>
         </div>
 

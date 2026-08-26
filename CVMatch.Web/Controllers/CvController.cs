@@ -313,7 +313,10 @@ public class CvController : Controller
 
         if (vm.WorkExperiences.Count == 0)
             vm.WorkExperiences.Add(new WorkExperienceInputModel());
-
+        
+        if (vm.Projects.Count == 0)
+                vm.Projects.Add(new ProjectInputModel());
+        
         return View(vm);
     }
 
@@ -365,7 +368,10 @@ public class CvController : Controller
 
             if (model.WorkExperiences.Count == 0)
                 model.WorkExperiences.Add(new WorkExperienceInputModel());
-
+            
+            if (model.Projects.Count == 0)
+                    model.Projects.Add(new ProjectInputModel());
+           
             return View(model);
         }
 
@@ -570,6 +576,17 @@ public class CvController : Controller
             });
         }
 
+        foreach (var p in data.Projects.Where(x => !string.IsNullOrWhiteSpace(x.Name)))
+        {
+            profile.Projects.Add(new Project
+            {
+                Name = p.Name!.Trim(),
+                Description = Temizle(p.Description),
+                Technologies = Temizle(p.Technologies),
+                Url = ApplicationHelpers.NormalizeUrl(p.Url)
+            });
+        }
+
         await AttachSkillsAsync(profile, data.Skills, ct);
 
         _db.CandidateProfiles.Add(profile);
@@ -697,6 +714,16 @@ public class CvController : Controller
                         EndDate = w.EndDate?.ToString("MM/yyyy", CultureInfo.InvariantCulture),
                         IsCurrent = w.IsCurrent
                     })
+                    .ToList(),
+                Projects = profile.Projects
+                    .OrderBy(p => p.Id)
+                    .Select(p => new ProjectInputModel
+                    {
+                        Name = p.Name,
+                        Technologies = p.Technologies,
+                        Url = p.Url,
+                        Description = p.Description
+                    })
                     .ToList()
             }
         };
@@ -706,6 +733,9 @@ public class CvController : Controller
 
         if (vm.Data.WorkExperiences.Count == 0)
             vm.Data.WorkExperiences.Add(new WorkExperienceInputModel());
+        
+        if (vm.Data.Projects.Count == 0)
+            vm.Data.Projects.Add(new ProjectInputModel());
 
         return View(vm);
     }
@@ -721,6 +751,7 @@ public class CvController : Controller
         return await _db.CandidateProfiles
             .Include(x => x.Educations)
             .Include(x => x.WorkExperiences)
+            .Include(x => x.Projects)
             .Include(x => x.CandidateSkills)
                 .ThenInclude(cs => cs.Skill)
             .FirstOrDefaultAsync(
@@ -747,7 +778,10 @@ public class CvController : Controller
 
             if (data.WorkExperiences.Count == 0)
                 data.WorkExperiences.Add(new WorkExperienceInputModel());
-
+            
+            if (data.Projects.Count == 0)
+                data.Projects.Add(new ProjectInputModel());
+            
             return View(new CvEditViewModel
             {
                 Key = key,
@@ -781,6 +815,9 @@ public class CvController : Controller
 
             if (data.WorkExperiences.Count == 0)
                 data.WorkExperiences.Add(new WorkExperienceInputModel());
+            
+            if (data.Projects.Count == 0)
+                data.Projects.Add(new ProjectInputModel());
 
             return View(new CvEditViewModel
             {
@@ -832,6 +869,20 @@ public class CvController : Controller
                 StartDate = ParseIsoLike(ToIsoLike(w.StartDate)),
                 EndDate = w.IsCurrent ? null : ParseIsoLike(ToIsoLike(w.EndDate)),
                 IsCurrent = w.IsCurrent
+            });
+        }
+
+        _db.Projects.RemoveRange(profile.Projects);
+        profile.Projects.Clear();
+
+        foreach (var p in data.Projects.Where(x => !string.IsNullOrWhiteSpace(x.Name)))
+        {
+            profile.Projects.Add(new Project
+            {
+                Name = p.Name!.Trim(),
+                Description = p.Description?.Trim(),
+                Technologies = p.Technologies?.Trim(),
+                Url = ApplicationHelpers.NormalizeUrl(p.Url)
             });
         }
 
@@ -1093,6 +1144,15 @@ public class CvController : Controller
                 EndDate = w.IsCurrent ? null : ToIsoLike(w.EndDate),
                 IsCurrent = w.IsCurrent
             }).ToList(),
+            Projects = vm.Projects
+                .Where(p => !string.IsNullOrWhiteSpace(p.Name))
+                .Select(p => new ExtractedProject
+                {
+                    Name = Temizle(p.Name),
+                    Description = Temizle(p.Description),
+                    Technologies = Temizle(p.Technologies),
+                    Url = Temizle(p.Url)
+                }).ToList(),
             Skills = (vm.SkillsCsv ?? string.Empty)
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Distinct(StringComparer.InvariantCultureIgnoreCase)
