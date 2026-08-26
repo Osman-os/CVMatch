@@ -184,8 +184,12 @@ public class JobPostingsController : Controller
 
         if (vm.Id != 0 && ilan.EmploymentType != vm.EmploymentType)
         {
+            var simdi = DateTime.UtcNow;
+
             var basvuruVar = await _db.CvSubmissions
-                .AnyAsync(x => x.JobPostingId == ilan.Id, ct);
+                .AnyAsync(x =>
+                    x.JobPostingId == ilan.Id &&
+                    (x.Status == SubmissionStatus.Approved || x.ExpiresAt > simdi), ct);
 
             if (basvuruVar)
             {

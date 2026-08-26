@@ -215,12 +215,6 @@ internal static class DateRules
         var basla = Parse(startDate);
         var bitis = Parse(endDate);
 
-        if (!isCurrent && string.IsNullOrWhiteSpace(endDate))
-        {
-            yield return new ValidationResult(
-                $"{etiket}: Bitiş tarihi girin veya \"Devam Ediyor\" seçeneğini işaretleyin.");
-        }
-
         if (basla is not null && bitis is not null && bitis < basla)
         {
             yield return new ValidationResult(

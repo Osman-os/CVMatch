@@ -190,8 +190,10 @@ public class ClaudeCvExtractionService : ICvExtractionService
 
         workExperiences listesine giren kayıtlar: bir işveren için yapılan ücretli
         veya resmi çalışmalar. Stajlar, yarı zamanlı işler, freelance ve sözleşmeli
-        çalışmalar buraya girer. Kulüp, topluluk veya gönüllü görevler CV'de deneyim
-        başlığı altındaysa buraya girer.
+        çalışmalar buraya girer. Kulüp, öğrenci topluluğu ve gönüllü görevler CV'de
+        deneyim başlığı altındaysa listede gösterilir; ancak ücretli veya resmi bir
+        iş ilişkisi olduğu açıkça belirtilmiyorsa bu kayıtların süreleri
+        totalExperienceMonths hesabına dahil edilmez.
 
         Örnek:
 
@@ -215,7 +217,8 @@ public class ClaudeCvExtractionService : ICvExtractionService
         tam sayı. Her deneyim için (bitiş - başlangıç) ay farkını hesapla ve
         topla. Örnek: 2012-01 ile 2017-01 arası 60 ay, 2017-01 ile 2022-01 arası
         60 ay, toplam 120. Çakışan dönemleri bir kez say. Devam eden işler için
-        bugüne kadar hesapla. Hesaplayamıyorsan null bırak.Bu hesaba YALNIZCA workExperiences listesindeki kayıtlar girer. projects
+        bugüne kadar hesapla. Hesaplayamıyorsan null bırak.
+        Bu hesaba YALNIZCA workExperiences listesindeki kayıtlar girer. projects
         listesindeki hiçbir kaydın süresi toplam deneyime eklenmez; bir proje ne
         kadar sürmüş olursa olsun katkısı sıfırdır.
 
@@ -260,6 +263,11 @@ public class ClaudeCvExtractionService : ICvExtractionService
 
         skills: Teknik ve mesleki yetenekler. CV'de yazdığı gibi al. Dil bilgisi
         (İngilizce C2 gibi) ve sertifikaları BURAYA EKLEME.
+
+        workExperiences[].companyName: İşveren veya müşteri adı CV'de açıkça
+        yazıyorsa onu kullan. CV freelance, serbest çalışma veya self-employed
+        olduğunu belirtip herhangi bir kurum adı vermiyorsa bu alana "Freelance"
+        yaz. Bilinmeyen bir şirket adı uydurma.
     
         workExperiences[].description: Varsa kısa görev açıklaması. Yoksa null.
         Anlamsız yer tutucu metinleri (Lorem ipsum gibi) null bırak.
