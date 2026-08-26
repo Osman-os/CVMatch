@@ -170,4 +170,32 @@
     }
 
     renderSkills();
+
+    (function () {
+        const alanlar = window.uncertainFields || [];
+        if (alanlar.length === 0) return;
+
+        // Alan adı -> sayfadaki karşılığı
+        const eslesme = {
+            fullName: '[name="FullName"]',
+            email: '[name="Email"]',
+            phone: '[name="Phone"]',
+            city: '[name="CityId"]',
+            address: '[name="Address"]',
+            totalExperienceMonths: '[name="ExperienceYears"], [name="ExperienceMonths"]',
+            educations: '#educationList',
+            workExperiences: '#experienceList',
+            projects: '#projectList',
+            skills: '#skillTags'
+        };
+
+        alanlar.forEach(function (ad) {
+            const secici = eslesme[ad];
+            if (!secici) return;
+
+            document.querySelectorAll(secici).forEach(function (el) {
+                el.classList.add('cvm-uncertain');
+            });
+        });
+    })();
 })();

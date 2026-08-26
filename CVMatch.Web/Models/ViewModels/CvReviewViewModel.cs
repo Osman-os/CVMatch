@@ -68,6 +68,8 @@ public class CvReviewViewModel : IValidatableObject
     public List<EducationInputModel> Educations { get; set; } = new();
     public List<WorkExperienceInputModel> WorkExperiences { get; set; } = new();
     public List<ProjectInputModel> Projects { get; set; } = new();
+    public List<string> UncertainFields { get; set; } = new();
+    
 
     [StringLength(5000, ErrorMessage = "Yetenek listesi çok uzun.")]
     public string? SkillsCsv { get; set; }

@@ -1157,6 +1157,7 @@ public class CvController : Controller
                     Technologies = Temizle(p.Technologies),
                     Url = Temizle(p.Url)
                 }).ToList(),
+            UncertainFields = vm.UncertainFields.ToList(),
             Skills = (vm.SkillsCsv ?? string.Empty)
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Distinct(StringComparer.InvariantCultureIgnoreCase)

@@ -261,6 +261,16 @@ public class ClaudeCvExtractionService : ICvExtractionService
 
         projects[].url: Proje bağlantısı varsa. Yoksa null.
 
+        uncertainFields: Çıkardığın ama emin olamadığın alanların adlarını bu diziye
+        yaz. Yalnızca şu adları kullan: "fullName", "email", "phoneNumber", "city",
+        "address", "totalExperienceMonths", "educations", "workExperiences",
+        "projects", "skills".
+
+        Bir alanı şu durumlarda ekle: okuduğun değerin doğruluğundan şüphe ediyorsan,
+        iki farklı okuma mümkünse, ya da bir tarihi hangi kayda ait olduğundan emin
+        olamadan atadıysan. Emin olduğun alanları ekleme; her şeyi işaretlemek uyarıyı
+        anlamsızlaştırır.
+
         skills: Teknik ve mesleki yetenekler. CV'de yazdığı gibi al. Dil bilgisi
         (İngilizce C2 gibi) ve sertifikaları BURAYA EKLEME.
 
@@ -311,6 +321,7 @@ public class ClaudeCvExtractionService : ICvExtractionService
               "url": string | null
             }
           ],
+          "uncertainFields": [string],
           "skills": [string]
         }
         """;

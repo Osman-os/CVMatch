@@ -49,6 +49,8 @@ public static class ExtractionMapper
             Technologies = p.Technologies,
             Url = p.Url
         }).ToList();
+        
+        vm.UncertainFields = data.UncertainFields.ToList();
 
         vm.SkillsCsv = string.Join(",", data.Skills.Where(s => !string.IsNullOrWhiteSpace(s)));
     }

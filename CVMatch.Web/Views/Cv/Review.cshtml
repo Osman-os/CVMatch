@@ -43,6 +43,14 @@ else
 
     <div class="row g-4">
         <div class="col-lg-7 cvm-form-col">
+          
+          @if (Model.UncertainFields.Count > 0)
+{
+    <div class="alert alert-warning">
+        <strong>Bu alanları özellikle kontrol edin.</strong>
+        CV'nizden okunurken emin olunamayan bilgiler sarı çerçeveyle işaretlendi.
+    </div>
+}  
             @await Html.PartialAsync("_CvFormFields", Model)
         </div>
 
@@ -82,6 +90,12 @@ else
                                     (Model.SkillsCsv ?? "").Split(',',
                                             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
     </script>
+    
+    <script>
+        window.uncertainFields = @Html.Raw(
+            System.Text.Json.JsonSerializer.Serialize(Model.UncertainFields));
+    </script>
+    
     <script src="/js/cv-review.js"></script>
     <script>
         // Önizlemeye tıklayınca yeni sekmede tam boyut

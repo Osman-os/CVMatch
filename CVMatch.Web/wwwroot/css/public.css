@@ -713,3 +713,9 @@ body {
     content: "✓";
     color: #22a06b;
 }
+
+.cvm-uncertain {
+    border: 2px solid #f0ad4e !important;
+    border-radius: 8px;
+    background-color: #fffaf0;
+}

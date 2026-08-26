@@ -46,19 +46,25 @@ public class ExtractedCvData
     [JsonPropertyName("projects")]
     public List<ExtractedProject> Projects { get; set; } = new();
 
+    [JsonPropertyName("uncertainFields")]
+    public List<string> UncertainFields { get; set; } = new();
+
     [JsonPropertyName("skills")]
     public List<string> Skills { get; set; } = new();
+    
     public void Normalize()
     {
         Educations ??= new();
         WorkExperiences ??= new();
         Projects ??= new();
         Skills ??= new();
+        UncertainFields ??= new();
 
         Educations.RemoveAll(e => e is null);
         WorkExperiences.RemoveAll(w => w is null);
         Projects.RemoveAll(p => p is null);
         Skills.RemoveAll(string.IsNullOrWhiteSpace);
+        UncertainFields.RemoveAll(string.IsNullOrWhiteSpace);
     }
 }
 

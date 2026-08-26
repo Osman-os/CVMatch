@@ -41,53 +41,53 @@
     {
         <h2 class="h4 mb-3">Açık İlanlar</h2>
 
-        <div class="row g-3">
+                <div class="d-flex flex-column gap-3">
             @foreach (var ilan in Model.Ilanlar)
             {
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body p-4 d-flex flex-column">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <div class="row g-3 align-items-center">
 
-                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                                <h3 class="h5 mb-0">@ilan.Title</h3>
-                                <span class="cvm-chip @(ilan.EmploymentType == CVMatch.Web.Models.Enums.EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
-                                    @ilan.TurMetni
-                                </span>
+                            <div class="col-lg-9">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="h5 mb-0">@ilan.Title</h3>
+                                    <span class="cvm-chip @(ilan.EmploymentType == CVMatch.Web.Models.Enums.EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
+                                        @ilan.TurMetni
+                                    </span>
+                                </div>
+
+                                <div class="text-secondary small mb-2">
+                                    @(ilan.CityName ?? "Konum belirtilmemiş") · @ilan.DeneyimMetni
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(ilan.Description))
+                                {
+                                    var ozet = ilan.Description!.Length > 160
+                                        ? ilan.Description[..160].TrimEnd() + "…"
+                                        : ilan.Description;
+
+                                    <p class="small text-secondary mb-2">@ozet</p>
+                                }
+
+                                @if (ilan.ZorunluYetenekler.Count > 0 || ilan.TercihYetenekler.Count > 0)
+                                {
+                                    <div>
+                                        @foreach (var y in ilan.ZorunluYetenekler)
+                                        {
+                                            <span class="cvm-chip cvm-chip-blue">@y</span>
+                                        }
+                                        @foreach (var y in ilan.TercihYetenekler)
+                                        {
+                                            <span class="cvm-chip">@y</span>
+                                        }
+                                    </div>
+                                }
                             </div>
 
-                            <div class="text-secondary small mb-3">
-                                @(ilan.CityName ?? "Konum belirtilmemiş") · @ilan.DeneyimMetni
+                            <div class="col-lg-3 text-lg-end">
+                                <a asp-action="Apply" asp-route-id="@ilan.Id"
+                                   class="btn btn-primary w-100">Bu İlana Başvur</a>
                             </div>
-
-                            @if (!string.IsNullOrWhiteSpace(ilan.Description))
-                            {
-                                <p class="small mb-3" style="white-space: pre-line;">@ilan.Description</p>
-                            }
-
-                            @if (ilan.ZorunluYetenekler.Count > 0)
-                            {
-                                <div class="mb-2">
-                                    <div class="text-secondary small mb-1">Aranan yetenekler</div>
-                                    @foreach (var y in ilan.ZorunluYetenekler)
-                                    {
-                                        <span class="cvm-chip cvm-chip-blue">@y</span>
-                                    }
-                                </div>
-                            }
-
-                            @if (ilan.TercihYetenekler.Count > 0)
-                            {
-                                <div class="mb-2">
-                                    <div class="text-secondary small mb-1">Tercih edilen</div>
-                                    @foreach (var y in ilan.TercihYetenekler)
-                                    {
-                                        <span class="cvm-chip">@y</span>
-                                    }
-                                </div>
-                            }
-
-                            <a asp-action="Apply" asp-route-id="@ilan.Id"
-                               class="btn btn-primary w-100 mt-auto">Bu İlana Başvur</a>
 
                         </div>
                     </div>
