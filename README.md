@@ -273,3 +273,4 @@ Uygulama uçtan uca çalışır durumdadır.
 * Başvuru silindiğinde önce veritabanı kayıtları, sonra diskteki dosyalar kaldırılır.
   Dosya silme başarısız olursa kayıt zaten silinmiş olduğundan sahipsiz dosya diskte
   kalabilir; bu durumda manuel temizlik gerekir.
+* CV önizlemesi PDF'in ilk sayfası doğrudan görüntüye dönüştürülerek oluşturulur. Fiziksel sayfa ölçüsü olağan dışı büyük tanımlanmış PDF'ler bu aşamada yüksek bellek kullanımına yol açabilir. 10 MB dosya boyutu sınırı, IP bazlı yükleme istek sınırı ve önizleme üretilemediğinde başvuru akışının devam etmesi bu riski sınırlar.
