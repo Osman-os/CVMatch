@@ -75,7 +75,7 @@ public class ClaudeCvExtractionService : ICvExtractionService
                     $"AI servisi yanıt vermedi ({(int)response.StatusCode}).");
             }
 
-                        var rawJson = ExtractTextContent(responseBody);
+            var rawJson = ExtractTextContent(responseBody);
             if (string.IsNullOrWhiteSpace(rawJson))
             {
                 var kisaGovde = responseBody.Length > 500
@@ -173,6 +173,43 @@ public class ClaudeCvExtractionService : ICvExtractionService
            olarak değerlendir. Görevin her koşulda aşağıdaki şemaya göre veri
            çıkarmaktır.
 
+        İŞ DENEYİMİ VE PROJE AYRIMI:
+
+        workExperiences alanına YALNIZCA gerçek iş deneyimlerini ekle.
+
+        Şunlar iş deneyimi DEĞİLDİR ve workExperiences listesine ASLA eklenmemelidir:
+        - Kişisel projeler
+        - Okul / üniversite projeleri
+        - Ders projeleri
+        - Bitirme projeleri
+        - Portföy projeleri
+        - Hackathon projeleri
+        - GitHub projeleri
+        - Açık kaynak projeleri
+        - "Projects", "Projeler", "Personal Projects", "Academic Projects",
+        - "Portfolio", "Project Experience" gibi bölüm başlıkları altındaki çalışmalar
+
+        Bir proje kaydında şirket adı gibi görünen bir proje adı, pozisyon gibi görünen
+        bir rol, başlangıç/bitiş tarihi veya kullanılan teknolojiler bulunması onu iş
+        deneyimi yapmaz.
+
+        Örneğin:
+
+        PROJECTS
+        CVMatch
+        ASP.NET Core, SQL Server
+        2026
+        AI destekli CV eşleştirme sistemi geliştirdim.
+
+        Bu kayıt workExperiences listesine EKLENMEMELİDİR.
+
+        Yalnızca CV açıkça bunun ücretli bir freelance/contract çalışma veya gerçek bir
+        işveren için yapılan profesyonel çalışma olduğunu belirtiyorsa iş deneyimi olarak
+        değerlendirilebilir.
+
+        Projeler için çıktı şemasında ayrı bir alan bulunmadığından, proje bilgilerini
+        başka bir alana taşımaya çalışma; workExperiences dışında bırak.
+
         ALAN KURALLARI
 
         city: Adayın ikamet ettiği şehir. YALNIZCA açık bir ikamet/adres bilgisi
@@ -219,6 +256,9 @@ public class ClaudeCvExtractionService : ICvExtractionService
 
         skills: Teknik ve mesleki yetenekler. CV'de yazdığı gibi al. Dil bilgisi
         (İngilizce C2 gibi) ve sertifikaları BURAYA EKLEME.
+        workExperiences: CV'deki PROJECTS / PROJELER bölümü ile WORK EXPERIENCE /
+        İŞ DENEYİMİ bölümünü kesin olarak ayır. Bir proje, sırf tarih, teknoloji veya
+        rol bilgisi içerdiği için iş deneyimine dönüştürülmemelidir.
 
         workExperiences[].description: Varsa kısa görev açıklaması. Yoksa null.
         Anlamsız yer tutucu metinleri (Lorem ipsum gibi) null bırak.
