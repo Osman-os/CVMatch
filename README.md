@@ -5,14 +5,14 @@ Staj projesi olarak geliştirilmiştir.
 
 ## Ne yapar?
 
-Adaylar üyelik açmadan CV'lerini PDF olarak yükler. Sistem CV metnini Claude API ile işleyip kişisel bilgileri, eğitim geçmişini, iş deneyimini ve yetenekleri çıkarır. Aday bu bilgileri kontrol edip düzelttikten sonra başvurusunu onaylar.
+Adaylar açık ilanlar arasından birini seçip, üyelik açmadan CV'lerini PDF olarak yükler. Sistem CV metnini Claude API ile işleyip kişisel bilgileri, eğitim geçmişini, iş deneyimini, projeleri ve yetenekleri çıkarır. Projeler iş deneyiminden ayrı tutulur. Aday bu bilgileri kontrol edip düzelttikten sonra başvurusunu onaylar.
 
 Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları oluşturur ve ilanlara uygun adayları yetenek uyumuna göre skorlanmış biçimde görüntüler.
 
 ### Öne çıkan özellikler
 
 * PDF'den metin ve vesikalık fotoğraf çıkarımı
-* Claude API ile yapılandırılmış veri çıkarımı (eğitim, deneyim, yetenek ve iletişim)
+* Claude API ile yapılandırılmış veri çıkarımı (eğitim, iş deneyimi, projeler, yetenek ve iletişim)
 * Adayın çıkarılan bilgileri onaylamadan önce düzenleyebildiği kontrol ekranı
 * KVKK onay kutuları ve başvuru sonrası düzenleme/silme hakkı
 * Yetenek, şehir, deneyim, durum ve başvuru türüne göre filtrelenebilen aday listesi
