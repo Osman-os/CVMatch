@@ -177,8 +177,29 @@ public class WorkExperienceInputModel : IValidatableObject
 
     public bool IsCurrent { get; set; }
     
-    public IEnumerable<ValidationResult> Validate(ValidationContext context)
-        => DateRules.Validate(StartDate, EndDate, IsCurrent, CompanyName);
+        public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {
+        var doluMu =
+            !string.IsNullOrWhiteSpace(CompanyName) ||
+            !string.IsNullOrWhiteSpace(Position) ||
+            !string.IsNullOrWhiteSpace(Description) ||
+            !string.IsNullOrWhiteSpace(StartDate) ||
+            !string.IsNullOrWhiteSpace(EndDate);
+
+        if (!doluMu) yield break;
+
+        if (string.IsNullOrWhiteSpace(CompanyName))
+        {
+            yield return new ValidationResult(
+                "Kurum adını girin. Serbest çalışmaysanız \"Freelance\" yazabilirsiniz.",
+                new[] { nameof(CompanyName) });
+        }
+
+        var etiket = string.IsNullOrWhiteSpace(CompanyName) ? "İş deneyimi" : CompanyName;
+
+        foreach (var sonuc in DateRules.Validate(StartDate, EndDate, IsCurrent, etiket))
+            yield return sonuc;
+    }
 }
 
 public class ProjectInputModel

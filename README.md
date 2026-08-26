@@ -21,6 +21,7 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 * İstek sınırlama (rate limiting) ile kötüye kullanım koruması
 * Panel üzerinden yetenek sözlüğü yönetimi
 * Panel üzerinden yönetici ekleme ve kaldırma
+* Yapay zekânın emin olamadığı alanların kontrol ekranında işaretlenmesi (ölçülmüş bir doğruluk yüzdesi değil, modelin kendi belirsizlik bildirimi)
 
 ## Teknolojiler
 
