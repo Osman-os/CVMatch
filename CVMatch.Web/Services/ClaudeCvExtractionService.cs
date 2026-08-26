@@ -215,7 +215,9 @@ public class ClaudeCvExtractionService : ICvExtractionService
         tam sayı. Her deneyim için (bitiş - başlangıç) ay farkını hesapla ve
         topla. Örnek: 2012-01 ile 2017-01 arası 60 ay, 2017-01 ile 2022-01 arası
         60 ay, toplam 120. Çakışan dönemleri bir kez say. Devam eden işler için
-        bugüne kadar hesapla. Hesaplayamıyorsan null bırak.
+        bugüne kadar hesapla. Hesaplayamıyorsan null bırak.Bu hesaba YALNIZCA workExperiences listesindeki kayıtlar girer. projects
+        listesindeki hiçbir kaydın süresi toplam deneyime eklenmez; bir proje ne
+        kadar sürmüş olursa olsun katkısı sıfırdır.
 
         educations[].level: CV'nin dili ne olursa olsun YALNIZCA şu değerlerden biri:
         HighSchool, AssociateDegree, BachelorDegree, MasterDegree, Doctorate
@@ -249,8 +251,10 @@ public class ClaudeCvExtractionService : ICvExtractionService
         projects[].name: Projenin adı. Ad bulunamıyorsa o projeyi listeye ekleme.
 
         projects[].technologies: Projede kullanılan teknolojiler, CV'de yazdığı gibi
-        tek satır metin olarak (örnek: "React, TypeScript"). Bu değerleri skills
-        listesine ayrıca ekleme.
+        tek satır metin olarak (örnek: "React, TypeScript"). Bu teknolojiler adayın
+        teknik yeteneklerini de gösteriyorsa skills listesine de ekle; CV'de ayrı bir
+        yetenekler bölümü yoksa bu özellikle önemlidir. skills listesinde aynı
+        yeteneği birden fazla kez tekrarlama.
 
         projects[].url: Proje bağlantısı varsa. Yoksa null.
 

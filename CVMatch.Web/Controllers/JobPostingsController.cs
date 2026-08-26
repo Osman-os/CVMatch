@@ -184,7 +184,7 @@ public class JobPostingsController : Controller
 
         if (vm.Id != 0 && ilan.EmploymentType != vm.EmploymentType)
         {
-            var basvuruVar = await _db.CandidateProfiles
+            var basvuruVar = await _db.CvSubmissions
                 .AnyAsync(x => x.JobPostingId == ilan.Id, ct);
 
             if (basvuruVar)

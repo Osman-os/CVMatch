@@ -1,6 +1,7 @@
 @model CVMatch.Web.Models.ViewModels.CvEditViewModel
 @{
     ViewData["Title"] = "Başvurumu Düzenle";
+    ViewData["PageClass"] = "cvm-page-wide";
 }
 
 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -58,13 +59,14 @@
     </div>
 </div>
 
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
         window.initialSkills = @Html.Raw(
-                            System.Text.Json.JsonSerializer.Serialize(
-                                    (Model.Data.SkillsCsv ?? "").Split(',',
-                                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
+                    System.Text.Json.JsonSerializer.Serialize(
+                    (Model.Data.SkillsCsv ?? "").Split(',',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
     </script>
     <script src="/js/cv-review.js"></script>
 }

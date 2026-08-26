@@ -187,7 +187,7 @@ Bu yapı sayesinde ilan gereksinimleri değiştirildiğinde adayların eşleşti
 
 ### Mükerrer başvuru kontrolü
 
-Aynı e-posta adresi veya normalleştirilmiş telefon numarasıyla, düzenleme süresi henüz dolmamış bir başvuru bulunuyorsa yeni kayıt oluşturulmaz.
+Aynı ilana, aynı e-posta adresi veya normalleştirilmiş telefon numarasıyla, düzenleme süresi henüz dolmamış ikinci bir başvuru oluşturulmaz.
 
 Düzenleme süresi dolmuş başvurular yeni başvuru yapılmasını engellemez. Böylece adayın kalıcı olarak yeni başvuru yapmasının önüne geçilmez.
 

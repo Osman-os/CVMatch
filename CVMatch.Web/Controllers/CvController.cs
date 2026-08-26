@@ -797,7 +797,10 @@ public class CvController : Controller
 
         var cakisan = await _db.CandidateProfiles
             .AsNoTracking()
-            .Where(x => x.Id != profile.Id && x.EditTokenExpiresAt > DateTime.UtcNow)
+            .Where(x =>
+                x.Id != profile.Id &&
+                x.JobPostingId == profile.JobPostingId &&
+                x.EditTokenExpiresAt > DateTime.UtcNow)
             .Where(x =>
                 (yeniEmail != null && x.Email.ToLower() == yeniEmail) ||
                 (yeniPhone != null && x.PhoneNormalized == yeniPhone))
@@ -935,6 +938,7 @@ public class CvController : Controller
         _db.CandidateSkills.RemoveRange(profile.CandidateSkills);
         _db.Educations.RemoveRange(profile.Educations);
         _db.WorkExperiences.RemoveRange(profile.WorkExperiences);
+        _db.Projects.RemoveRange(profile.Projects);
         _db.CandidateProfiles.Remove(profile);
 
         await _db.SaveChangesAsync(ct);
