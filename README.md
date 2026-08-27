@@ -1,4 +1,5 @@
 # CVMatch
+> Bu dal MySQL sürümüdür. SQL Server LocalDB kullanan sürüm `main` dalındadır.
 
 CV yükleme, yapay zekâ destekli bilgi çıkarımı ve ilan-aday eşleştirme platformu.
 Staj projesi olarak geliştirilmiştir.
@@ -26,8 +27,8 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 ## Teknolojiler
 
 * .NET 10 / ASP.NET Core MVC
-* Entity Framework Core
-* SQL Server LocalDB
+* Entity Framework Core 9
+* MySQL 8 (Pomelo EF Core sağlayıcısı)
 * ASP.NET Core Identity (yalnızca yönetici girişi)
 * Anthropic Claude API — CV metninden yapılandırılmış veri çıkarımı
 * PdfPig — PDF metin ve görsel çıkarımı
@@ -40,7 +41,7 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 
 * Windows (PDF önizleme üretimi Windows'a bağımlıdır)
 * .NET 10 SDK
-* SQL Server LocalDB
+* MySQL 8.0 veya üzeri (erişim yetkisi olan boş bir veritabanı)
 * Anthropic API anahtarı
 
 ### 1. Depoyu klonlayın
@@ -56,6 +57,9 @@ cd CVMatch
 
 ```json
 {
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=SUNUCU-ADRESI;Port=3306;Database=VERITABANI-ADI;User=KULLANICI;Password=PAROLA;CharSet=utf8mb4;SslMode=Preferred;"
+  },
   "SeedAdmin": {
     "Email": "admin@cvmatch.local",
     "Password": "ORNEK-PAROLA-DEGISTIRIN"
@@ -67,6 +71,16 @@ cd CVMatch
   }
 }
 ```
+
+Bu dosya `.gitignore` içindedir ve depoya gönderilmez. `appsettings.json` içindeki bağlantı dizesi yalnızca alan adlarını gösteren bir şablondur, gerçek değer içermez.
+
+Veritabanı önceden oluşturulmuş olmalıdır:
+
+```sql
+CREATE DATABASE cvmatch CHARACTER SET utf8mb4 COLLATE utf8mb4_turkish_ci;
+```
+
+`MySqlServerVersion` değeri `Program.cs` içinde tanımlıdır. Farklı bir MySQL sürümü kullanıyorsanız oradaki sürüm numarasını güncelleyin.
 
 Yukarıdaki parola yalnızca örnektir. İlk çalıştırmadan önce kendi parolanızla değiştirin.
 
