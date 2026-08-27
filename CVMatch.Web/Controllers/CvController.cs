@@ -76,6 +76,7 @@ public class CvController : Controller
                 Id = x.Id,
                 Title = x.Title,
                 Description = x.Description,
+                CreatedAt = x.CreatedAt,
                 CityName = x.City != null ? x.City.Name : null,
                 EmploymentType = x.EmploymentType,
                 MinExperienceYears = x.MinExperienceYears,

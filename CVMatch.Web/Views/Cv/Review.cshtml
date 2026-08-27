@@ -40,7 +40,7 @@ else
 <form asp-action="Review" method="post" id="reviewForm">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Token" />
-    
+
     @for (var i = 0; i < Model.UncertainFields.Count; i++)
     {
         <input type="hidden" asp-for="UncertainFields[i]" />
@@ -48,14 +48,18 @@ else
 
     <div class="row g-4">
         <div class="col-lg-7 cvm-form-col">
+
           
-          @if (Model.UncertainFields.Count > 0)
-{
-    <div class="alert alert-warning">
-        <strong>Bu alanları özellikle kontrol edin.</strong>
-        CV'nizden okunurken emin olunamayan bilgiler sarı çerçeveyle işaretlendi.
-    </div>
-}  
+            @if (Model.UncertainFields.Count > 0)
+            {
+                <p class="text-secondary small mb-3 d-flex align-items-center">
+                    <span class="cvm-uncertain-mark cvm-uncertain-mark-inline"
+                          data-uncertain="AI bu bilgiden emin değil. Lütfen CV'nizle karşılaştırarak kontrol edin."
+                          tabindex="0">!</span>
+                    işaretli alanlar CV'nizden okunurken emin olunamadı.
+                </p>
+            }
+
             @await Html.PartialAsync("_CvFormFields", Model)
         </div>
 
@@ -91,16 +95,16 @@ else
     <partial name="_ValidationScriptsPartial" />
     <script>
         window.initialSkills = @Html.Raw(
-                            System.Text.Json.JsonSerializer.Serialize(
-                                    (Model.SkillsCsv ?? "").Split(',',
-                                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
+                                                                                                                            System.Text.Json.JsonSerializer.Serialize(
+                                                                                                                                                            (Model.SkillsCsv ?? "").Split(',',
+                                                                                                                                                                                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
     </script>
-    
+
     <script>
         window.uncertainFields = @Html.Raw(
-            System.Text.Json.JsonSerializer.Serialize(Model.UncertainFields));
+                                                            System.Text.Json.JsonSerializer.Serialize(Model.UncertainFields));
     </script>
-    
+
     <script src="/js/cv-review.js"></script>
     <script>
         // Önizlemeye tıklayınca yeni sekmede tam boyut

@@ -14,6 +14,7 @@ public class JobPostingCardViewModel
     public string? Description { get; set; }
     public string? CityName { get; set; }
     public EmploymentType EmploymentType { get; set; }
+    public DateTime CreatedAt { get; set; }
     public int MinExperienceYears { get; set; }
 
     public List<string> ZorunluYetenekler { get; set; } = new();

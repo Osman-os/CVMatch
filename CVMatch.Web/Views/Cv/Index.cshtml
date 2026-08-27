@@ -57,7 +57,7 @@
                                 </div>
 
                                 <div class="text-secondary small mb-2">
-                                    @(ilan.CityName ?? "Konum belirtilmemiş") · @ilan.DeneyimMetni
+                                        @(ilan.CityName ?? "Konum belirtilmemiş") · @ilan.DeneyimMetni
                                 </div>
 
                                 @if (!string.IsNullOrWhiteSpace(ilan.Description))
@@ -87,6 +87,10 @@
                             <div class="col-lg-3 text-lg-end">
                                 <a asp-action="Apply" asp-route-id="@ilan.Id"
                                    class="btn btn-primary w-100">Bu İlana Başvur</a>
+
+                                <div class="cvm-ilan-tarih">
+                                    @ilan.CreatedAt.ToLocalTime().ToString("dd MMMM yyyy") tarihinde yayınlandı
+                                </div>
                             </div>
 
                         </div>

@@ -175,6 +175,8 @@
         const alanlar = window.uncertainFields || [];
         if (alanlar.length === 0) return;
 
+        const metin = 'AI bu bilgiden emin değil. Lütfen CV\'nizle karşılaştırarak kontrol edin.';
+
         // Alan adı -> sayfadaki karşılığı
         const eslesme = {
             fullName: '[name="FullName"]',
@@ -189,13 +191,36 @@
             skills: '#skillTags'
         };
 
+        const bolumler = ['educationList', 'experienceList', 'projectList', 'skillTags'];
+
+        function isaret(metinsahibi) {
+            if (!metinsahibi || metinsahibi.querySelector('.cvm-uncertain-mark')) return;
+
+            const el = document.createElement('span');
+            el.className = 'cvm-uncertain-mark';
+            el.setAttribute('data-uncertain', metin);
+            el.setAttribute('tabindex', '0');
+            el.setAttribute('role', 'note');
+            el.textContent = '!';
+            metinsahibi.appendChild(el);
+        }
+
+        function isaretle(el) {
+            if (bolumler.includes(el.id)) {
+                const kart = el.closest('.card');
+                isaret(kart ? kart.querySelector('h2') : null);
+                return;
+            }
+
+            const kap = el.closest('.mb-3, .mb-0, .col-md-6, .col-md-4') || el.parentElement;
+            isaret(kap ? kap.querySelector('label') : null);
+        }
+
         alanlar.forEach(function (ad) {
             const secici = eslesme[ad];
             if (!secici) return;
 
-            document.querySelectorAll(secici).forEach(function (el) {
-                el.classList.add('cvm-uncertain');
-            });
+            document.querySelectorAll(secici).forEach(isaretle);
         });
     })();
 })();

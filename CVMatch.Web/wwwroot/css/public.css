@@ -49,8 +49,9 @@ body {
     max-width: 1140px;
     margin: 0 auto;
     padding: 40px 24px;
-    flex: 1 0 auto;   
+    flex: 1 0 auto;
 }
+
 /* Kahraman bölüm */
 .cvm-hero {
     text-align: center;
@@ -121,8 +122,13 @@ body {
 }
 
 @media (max-width: 768px) {
-    .cvm-hero h1 { font-size: 1.75rem; }
-    .cvm-page { padding: 24px 16px; }
+    .cvm-hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .cvm-page {
+        padding: 24px 16px;
+    }
 }
 
 /* ---- Ana sayfa ---- */
@@ -604,7 +610,9 @@ body {
 }
 
 @media (max-width: 992px) {
-    .cvm-preview-col .card { position: static; }
+    .cvm-preview-col .card {
+        position: static;
+    }
 }
 
 /* Toplam deneyim kompakt */
@@ -669,7 +677,9 @@ body {
 }
 
 @keyframes cvm-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .cvm-steps-list {
@@ -714,8 +724,62 @@ body {
     color: #22a06b;
 }
 
-.cvm-uncertain {
-    border: 2px solid #f0ad4e !important;
+.cvm-uncertain-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    margin-left: 5px;
+    background: #f0ad4e;
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    vertical-align: middle;
+    transform: none;
+}
+
+.cvm-uncertain-mark-inline {
+    margin-left: 0;
+    margin-right: 5px;
+    transform: none;
+}
+
+.cvm-uncertain-mark::after {
+    content: attr(data-uncertain);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    width: 240px;
+    background: #2b2b2b;
+    color: #fff;
+    padding: 8px 12px;
     border-radius: 8px;
-    background-color: #fffaf0;
+    font-size: .78rem;
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    z-index: 5;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .15s ease, transform .15s ease;
+}
+
+.cvm-uncertain-mark:hover::after,
+.cvm-uncertain-mark:focus::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.cvm-ilan-tarih {
+    margin-top: 8px;
+    font-size: .78rem;
+    font-weight: 500;
+    color: #475467;
+    text-align: center;
 }
