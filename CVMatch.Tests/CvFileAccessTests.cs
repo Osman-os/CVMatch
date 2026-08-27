@@ -43,8 +43,7 @@ public class CvFileAccessTests
             UploadedAt = DateTime.UtcNow.AddHours(-1),
             ExpiresAt = expiresAt,
 
-            // SQL Server rowversion'ı kendi üretir; in-memory sağlayıcı üretmez
-            RowVersion = new byte[8]
+            RowVersion = Guid.NewGuid()
         });
 
         await db.SaveChangesAsync();

@@ -127,8 +127,7 @@ public class ApplicationDbContext : IdentityDbContext
             e.HasIndex(x => new { x.Status, x.ExpiresAt });
             e.HasIndex(x => x.CandidateProfileId);
 
-            // Eşzamanlı güncellemeleri yakalamak için sürüm damgası
-            e.Property(x => x.RowVersion).IsRowVersion();
+            e.Property(x => x.RowVersion).IsConcurrencyToken();
 
             e.HasOne(x => x.CandidateProfile)
              .WithMany(c => c.CvSubmissions)
@@ -202,5 +201,15 @@ public class ApplicationDbContext : IdentityDbContext
              .HasForeignKey(x => x.SkillId)
              .OnDelete(DeleteBehavior.Restrict);
         });
+    }
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        foreach (var giris in ChangeTracker.Entries<CvSubmission>())
+        {
+            if (giris.State == EntityState.Modified)
+                giris.Entity.RowVersion = Guid.NewGuid();
+        }
+
+        return base.SaveChangesAsync(ct);
     }
 }
