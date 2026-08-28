@@ -783,3 +783,56 @@ body {
     color: #475467;
     text-align: center;
 }
+
+.cvm-login-wrap {
+    width: 520px !important;
+    min-width: 520px !important;
+    max-width: 520px !important;
+
+    margin: 70px auto !important;
+    flex: 0 0 520px !important;
+}
+
+.cvm-login-wrap .card {
+    width: 520px !important;
+    min-width: 520px !important;
+    max-width: 520px !important;
+}
+
+.cvm-login-wrap .card-body {
+    padding: 40px 48px !important;
+}
+
+.cvm-login-wrap form {
+    width: 100% !important;
+}
+
+.cvm-login-wrap .form-control {
+    width: 100% !important;
+    max-width: none !important;
+    height: 50px;
+    padding: 12px 14px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.cvm-login-wrap .form-label {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.cvm-login-wrap .btn-primary {
+    width: 100% !important;
+    height: 50px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.cvm-login-wrap .form-check-label {
+    font-size: 14px;
+}
+
+.cvm-login-wrap h1 {
+    font-size: 28px;
+    font-weight: 700;
+}

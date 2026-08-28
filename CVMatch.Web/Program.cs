@@ -121,14 +121,26 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Aday üyeliği yok; kayıt sayfası yalnızca yöneticiye açık
+var kapaliIdentitySayfalari = new[]
+{
+    "/Identity/Account/Register",
+    "/Identity/Account/RegisterConfirmation",
+    "/Identity/Account/ConfirmEmail",
+    "/Identity/Account/ConfirmEmailChange",
+    "/Identity/Account/ResendEmailConfirmation",
+    "/Identity/Account/ExternalLogin",
+    "/Identity/Account/Manage"
+};
+
 app.Use(async (context, next) =>
 {
-    // Yönetici ekleme kendi panelimizden yapılır; Identity'nin kayıt sayfası kapalı
-    if (context.Request.Path.StartsWithSegments("/Identity/Account/Register"))
+    foreach (var yol in kapaliIdentitySayfalari)
     {
-        context.Response.Redirect("/Admin/Users");
-        return;
+        if (context.Request.Path.StartsWithSegments(yol))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
     }
 
     await next();
