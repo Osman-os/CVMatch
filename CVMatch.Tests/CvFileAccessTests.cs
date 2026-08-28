@@ -27,7 +27,8 @@ public class CvFileAccessTests
 
     private static CvController CreateController(ApplicationDbContext db)
         => new(db, new SahteDepolama(), new SahteIsleme(),
-               NullLogger<CvController>.Instance, new SahteEmailSender());
+               NullLogger<CvController>.Instance, new SahteEmailSender(),
+               new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
 
     private static async Task<Guid> SubmissionEkleAsync(
         ApplicationDbContext db, SubmissionStatus status, DateTime expiresAt)

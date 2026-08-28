@@ -1,4 +1,5 @@
-﻿@{
+﻿@inject IConfiguration Config
+@{
     ViewData["Title"] = "KVKK Aydınlatma Metni";
 }
 
@@ -103,7 +104,7 @@
             <p class="small mb-0">
                 Düzenleme bağlantınızın süresi dolduktan sonra da bu haklarınızı
                 kullanabilirsiniz. Başvuru numaranızla
-                <strong>[İLETİŞİM-EPOSTA]</strong> adresine yazmanız yeterlidir.
+                <strong>@Config["Support:Email"]</strong> adresine yazmanız yeterlidir.
             </p>
         </div>
     </div>

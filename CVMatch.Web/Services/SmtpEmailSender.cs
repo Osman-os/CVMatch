@@ -18,9 +18,7 @@ public class SmtpEmailSender : IEmailSender
     {
         _logger = logger;
 
-        _host = config["Smtp:Host"] is { Length: > 0 } host
-            ? host
-            : throw new InvalidOperationException("Smtp:Host yapılandırılmamış.");
+        _host = config["Smtp:Host"] ?? string.Empty;
         _port = int.TryParse(config["Smtp:Port"], out var p) ? p : 587;
         _sslKullan = !bool.TryParse(config["Smtp:UseSsl"], out var ssl) || ssl;
         _kullanici = config["Smtp:User"] ?? string.Empty;

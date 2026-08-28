@@ -48,19 +48,22 @@ public class CvController : Controller
     private readonly ICvProcessingService _processing;
     private readonly ILogger<CvController> _logger;
     private readonly IEmailSender _emailSender;
+    private readonly IConfiguration _config;
 
     public CvController(
         ApplicationDbContext db,
         IFileStorage storage,
         ICvProcessingService processing,
         ILogger<CvController> logger,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        IConfiguration config)
     {
         _db = db;
         _storage = storage;
         _processing = processing;
         _logger = logger;
         _emailSender = emailSender;
+        _config = config;
     }
 
     [HttpGet]
@@ -523,7 +526,7 @@ public class CvController : Controller
             ModelState.AddModelError(string.Empty,
                 "Bu ilana bu iletişim bilgileriyle yapılmış aktif bir başvuru bulunuyor. " +
                 "Bilgilerinizi düzenleme bağlantınızla güncelleyebilirsiniz. " +
-                "Bağlantıya erişemiyorsanız [İLETİŞİM-EPOSTA] adresine yazın.");
+                $"Bağlantıya erişemiyorsanız {_config["Support:Email"]} adresine yazın.");
 
             return await BuildSummaryViewAsync(submission, consent, ct);
         }

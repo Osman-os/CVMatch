@@ -48,7 +48,7 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 ### 1. Depoyu klonlayın
 
 ```bash
-git clone https://github.com/Osman-os/CVMatch.git
+git clone -b mysql https://github.com/Osman-os/CVMatch.git
 cd CVMatch
 ```
 
@@ -59,7 +59,7 @@ cd CVMatch
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=SUNUCU-ADRESI;Port=3306;Database=VERITABANI-ADI;User=KULLANICI;Password=PAROLA;CharSet=utf8mb4;SslMode=Preferred;"
+    "DefaultConnection": "Server=SUNUCU-ADRESI;Port=3306;Database=VERITABANI-ADI;User=KULLANICI;Password=PAROLA;CharSet=utf8mb4;SslMode=Required;"
   },
   "SeedAdmin": {
     "Email": "admin@cvmatch.local",

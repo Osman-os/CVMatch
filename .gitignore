@@ -489,3 +489,4 @@ storage/
 test-cv-*.txt
 test-cv-*.jpg
 test-cv-gorseller/
+CVMatch.Web/appsettings.Production.json
