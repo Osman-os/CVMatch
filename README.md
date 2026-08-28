@@ -23,6 +23,7 @@ Yöneticiler admin panelinden başvuruları filtreleyip inceler, iş ilanları o
 * Panel üzerinden yetenek sözlüğü yönetimi
 * Panel üzerinden yönetici ekleme ve kaldırma
 * Yapay zekânın emin olamadığı alanların kontrol ekranında işaretlenmesi (ölçülmüş bir doğruluk yüzdesi değil, modelin kendi belirsizlik bildirimi)
+* SMTP üzerinden e-posta gönderimi: adaya düzenleme bağlantısı, yöneticiye parola sıfırlama
 
 ## Teknolojiler
 
@@ -68,9 +69,19 @@ cd CVMatch
     "ApiKey": "sk-ant-...",
     "Model": "claude-sonnet-5",
     "BaseUrl": "https://api.anthropic.com/v1/messages"
+  },
+  "Smtp": {
+    "Host": "smtp.sunucu.com",
+    "Port": "587",
+    "UseSsl": "true",
+    "User": "kullanici",
+    "Password": "PAROLA",
+    "FromEmail": "gonderen@sirket.com",
+    "FromName": "CVMatch"
   }
 }
 ```
+SMTP yapılandırılmazsa uygulama çalışmaya devam eder; e-posta gönderimi başarısız olur, hata loglanır ve akış kesilmez.
 
 Bu dosya `.gitignore` içindedir ve depoya gönderilmez. `appsettings.json` içindeki bağlantı dizesi yalnızca alan adlarını gösteren bir şablondur, gerçek değer içermez.
 
@@ -181,7 +192,7 @@ Bu sayede hatalı veya eksik bir yapay zekâ çıkarımı doğrudan kalıcı ver
 
 ### Düzenleme anahtarı hash'lenerek saklanır
 
-Ham düzenleme anahtarı yalnızca başvuru tamamlandı ekranında bir kez gösterilir.
+Ham düzenleme anahtarı başvuru tamamlandı ekranında gösterilir ve aynı anda adayın e-posta adresine gönderilir. Bağlantıyı kaybeden aday e-postasından yeniden bulabilir.
 
 Veritabanında anahtarın SHA-256 özeti saklanır. Düzenleme bağlantısı 30 gün boyunca geçerlidir.
 
@@ -273,6 +284,7 @@ Uygulama uçtan uca çalışır durumdadır.
 ## Bilinen sınırlar
 
 * Taranmış veya yalnızca görüntü içeren CV'lerden metin çıkarılamaz. OCR proje kapsamı dışında tutulmuştur.
+* E-posta gönderimi kritik yol değildir: SMTP erişilemezse hata loglanır, başvuru ve parola sıfırlama akışları kesilmez. Bu durumda aday düzenleme bağlantısını yalnızca tamamlandı ekranından alabilir.
 * Mükerrer başvuru kontrolü aynı ilan için yapılır; aday farklı ilanlara ayrı ayrı başvurabilir. Kontrol hem e-posta hem telefon değiştirilerek aşılabilir. Aday tarafında kimlik doğrulaması bulunmadığından kesin engelleme mümkün değildir; kontrolün amacı kazara oluşan tekrarları azaltmaktır.
 * Aday kaydı ile başvuru aynı varlıkta (`CandidateProfile`) tutulur. Bu yapı, adayın tek bir havuza başvurduğu ilk tasarımdan gelir. İlan bazlı başvuruya geçildiğinde, aynı kişi birden fazla ilana başvurduğunda kişisel bilgileri, yetenekleri, eğitim ve deneyim kayıtları her başvuru için ayrı ayrı saklanır hâle gelmiştir. Yönetici panelindeki aday listesi bu kayıtları e-postaya göre gruplayarak tek satırda gösterir, ancak veritabanındaki tekrar sürer: aday bir başvurusunu düzenlediğinde diğer başvurusundaki bilgiler güncellenmez.
 * Bunun doğru çözümü kişi ile başvurunun ayrı varlıklara bölünmesidir (`CandidateProfile` kişiyi, ayrı bir `Application` varlığı kişi–ilan bağını tutar). Bu değişiklik yeni bir varlık, veri taşıma ve eşleştirme ile yönetici panelinin önemli bölümünün yeniden yazılmasını gerektirdiğinden proje kapsamı dışında bırakılmıştır.
