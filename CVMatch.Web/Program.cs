@@ -21,6 +21,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<CVMatch.Web.Services.IEmailSender, CVMatch.Web.Services.SmtpEmailSender>();
+builder.Services.AddSingleton<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,
+    CVMatch.Web.Services.IdentityEmailSender>();
 builder.Services.AddRazorPages(options =>
 {
     // Aday üyeliği yok; kayıt sayfası yalnızca yöneticiye açık

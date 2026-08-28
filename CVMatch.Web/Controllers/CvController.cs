@@ -25,10 +25,6 @@ public class CvController : Controller
     private static bool TaslakGecerliMi(CvSubmission s) =>
         ApplicationHelpers.DraftIsValid(s.Status, s.ExpiresAt);
 
-    /// <summary>
-    /// Elle gönderilen isteklerde tanımsız enum veya olmayan şehir gelebilir.
-    /// Hatalar ModelState'e eklenir, çağıran metot ModelState.IsValid ile kontrol eder.
-    /// </summary>
     private async Task DogrulamaEkleAsync(CvReviewViewModel data, CancellationToken ct)
     {
         if (data.CityId.HasValue
@@ -51,17 +47,20 @@ public class CvController : Controller
     private readonly IFileStorage _storage;
     private readonly ICvProcessingService _processing;
     private readonly ILogger<CvController> _logger;
+    private readonly IEmailSender _emailSender;
 
     public CvController(
         ApplicationDbContext db,
         IFileStorage storage,
         ICvProcessingService processing,
-        ILogger<CvController> logger)
+        ILogger<CvController> logger,
+        IEmailSender emailSender)
     {
         _db = db;
         _storage = storage;
         _processing = processing;
         _logger = logger;
+        _emailSender = emailSender;
     }
 
     [HttpGet]
@@ -314,10 +313,10 @@ public class CvController : Controller
 
         if (vm.WorkExperiences.Count == 0)
             vm.WorkExperiences.Add(new WorkExperienceInputModel());
-        
+
         if (vm.Projects.Count == 0)
-                vm.Projects.Add(new ProjectInputModel());
-        
+            vm.Projects.Add(new ProjectInputModel());
+
         return View(vm);
     }
 
@@ -349,7 +348,7 @@ public class CvController : Controller
                 !string.IsNullOrWhiteSpace(w.Description) ||
                 !string.IsNullOrWhiteSpace(w.StartDate))
             .ToList();
-        
+
         model.PreferredEmploymentType = submission.JobPostingId is int ilanId
             ? await _db.JobPostings
                 .AsNoTracking()
@@ -373,10 +372,10 @@ public class CvController : Controller
 
             if (model.WorkExperiences.Count == 0)
                 model.WorkExperiences.Add(new WorkExperienceInputModel());
-            
+
             if (model.Projects.Count == 0)
-                    model.Projects.Add(new ProjectInputModel());
-           
+                model.Projects.Add(new ProjectInputModel());
+
             return View(model);
         }
 
@@ -655,8 +654,35 @@ public class CvController : Controller
             "Başvuru tamamlandı. Referans: {Reference}",
             profile.ApplicationReferenceNumber);
 
-        // Ham token yalnızca burada, bir kez gösterilir
+        var duzenlemeAdresi = Url.Action(
+            nameof(Edit), "Cv",
+            new { key = editToken.ToString() },
+            Request.Scheme)!;
+
+        await _emailSender.SendAsync(
+            profile.Email,
+            "Başvurunuz alındı — CVMatch",
+            $"""
+            <p>Merhaba {System.Net.WebUtility.HtmlEncode(profile.FullName)},</p>
+
+            <p>Başvurunuz alınmıştır. Başvuru numaranız:
+               <strong>{profile.ApplicationReferenceNumber}</strong></p>
+
+            <p>Bilgilerinizi güncellemek veya başvurunuzu silmek için aşağıdaki
+               bağlantıyı kullanabilirsiniz:</p>
+
+            <p><a href="{duzenlemeAdresi}">{duzenlemeAdresi}</a></p>
+
+            <p>Bu bağlantı
+               {profile.EditTokenExpiresAt.ToLocalTime():dd MMMM yyyy}
+               tarihine kadar geçerlidir ve size özeldir; başkasıyla paylaşmayın.</p>
+
+            <p>CVMatch</p>
+            """,
+            ct);
+
         return View(nameof(Completed), new CvCompletedViewModel
+    
         {
             ReferenceNumber = profile.ApplicationReferenceNumber,
             EditToken = editToken.ToString(),
@@ -738,7 +764,7 @@ public class CvController : Controller
 
         if (vm.Data.WorkExperiences.Count == 0)
             vm.Data.WorkExperiences.Add(new WorkExperienceInputModel());
-        
+
         if (vm.Data.Projects.Count == 0)
             vm.Data.Projects.Add(new ProjectInputModel());
 
@@ -783,10 +809,10 @@ public class CvController : Controller
 
             if (data.WorkExperiences.Count == 0)
                 data.WorkExperiences.Add(new WorkExperienceInputModel());
-            
+
             if (data.Projects.Count == 0)
                 data.Projects.Add(new ProjectInputModel());
-            
+
             return View(new CvEditViewModel
             {
                 Key = key,
@@ -823,7 +849,7 @@ public class CvController : Controller
 
             if (data.WorkExperiences.Count == 0)
                 data.WorkExperiences.Add(new WorkExperienceInputModel());
-            
+
             if (data.Projects.Count == 0)
                 data.Projects.Add(new ProjectInputModel());
 

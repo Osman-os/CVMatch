@@ -9,10 +9,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CVMatch.Tests;
 
-/// <summary>
-/// CvController.File action'ının taslak geçerliliğini gerçekten uyguladığını doğrular.
-/// Yardımcı metodu değil, action'ın kendisini test eder.
-/// </summary>
+internal sealed class SahteEmailSender : CVMatch.Web.Services.IEmailSender
+{
+    public Task SendAsync(string aliciEposta, string konu, string htmlIcerik,
+        CancellationToken ct = default) => Task.CompletedTask;
+}
 public class CvFileAccessTests
 {
     private static ApplicationDbContext CreateDb()
@@ -26,7 +27,7 @@ public class CvFileAccessTests
 
     private static CvController CreateController(ApplicationDbContext db)
         => new(db, new SahteDepolama(), new SahteIsleme(),
-               NullLogger<CvController>.Instance);
+               NullLogger<CvController>.Instance, new SahteEmailSender());
 
     private static async Task<Guid> SubmissionEkleAsync(
         ApplicationDbContext db, SubmissionStatus status, DateTime expiresAt)
