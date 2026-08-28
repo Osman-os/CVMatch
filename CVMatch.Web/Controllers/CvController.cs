@@ -339,9 +339,13 @@ public class CvController : Controller
         if (submission.Status is not (SubmissionStatus.AwaitingReview or SubmissionStatus.Failed))
             return RedirectToAction(nameof(Processing), new { token = model.Token });
 
-        // Boş satırları at
         model.Educations = model.Educations
-            .Where(e => !string.IsNullOrWhiteSpace(e.School))
+            .Where(e =>
+                !string.IsNullOrWhiteSpace(e.School) ||
+                !string.IsNullOrWhiteSpace(e.FieldOfStudy) ||
+                e.Level.HasValue ||
+                !string.IsNullOrWhiteSpace(e.StartDate) ||
+                !string.IsNullOrWhiteSpace(e.EndDate))
             .ToList();
 
         model.WorkExperiences = model.WorkExperiences
@@ -349,7 +353,8 @@ public class CvController : Controller
                 !string.IsNullOrWhiteSpace(w.CompanyName) ||
                 !string.IsNullOrWhiteSpace(w.Position) ||
                 !string.IsNullOrWhiteSpace(w.Description) ||
-                !string.IsNullOrWhiteSpace(w.StartDate))
+                !string.IsNullOrWhiteSpace(w.StartDate) ||
+                !string.IsNullOrWhiteSpace(w.EndDate))
             .ToList();
 
         model.PreferredEmploymentType = submission.JobPostingId is int ilanId
