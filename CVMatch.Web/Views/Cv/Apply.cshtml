@@ -73,12 +73,25 @@
         const gonderBtn = document.getElementById('submitBtn');
         const bilgi = document.getElementById('fileInfo');
         const alan = document.getElementById('dropzone');
+        const enFazlaBayt = 10 * 1024 * 1024;
 
         function dosyaSecildi(dosya) {
             if (!dosya) return;
+
             const mb = (dosya.size / 1048576).toFixed(1);
+
+            if (dosya.size > enFazlaBayt) {
+                bilgi.textContent = `${dosya.name} · ${mb} MB — dosya 10 MB'ı aşamaz`;
+                bilgi.classList.add('text-danger');
+                bilgi.classList.remove('text-dark');
+                dosyaInput.value = '';
+                gonderBtn.disabled = true;
+                return;
+            }
+
             bilgi.textContent = `${dosya.name} · ${mb} MB`;
             bilgi.classList.add('text-dark');
+            bilgi.classList.remove('text-danger');
             gonderBtn.disabled = false;
         }
 
