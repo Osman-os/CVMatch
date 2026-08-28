@@ -202,7 +202,7 @@ public class WorkExperienceInputModel : IValidatableObject
     }
 }
 
-public class ProjectInputModel
+public class ProjectInputModel : IValidatableObject
 {
     [StringLength(200)]
     [Display(Name = "Proje Adı")]
@@ -221,6 +221,25 @@ public class ProjectInputModel
     [StringLength(1000)]
     [Display(Name = "Açıklama")]
     public string? Description { get; set; }
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {
+        var doluMu =
+            !string.IsNullOrWhiteSpace(Name) ||
+            !string.IsNullOrWhiteSpace(Technologies) ||
+            !string.IsNullOrWhiteSpace(Url) ||
+            !string.IsNullOrWhiteSpace(Description);
+
+        // Tamamen boş satırlar kaydetmeden önce eleniyor
+        if (!doluMu) yield break;
+
+        // Adı olmayan proje sessizce siliniyordu; artık kullanıcı uyarılır
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            yield return new ValidationResult(
+                "Proje adını girin.", new[] { nameof(Name) });
+        }
+    }
 }
 
 // Eğitim ve iş deneyimi satırları için ortak tarih kuralları.
