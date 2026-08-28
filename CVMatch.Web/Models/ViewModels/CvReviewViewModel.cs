@@ -147,8 +147,29 @@ public class EducationInputModel : IValidatableObject
     public string? EndDate { get; set; }
 
     public bool IsCurrent { get; set; }
+    
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
-        => DateRules.Validate(StartDate, EndDate, IsCurrent, School);
+    {
+        var doluMu =
+            !string.IsNullOrWhiteSpace(School) ||
+            !string.IsNullOrWhiteSpace(FieldOfStudy) ||
+            Level.HasValue ||
+            !string.IsNullOrWhiteSpace(StartDate) ||
+            !string.IsNullOrWhiteSpace(EndDate);
+
+        if (!doluMu) yield break;
+
+        if (string.IsNullOrWhiteSpace(School))
+        {
+            yield return new ValidationResult(
+                "Okul adını girin.", new[] { nameof(School) });
+        }
+
+        var etiket = string.IsNullOrWhiteSpace(School) ? "Eğitim" : School;
+
+        foreach (var sonuc in DateRules.Validate(StartDate, EndDate, IsCurrent, etiket))
+            yield return sonuc;
+    }
 }
 
 public class WorkExperienceInputModel : IValidatableObject
