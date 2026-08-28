@@ -51,38 +51,41 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+    // Sınırlar appsettings üzerinden ayarlanabilir; değer yoksa varsayılan kullanılır
+    int Sinir(string ad, int varsayilan) =>
+        int.TryParse(builder.Configuration[$"RateLimit:{ad}:PermitLimit"], out var v) && v > 0
+            ? v
+            : varsayilan;
+
+    int Pencere(string ad, int varsayilan) =>
+        int.TryParse(builder.Configuration[$"RateLimit:{ad}:WindowMinutes"], out var v) && v > 0
+            ? v
+            : varsayilan;
+
+    void PolitikaEkle(string ad, int varsayilanSinir, int varsayilanPencere)
+    {
+        var sinir = Sinir(ad, varsayilanSinir);
+        var pencere = Pencere(ad, varsayilanPencere);
+
+        options.AddPolicy(ad, context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = sinir,
+                    Window = TimeSpan.FromMinutes(pencere),
+                    QueueLimit = 0
+                }));
+    }
+
     // CV yükleme: her IP saatte 20 dosya
-    options.AddPolicy("upload", context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 20,
-                Window = TimeSpan.FromHours(1),
-                QueueLimit = 0
-            }));
+    PolitikaEkle("upload", 20, 60);
 
     // AI çıkarımı tetikleme: her IP saatte 30 istek
-    options.AddPolicy("islem", context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 30,
-                Window = TimeSpan.FromHours(1),
-                QueueLimit = 0
-            }));
+    PolitikaEkle("islem", 30, 60);
 
     // Identity Razor Pages (giriş dahil): kaba kuvvet denemelerine karşı
-    options.AddPolicy("giris", context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "bilinmeyen",
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(15),
-                QueueLimit = 0
-            }));
+    PolitikaEkle("giris", 20, 15);
 
     options.OnRejected = async (context, ct) =>
     {
