@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.HttpOverrides;
 using CVMatch.Web.Data;
 using CVMatch.Web.Services;
 using System.Threading.RateLimiting;
@@ -116,13 +115,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(DbSeeder.AdminRole));
 });
 
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.ForwardedForHeaderName = "CF-Connecting-IP";
-    options.KnownIPNetworks.Clear();
-    options.KnownProxies.Clear();
-});
 
 var app = builder.Build();
 

@@ -8,7 +8,9 @@
 <div class="cvm-guvenlik-wrap">
     <h1 class="h3 mb-1">İki Aşamalı Doğrulama</h1>
     <p class="text-secondary mb-4">
-        Her girişte parolanızın yanı sıra doğrulama uygulamasındaki kod istenir.
+        Girişte parolanızın yanı sıra doğrulama uygulamasındaki kod istenir.
+        Kod ekranında "Bu cihazı hatırla" seçeneğini işaretlerseniz aynı tarayıcıda
+        bir süre kod sorulmaz; parola yine istenir.
     </p>
     
     <div class="card">
@@ -37,9 +39,6 @@
                     </a>
                     <a asp-page="./ResetAuthenticator" class="btn btn-outline-secondary">
                         Doğrulama Uygulamasını Sıfırla
-                    </a>
-                    <a asp-page="./Disable2fa" class="btn btn-outline-danger">
-                        İki Aşamalı Doğrulamayı Kapat
                     </a>
                 </div>
             }
