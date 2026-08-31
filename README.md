@@ -221,7 +221,7 @@ Düzenleme süresi dolmuş başvurular yeni başvuru yapılmasını engellemez. 
 
 Aday tarafındaki uçlar kimlik doğrulaması gerektirmediğinden IP bazlı istek sınırlaması
 uygulanır: CV yükleme saatte 20, yapay zekâ çıkarımı saatte 30, yönetici girişi 15
-dakikada 10 istekle sınırlıdır.
+dakikada 20 istekle sınırlıdır.
 
 Yüklenen PDF'lerde dosya imzası doğrulanır, boyut 10 MB ile sınırlıdır ve metin
 çıkarımı en fazla 30 sayfa okur. Bir başvuruya en fazla 50 yetenek kaydedilir.

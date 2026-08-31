@@ -15,8 +15,14 @@ CultureInfo.DefaultThreadCurrentUICulture = kultur;
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 8)),
-        // Birden fazla koleksiyon birleştiğinde satır çarpımını önler
-        mysql => mysql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+        mysql =>
+        {
+            // Birden fazla koleksiyon birleştiğinde satır çarpımını önler
+            mysql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+
+            // Uzak sunucuya bağlantı ara sıra kopabiliyor
+            mysql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+        }));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -133,7 +139,23 @@ app.Use(async (context, next) =>
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseRateLimiter();
+
+// Hız sınırı yalnızca kimlik doğrulama ve CV işleme uç noktalarında uygulanır;
+// panelde gezinmek veya 2FA kurmak sayaca girmez
+var sinirliYollar = new[]
+{
+    "/Identity/Account/Login",
+    "/Identity/Account/LoginWith2fa",
+    "/Identity/Account/LoginWithRecoveryCode",
+    "/Identity/Account/ForgotPassword",
+    "/Cv/Upload",
+    "/Cv/Start"
+};
+
+app.UseWhen(
+    ctx => sinirliYollar.Any(y => ctx.Request.Path.StartsWithSegments(y)),
+    dal => dal.UseRateLimiter());
+
 app.UseAuthentication();
 app.UseAuthorization();
 
