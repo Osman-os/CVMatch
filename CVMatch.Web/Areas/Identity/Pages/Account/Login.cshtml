@@ -11,8 +11,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form id="account" method="post">
-
+            <form id="account" method="post" asp-route-returnUrl="/Admin">
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>

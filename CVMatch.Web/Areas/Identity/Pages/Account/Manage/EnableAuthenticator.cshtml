@@ -1,5 +1,5 @@
 @page
-@model Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel
+@model CVMatch.Web.Areas.Identity.Pages.Account.Manage.EnableAuthenticatorModel
 @{
     ViewData["Title"] = "Doğrulama Uygulaması Kur";
     ViewData["Breadcrumb"] = "Yönetici Paneli / Güvenlik";
@@ -8,14 +8,16 @@
 <div class="cvm-guvenlik-wrap">
        <h1 class="h3 mb-1">Doğrulama Uygulaması Kur</h1>
     <p class="text-secondary mb-4">
-        
-        Girişte parolanıza ek olarak telefonunuzdaki koddan da soracağız.
+        Kurulumdan sonra her girişte parolanızın yanı sıra telefonunuzdaki
+        doğrulama kodu da istenecek.
     </p>
+    <div class="alert alert-info">
+        Yönetim paneline erişmek için iki aşamalı doğrulama kurulumu zorunludur.
+        Kurulum tamamlanana kadar panele giriş yapılamaz.
+    </div>
 
     <div class="card">
         <div class="card-body">
-
-            <partial name="_StatusMessage" for="StatusMessage" />
 
             <ol class="mb-0">
                 <li class="mb-3">

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using CVMatch.Web.Data;
 using CVMatch.Web.Services;
 using System.Threading.RateLimiting;
@@ -28,6 +29,10 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Tokens.AuthenticatorIssuer = "Yesilmavi IK";
+});
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<CVMatch.Web.Services.IEmailSender, CVMatch.Web.Services.SmtpEmailSender>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,
@@ -158,6 +163,43 @@ app.UseWhen(
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+var zorunlu2faMuafYollar = new[]
+{
+    "/Identity/Account/Manage/EnableAuthenticator",
+    "/Identity/Account/Manage/TwoFactorAuthentication",
+    "/Identity/Account/Manage/ShowRecoveryCodes",
+    "/Identity/Account/Manage/GenerateRecoveryCodes",
+    "/Identity/Account/Logout",
+    "/Identity/Account/Login"
+};
+
+app.Use(async (context, next) =>
+{
+    var yol = context.Request.Path;
+
+    var korumaliAlan =
+        yol.StartsWithSegments("/Admin") ||
+        yol.StartsWithSegments("/JobPostings");
+
+    if (korumaliAlan
+        && context.User.Identity?.IsAuthenticated == true
+        && !zorunlu2faMuafYollar.Any(m => yol.StartsWithSegments(m)))
+    {
+        var userManager = context.RequestServices
+            .GetRequiredService<UserManager<IdentityUser>>();
+
+        var kullanici = await userManager.GetUserAsync(context.User);
+
+        if (kullanici is not null && !await userManager.GetTwoFactorEnabledAsync(kullanici))
+        {
+            context.Response.Redirect("/Identity/Account/Manage/EnableAuthenticator");
+            return;
+        }
+    }
+
+    await next();
+});
 
 app.Use(async (context, next) =>
 {
