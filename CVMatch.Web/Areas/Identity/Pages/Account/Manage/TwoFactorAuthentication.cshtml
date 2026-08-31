@@ -1,0 +1,60 @@
+@page
+@model Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel
+@{
+    ViewData["Title"] = "İki Aşamalı Doğrulama";
+    ViewData["Breadcrumb"] = "Yönetici Paneli / Güvenlik";
+}
+
+<div class="cvm-guvenlik-wrap">
+    <h1 class="h3 mb-1">İki Aşamalı Doğrulama</h1>
+    <p class="text-secondary mb-4">
+        Girişte parolanıza ek olarak doğrulama uygulamasından kod istenir.
+    </p>
+    
+    <div class="card">
+        <div class="card-body">
+
+            @if (Model.Is2faEnabled)
+            {
+                <div class="alert alert-success">
+                    İki aşamalı doğrulama <strong>etkin</strong>.
+                </div>
+
+                <p class="text-secondary small">
+                    Kalan kurtarma kodu: <strong>@Model.RecoveryCodesLeft</strong>
+                </p>
+
+                @if (Model.RecoveryCodesLeft <= 3)
+                {
+                    <div class="alert alert-warning small">
+                        Kurtarma kodlarınız azaldı. Yeni kod üretmenizi öneririz.
+                    </div>
+                }
+
+                <div class="d-grid gap-2">
+                    <a asp-page="./GenerateRecoveryCodes" class="btn btn-outline-secondary">
+                        Yeni Kurtarma Kodu Üret
+                    </a>
+                    <a asp-page="./ResetAuthenticator" class="btn btn-outline-secondary">
+                        Doğrulama Uygulamasını Sıfırla
+                    </a>
+                    <a asp-page="./Disable2fa" class="btn btn-outline-danger">
+                        İki Aşamalı Doğrulamayı Kapat
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    İki aşamalı doğrulama <strong>kapalı</strong>. Hesabınızı korumak için
+                    etkinleştirmenizi öneririz.
+                </div>
+
+                <a asp-page="./EnableAuthenticator" class="btn btn-primary">
+                    Doğrulama Uygulaması Kur
+                </a>
+            }
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+@page
+@model Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel
+@{
+    ViewData["Title"] = "Kurtarma Kodlarınız";
+    ViewData["Breadcrumb"] = "Yönetici Paneli / Güvenlik";
+}
+
+<div class="cvm-guvenlik-wrap">
+    <h1 class="h3 mb-4">Kurtarma Kodlarınız</h1>
+    
+    <div class="alert alert-warning">
+        <strong>Bu kodlar yalnızca bir kez gösterilir.</strong>
+        Şimdi kopyalayıp güvenli bir yerde saklayın. Her kod bir kez kullanılabilir.
+    </div>
+
+    @if (Model.RecoveryCodes is { Length: > 0 })
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var kod in Model.RecoveryCodes)
+                    {
+                        <div class="col-md-6 mb-2">
+                            <code>@kod</code>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Gösterilecek kurtarma kodu yok. Yeni kod üretmek için
+            <a asp-page="./GenerateRecoveryCodes">bu sayfayı</a> kullanın.
+        </div>
+    }
+
+    <a asp-page="./TwoFactorAuthentication" class="btn btn-primary">Güvenlik Ayarlarına Dön</a>
+</div>

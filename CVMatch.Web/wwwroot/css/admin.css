@@ -644,3 +644,7 @@
 .admin-content > * {
     max-width: 1360px;
 }
+
+.cvm-guvenlik-wrap {
+    max-width: 720px;
+}

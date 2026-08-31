@@ -14,7 +14,9 @@ CultureInfo.DefaultThreadCurrentUICulture = kultur;
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 8))));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 8)),
+        // Birden fazla koleksiyon birleştiğinde satır çarpımını önler
+        mysql => mysql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -135,6 +137,17 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.Equals("/yonetim", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.Redirect("/Identity/Account/Login");
+        return;
+    }
+
+    await next();
+});
+
 var kapaliIdentitySayfalari = new[]
 {
     "/Identity/Account/Register",
@@ -142,15 +155,31 @@ var kapaliIdentitySayfalari = new[]
     "/Identity/Account/ConfirmEmail",
     "/Identity/Account/ConfirmEmailChange",
     "/Identity/Account/ResendEmailConfirmation",
-    "/Identity/Account/ExternalLogin",
-    "/Identity/Account/Manage"
+    "/Identity/Account/ExternalLogin"
+};
+
+var acikManageSayfalari = new[]
+{
+    "/Identity/Account/Manage/TwoFactorAuthentication",
+    "/Identity/Account/Manage/EnableAuthenticator",
+    "/Identity/Account/Manage/ResetAuthenticator",
+    "/Identity/Account/Manage/GenerateRecoveryCodes",
+    "/Identity/Account/Manage/ShowRecoveryCodes",
+    "/Identity/Account/Manage/Disable2fa"
 };
 
 app.Use(async (context, next) =>
 {
-    foreach (var yol in kapaliIdentitySayfalari)
+    var yol = context.Request.Path;
+
+    var acik = acikManageSayfalari.Any(a => yol.StartsWithSegments(a));
+
+    if (!acik)
     {
-        if (context.Request.Path.StartsWithSegments(yol))
+        var kapali = kapaliIdentitySayfalari.Any(k => yol.StartsWithSegments(k))
+            || yol.StartsWithSegments("/Identity/Account/Manage");
+
+        if (kapali)
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return;

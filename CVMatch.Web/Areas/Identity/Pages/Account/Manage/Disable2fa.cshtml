@@ -1,0 +1,25 @@
+@page
+@model Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.Disable2faModel
+@{
+    ViewData["Title"] = "İki Aşamalı Doğrulamayı Kapat";
+    ViewData["Breadcrumb"] = "Yönetici Paneli / Güvenlik";
+}
+
+<div class="cvm-guvenlik-wrap">
+    <h1 class="h3 mb-4">İki Aşamalı Doğrulamayı Kapat</h1>
+    <div class="alert alert-warning">
+        <strong>Bu işlem yalnızca doğrulamayı kapatır.</strong>
+        Doğrulama uygulamasındaki anahtar silinmez. Anahtarı değiştirmek isterseniz
+        <a asp-page="./ResetAuthenticator">uygulamayı sıfırlayın</a>.
+    </div>
+
+    <p class="text-secondary">
+        Kapattıktan sonra hesabınıza yalnızca parolayla girilir. Güvenlik açısından
+        açık bırakmanızı öneririz.
+    </p>
+
+    <form method="post">
+        <button type="submit" class="btn btn-danger">Doğrulamayı Kapat</button>
+        <a asp-page="./TwoFactorAuthentication" class="btn btn-outline-secondary">Vazgeç</a>
+    </form>
+</div>

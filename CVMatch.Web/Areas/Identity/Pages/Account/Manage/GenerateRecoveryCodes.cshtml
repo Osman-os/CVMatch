@@ -1,0 +1,24 @@
+@page
+@model Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel
+@{
+    ViewData["Title"] = "Kurtarma Kodu Üret";
+    ViewData["Breadcrumb"] = "Yönetici Paneli / Güvenlik";
+}
+
+<div class="cvm-guvenlik-wrap">
+    <h1 class="h3 mb-4">Kurtarma Kodu Üret</h1>
+    
+    <div class="alert alert-warning">
+        <strong>Kodlarınızı güvenli bir yerde saklayın.</strong>
+        Telefonunuza erişemediğinizde hesabınıza girmenin tek yolu bu kodlardır.
+    </div>
+
+    <p class="text-secondary">
+        Yeni kod ürettiğinizde eski kodlar geçersiz olur.
+    </p>
+
+    <form method="post">
+        <button type="submit" class="btn btn-danger">Yeni Kod Üret</button>
+        <a asp-page="./TwoFactorAuthentication" class="btn btn-outline-secondary">Vazgeç</a>
+    </form>
+</div>
