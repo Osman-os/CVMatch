@@ -162,13 +162,18 @@ veritabanına ekler.
 
 ### Aday tarafı
 
-Giriş (`/yonetim`) → iki aşamalı doğrulama kodu → genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi → eşleştirme sonuçları → yetenek yönetimi → yönetici yönetimi → güvenlik ayarları
-
-Yönetici giriş bağlantısı aday tarafındaki menüde yer almaz; `/yonetim` adresi doğrudan yazılarak erişilir. İlk girişte doğrulama uygulaması kurulumu zorunludur.
+CV yükle → işleniyor → bilgileri kontrol et → özet ve KVKK onayları →
+başvuru tamamlandı → düzenleme bağlantısıyla düzenle veya sil
 
 ### Yönetici tarafı
 
-Giriş → genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi → eşleştirme sonuçları → yetenek yönetimi → yönetici yönetimi
+Giriş (`/yonetim`) → parola → iki aşamalı doğrulama →
+genel bakış → aday listesi (filtreli) → aday detayı → ilan yönetimi →
+eşleştirme sonuçları → yetenek yönetimi → yönetici yönetimi → güvenlik ayarları
+
+Yönetici giriş bağlantısı aday tarafındaki menüde yer almaz; `/yonetim`
+adresi doğrudan yazılarak erişilir. İlk girişte doğrulama uygulaması
+kurulumu zorunludur.
 
 ## Mimari kararlar
 
