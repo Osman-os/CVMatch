@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.HttpOverrides;
 using CVMatch.Web.Data;
 using CVMatch.Web.Services;
 using System.Threading.RateLimiting;
@@ -115,6 +116,14 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(DbSeeder.AdminRole));
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardedForHeaderName = "CF-Connecting-IP";
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
 // Depolama klasörünü açılışta hazırla ve yapılandırmayı doğrula
@@ -205,7 +214,10 @@ app.Use(async (context, next) =>
 {
     if (context.Request.Path.Equals("/yonetim", StringComparison.OrdinalIgnoreCase))
     {
-        context.Response.Redirect("/Identity/Account/Login");
+        context.Response.Redirect(
+            context.User.Identity?.IsAuthenticated == true
+                ? "/Admin"
+                : "/Identity/Account/Login");
         return;
     }
 
