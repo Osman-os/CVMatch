@@ -4,19 +4,21 @@
     var adimlar = new[] { "CV Yükle", "Bilgileri Kontrol Et", "Onayla" };
 }
 
-<div class="cvm-steps">
+<nav class="cvm-steps" aria-label="Başvuru adımları">
     @for (var i = 1; i <= adimlar.Length; i++)
     {
         var sinif = i < Model ? "done" : i == Model ? "active" : "";
+        var durum = i < Model ? "Tamamlandı" : i == Model ? "Şu anki adım" : "Bekliyor";
 
-        <div class="cvm-step @sinif">
+        <div class="cvm-step @sinif" aria-current="@(i == Model ? "step" : null)">
             <span class="cvm-step-dot">@(i < Model ? "✓" : i.ToString())</span>
-            <span>@adimlar[i - 1]</span>
+            <span class="cvm-step-label">@adimlar[i - 1]</span>
+            <span class="visually-hidden">@durum</span>
         </div>
 
         if (i < adimlar.Length)
         {
-            <span class="cvm-step-line"></span>
+            <span class="cvm-step-line @(i < Model ? "done" : "")"></span>
         }
     }
-</div>
+</nav>

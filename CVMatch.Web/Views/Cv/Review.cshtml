@@ -6,16 +6,15 @@
 
 <partial name="_Steps" model="2" />
 
-<h1 class="h3 mb-1">Bilgilerinizi kontrol edin</h1>
+<h1 class="h3 mb-2">Bilgilerinizi kontrol edin</h1>
+<p class="cvm-lead mb-4">
+    CV'nizden çıkarılan bilgileri kontrol edin. Eksik veya hatalı alanları düzenleyebilirsiniz.
+</p>
 
 @if (TempData["Bilgi"] is string bilgi)
 {
     <div class="alert alert-warning">@bilgi</div>
 }
-
-<p class="text-secondary">
-    CV'nizden çıkarılan bilgileri kontrol edin. Eksik veya hatalı alanları düzenleyebilirsiniz.
-</p>
 
 @if (Model.IsManualEntry)
 {
@@ -49,36 +48,60 @@ else
     <div class="row g-4">
         <div class="col-lg-7 cvm-form-col">
 
-          
             @if (Model.UncertainFields.Count > 0)
             {
-                <p class="text-secondary small mb-3 d-flex align-items-center">
+                <div class="cvm-belirsizlik-not">
                     <span class="cvm-uncertain-mark cvm-uncertain-mark-inline"
                           data-uncertain="AI bu bilgiden emin değil. Lütfen CV'nizle karşılaştırarak kontrol edin."
                           tabindex="0">!</span>
-                    işaretli alanlar CV'nizden okunurken emin olunamadı.
-                </p>
+                    <span>İşaretli alanlar CV'nizden okunurken emin olunamadı, kontrol etmenizi öneririz.</span>
+                </div>
             }
+
+            <nav class="cvm-bolum-nav" aria-label="Form bölümleri">
+                <a href="#bolum-kisisel">Kişisel</a>
+                <a href="#bolum-adres">Adres</a>
+                <a href="#bolum-egitim">Eğitim</a>
+                <a href="#bolum-deneyim">Deneyim</a>
+                <a href="#bolum-projeler">Projeler</a>
+                <a href="#bolum-yetenekler">Yetenekler</a>
+                <a href="#bolum-baglantilar">Bağlantılar</a>
+            </nav>
 
             @await Html.PartialAsync("_CvFormFields", Model)
         </div>
 
         <div class="col-lg-5 cvm-preview-col">
-            <div class="card position-sticky" style="top: 1rem;">
+            <div class="card cvm-preview-kart">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h5 mb-0">CV Önizlemesi</h2>
-                        <span class="badge text-bg-light">PDF - Sayfa 1</span>
+                    <div class="cvm-preview-baslik">
+                        <h2 class="h6 mb-0">CV Önizlemesi</h2>
+                        <span class="cvm-preview-etiket">PDF · Sayfa 1</span>
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.PreviewImageFileName))
                     {
-                        <img src="@Url.Action("File", new { token = Model.Token, type = "preview" })"
-                             class="img-fluid border rounded" alt="CV önizlemesi" />
+                        <div class="cvm-preview-araclar">
+                            <button type="button" class="cvm-preview-btn" id="zoomOut"
+                                    aria-label="Uzaklaştır">−</button>
+                            <span class="cvm-preview-oran" id="zoomLabel">100%</span>
+                            <button type="button" class="cvm-preview-btn" id="zoomIn"
+                                    aria-label="Yakınlaştır">+</button>
+                            <button type="button" class="cvm-preview-btn" id="zoomReset"
+                                    aria-label="Sıfırla">Sıfırla</button>
+                            <a href="@Url.Action("File", new { token = Model.Token, type = "preview" })"
+                               target="_blank" rel="noopener"
+                               class="cvm-preview-btn cvm-preview-btn-son">Yeni sekmede aç</a>
+                        </div>
+
+                        <div class="cvm-preview-cerceve" id="previewFrame">
+                            <img src="@Url.Action("File", new { token = Model.Token, type = "preview" })"
+                                 id="previewImg" alt="CV önizlemesi" />
+                        </div>
                     }
                     else
                     {
-                        <p class="text-secondary small mb-0">Önizleme oluşturulamadı.</p>
+                        <p class="cvm-muted small mb-0">Önizleme oluşturulamadı.</p>
                     }
                 </div>
             </div>
@@ -93,23 +116,17 @@ else
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        window.initialSkills = @Html.Raw(
-                                                                                                                            System.Text.Json.JsonSerializer.Serialize(
-                                                                                                                                                            (Model.SkillsCsv ?? "").Split(',',
-                                                                                                                                                                                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
-    </script>
 
     <script>
+        window.initialSkills = @Html.Raw(
+            System.Text.Json.JsonSerializer.Serialize(
+                (Model.SkillsCsv ?? "").Split(',',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
+
         window.uncertainFields = @Html.Raw(
-                                                            System.Text.Json.JsonSerializer.Serialize(Model.UncertainFields));
+            System.Text.Json.JsonSerializer.Serialize(Model.UncertainFields));
     </script>
 
     <script src="/js/cv-review.js"></script>
-    <script>
-        // Önizlemeye tıklayınca yeni sekmede tam boyut
-        document.querySelector('.cvm-preview-col img')?.addEventListener('click', function () {
-        window.open(this.src, '_blank');
-        });
-    </script>
+    <script src="/js/cv-preview.js"></script>
 }

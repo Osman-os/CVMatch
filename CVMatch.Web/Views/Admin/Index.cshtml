@@ -23,54 +23,54 @@
     };
 }
 
-<h1 class="h3 mb-1">Genel Bakış</h1>
-<p class="text-secondary mb-4">Başvurular ve ilanlarla ilgili güncel durumu görüntüleyin.</p>
+<h1 class="h3 mb-2">Genel Bakış</h1>
+<p class="cvm-admin-lead mb-4">Başvurular ve ilanlarla ilgili güncel durumu görüntüleyin.</p>
 
 <div class="row g-3 mb-4">
     <div class="col-6 col-xl-3">
-        <div class="card h-100">
-            <div class="card-body d-flex align-items-center gap-3">
-                <span class="cvm-stat-icon cvm-icon-blue">◍</span>
-                <div>
-                    <div class="text-secondary small">Toplam Aday</div>
-                    <div class="h3 mb-0">@Model.ToplamBasvuru</div>
+        <div class="card h-100 cvm-stat-kart">
+            <div class="card-body">
+                <div class="cvm-stat-ust">
+                    <span class="cvm-stat-icon cvm-icon-blue">◍</span>
+                    <span class="cvm-stat-etiket">Toplam Aday</span>
                 </div>
+                <div class="cvm-stat-deger">@Model.ToplamBasvuru</div>
             </div>
         </div>
     </div>
 
     <div class="col-6 col-xl-3">
-        <div class="card h-100">
-            <div class="card-body d-flex align-items-center gap-3">
-                <span class="cvm-stat-icon cvm-icon-indigo">▤</span>
-                <div>
-                    <div class="text-secondary small">Yeni Başvuru</div>
-                    <div class="h3 mb-0">@Model.YeniBasvuru</div>
+        <div class="card h-100 cvm-stat-kart">
+            <div class="card-body">
+                <div class="cvm-stat-ust">
+                    <span class="cvm-stat-icon cvm-icon-indigo">▤</span>
+                    <span class="cvm-stat-etiket">Yeni Başvuru</span>
                 </div>
+                <div class="cvm-stat-deger">@Model.YeniBasvuru</div>
             </div>
         </div>
     </div>
 
     <div class="col-6 col-xl-3">
-        <div class="card h-100">
-            <div class="card-body d-flex align-items-center gap-3">
-                <span class="cvm-stat-icon cvm-icon-amber">◷</span>
-                <div>
-                    <div class="text-secondary small">Son 7 Gün</div>
-                    <div class="h3 mb-0">@Model.SonYediGun</div>
+        <div class="card h-100 cvm-stat-kart">
+            <div class="card-body">
+                <div class="cvm-stat-ust">
+                    <span class="cvm-stat-icon cvm-icon-amber">◷</span>
+                    <span class="cvm-stat-etiket">Son 7 Gün</span>
                 </div>
+                <div class="cvm-stat-deger">@Model.SonYediGun</div>
             </div>
         </div>
     </div>
 
     <div class="col-6 col-xl-3">
-        <div class="card h-100">
-            <div class="card-body d-flex align-items-center gap-3">
-                <span class="cvm-stat-icon cvm-icon-green">▣</span>
-                <div>
-                    <div class="text-secondary small">Yayındaki İlan</div>
-                    <div class="h3 mb-0">@Model.AktifIlan</div>
+        <div class="card h-100 cvm-stat-kart">
+            <div class="card-body">
+                <div class="cvm-stat-ust">
+                    <span class="cvm-stat-icon cvm-icon-green">▣</span>
+                    <span class="cvm-stat-etiket">Yayındaki İlan</span>
                 </div>
+                <div class="cvm-stat-deger">@Model.AktifIlan</div>
             </div>
         </div>
     </div>
@@ -87,7 +87,13 @@
 
                 @if (Model.SonBasvurular.Count == 0)
                 {
-                    <p class="text-secondary mb-0">Henüz başvuru yok.</p>
+                    <div class="cvm-admin-empty">
+                        <div class="cvm-admin-empty-icon">◍</div>
+                        <p class="mb-1 fw-semibold">Henüz aday başvurusu bulunmuyor</p>
+                        <p class="cvm-admin-muted small mb-0">
+                            Başvurular geldikçe burada görüntülenecek.
+                        </p>
+                    </div>
                 }
                 else
                 {
@@ -109,13 +115,13 @@
                                     <tr>
                                         <td class="fw-semibold">@b.FullName</td>
                                         <td>@(b.CityName ?? "—")</td>
-                                        <td class="small text-secondary">@b.DeneyimMetni</td>
+                                        <td class="small cvm-admin-muted">@b.DeneyimMetni</td>
                                         <td>
                                             <span class="cvm-chip @DurumSinifi(b.Status)">
                                                 @DurumMetni(b.Status)
                                             </span>
                                         </td>
-                                        <td class="small text-secondary">
+                                        <td class="small cvm-admin-muted">
                                             @b.SubmittedAt.ToLocalTime().ToString("dd MMMM yyyy")
                                         </td>
                                         <td class="text-end">
@@ -137,23 +143,61 @@
             <div class="card-body">
                 <h2 class="h5 mb-3">İlan Durumu</h2>
 
-                <div class="cvm-status-row">
-                    <span><span class="cvm-dot cvm-dot-green"></span> Yayında</span>
-                    <strong>@Model.AktifIlan İlan</strong>
-                </div>
-                <div class="cvm-status-row">
-                    <span><span class="cvm-dot cvm-dot-amber"></span> Taslak</span>
-                    <strong>@Model.TaslakIlan İlan</strong>
-                </div>
-                <div class="cvm-status-row">
-                    <span><span class="cvm-dot cvm-dot-gray"></span> Kapalı</span>
-                    <strong>@Model.KapaliIlan İlan</strong>
-                </div>
+                <a asp-controller="JobPostings" asp-action="Index" class="cvm-status-row">
+                    <span class="cvm-status-ad">
+                        <span class="cvm-dot cvm-dot-green"></span> Yayında
+                    </span>
+                    <strong>@Model.AktifIlan</strong>
+                </a>
+                <a asp-controller="JobPostings" asp-action="Index" class="cvm-status-row">
+                    <span class="cvm-status-ad">
+                        <span class="cvm-dot cvm-dot-amber"></span> Taslak
+                    </span>
+                    <strong>@Model.TaslakIlan</strong>
+                </a>
+                <a asp-controller="JobPostings" asp-action="Index" class="cvm-status-row">
+                    <span class="cvm-status-ad">
+                        <span class="cvm-dot cvm-dot-gray"></span> Kapalı
+                    </span>
+                    <strong>@Model.KapaliIlan</strong>
+                </a>
 
                 <div class="cvm-info-box mt-3">
                     Son 7 günde toplam @Model.SonYediGun yeni aday başvuruda bulundu.
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Hızlı İşlemler</h2>
+
+        <div class="cvm-hizli-islemler">
+            <a asp-controller="JobPostings" asp-action="Create" class="cvm-hizli-islem">
+                <span class="cvm-hizli-ikon">＋</span>
+                <span>
+                    <strong>Yeni İlan Oluştur</strong>
+                    <span class="cvm-hizli-aciklama">Pozisyon açın ve başvuru toplayın</span>
+                </span>
+            </a>
+
+            <a asp-action="Candidates" class="cvm-hizli-islem">
+                <span class="cvm-hizli-ikon">◍</span>
+                <span>
+                    <strong>Adayları Görüntüle</strong>
+                    <span class="cvm-hizli-aciklama">Başvuruları filtreleyip inceleyin</span>
+                </span>
+            </a>
+
+            <a asp-action="Skills" class="cvm-hizli-islem">
+                <span class="cvm-hizli-ikon">✦</span>
+                <span>
+                    <strong>Yetenekleri Yönet</strong>
+                    <span class="cvm-hizli-aciklama">Yetenek sözlüğünü düzenleyin</span>
+                </span>
+            </a>
         </div>
     </div>
 </div>

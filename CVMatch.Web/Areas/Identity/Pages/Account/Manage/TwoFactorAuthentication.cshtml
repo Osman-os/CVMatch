@@ -6,54 +6,83 @@
 }
 
 <div class="cvm-guvenlik-wrap">
-    <h1 class="h3 mb-1">İki Aşamalı Doğrulama</h1>
-    <p class="text-secondary mb-4">
+    <h1 class="h3 mb-2">İki Aşamalı Doğrulama</h1>
+    <p class="cvm-admin-lead mb-4">
         Girişte parolanızın yanı sıra doğrulama uygulamasındaki kod istenir.
         Kod ekranında "Bu cihazı hatırla" seçeneğini işaretlerseniz aynı tarayıcıda
         bir süre kod sorulmaz; parola yine istenir.
     </p>
-    
-    <div class="card">
-        <div class="card-body">
 
-            @if (Model.Is2faEnabled)
-            {
-                <div class="alert alert-success">
-                    İki aşamalı doğrulama <strong>etkin</strong>.
+    @if (Model.Is2faEnabled)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="cvm-guvenlik-durum">
+                    <span class="cvm-guvenlik-rozet">Etkin</span>
+                    <div>
+                        <div class="fw-semibold">İki aşamalı doğrulama açık</div>
+                        <div class="cvm-admin-muted small">
+                            Hesabınız parola ve doğrulama kodu ile korunuyor.
+                        </div>
+                    </div>
                 </div>
 
-                <p class="text-secondary small">
-                    Kalan kurtarma kodu: <strong>@Model.RecoveryCodesLeft</strong>
-                </p>
+                <div class="cvm-guvenlik-kod">
+                    <span>Kalan kurtarma kodu</span>
+                    <strong class="@(Model.RecoveryCodesLeft <= 3 ? "text-danger" : "")">
+                        @Model.RecoveryCodesLeft
+                    </strong>
+                </div>
 
                 @if (Model.RecoveryCodesLeft <= 3)
                 {
-                    <div class="alert alert-warning small">
-                        Kurtarma kodlarınız azaldı. Yeni kod üretmenizi öneririz.
+                    <div class="alert alert-warning small mb-0 mt-3">
+                        Kurtarma kodlarınız azaldı. Telefonunuza erişemediğinizde giriş
+                        yapabilmek için yeni kod üretmenizi öneririz.
                     </div>
                 }
+            </div>
+        </div>
 
-                <div class="d-grid gap-2">
-                    <a asp-page="./GenerateRecoveryCodes" class="btn btn-outline-secondary">
-                        Yeni Kurtarma Kodu Üret
-                    </a>
-                    <a asp-page="./ResetAuthenticator" class="btn btn-outline-secondary">
-                        Doğrulama Uygulamasını Sıfırla
-                    </a>
-                </div>
-            }
-            else
-            {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h6 mb-1">Kurtarma Kodları</h2>
+                <p class="cvm-admin-muted small mb-3">
+                    Her kod yalnızca bir kez kullanılabilir. Yeni kod ürettiğinizde
+                    eskiler geçersiz olur.
+                </p>
+                <a asp-page="./GenerateRecoveryCodes" class="btn btn-outline-secondary">
+                    Yeni Kurtarma Kodu Üret
+                </a>
+            </div>
+        </div>
+
+        <div class="card cvm-guvenlik-riskli">
+            <div class="card-body">
+                <h2 class="h6 mb-1">Doğrulama Uygulaması</h2>
+                <p class="cvm-admin-muted small mb-3">
+                    Telefonunuzu değiştirdiyseniz veya uygulamayı sildiyseniz sıfırlayın.
+                    Mevcut anahtar geçersiz olur ve kurulumu baştan yapmanız gerekir.
+                </p>
+                <a asp-page="./ResetAuthenticator" class="btn btn-outline-danger">
+                    Doğrulama Uygulamasını Sıfırla
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body">
                 <div class="alert alert-warning">
-                    İki aşamalı doğrulama <strong>kapalı</strong>. Hesabınızı korumak için
-                    etkinleştirmenizi öneririz.
+                    İki aşamalı doğrulama <strong>kapalı</strong>. Yönetim paneline
+                    erişebilmek için kurulum yapmanız gerekiyor.
                 </div>
 
                 <a asp-page="./EnableAuthenticator" class="btn btn-primary">
                     Doğrulama Uygulaması Kur
                 </a>
-            }
-
+            </div>
         </div>
-    </div>
+    }
 </div>

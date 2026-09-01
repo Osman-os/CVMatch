@@ -27,7 +27,7 @@
                         <thead>
                             <tr>
                                 <th>E-posta</th>
-                                <th class="text-end">İşlem</th>
+                                <th class="text-end" style="width: 120px;">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -35,7 +35,7 @@
                             {
                                 <tr>
                                     <td>
-                                        @y.Email
+                                        <span class="fw-semibold">@y.Email</span>
                                         @if (y.KendisiMi)
                                         {
                                             <span class="cvm-chip cvm-chip-blue ms-2">Siz</span>
@@ -45,12 +45,16 @@
                                         @if (!y.KendisiMi)
                                         {
                                             <form asp-action="RemoveUser" method="post" class="d-inline"
-                                                    onsubmit="return confirm('Bu yönetici listeden kaldırılacak. Emin misiniz?');">
+                                                  onsubmit="return confirm('@y.Email adresli yönetici kaldırılacak. Bu kişi artık panele giriş yapamayacak. Emin misiniz?');">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@y.Id" />
                                                 <button type="submit"
                                                         class="btn btn-sm btn-outline-danger">Kaldır</button>
                                             </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="cvm-admin-muted small">—</span>
                                         }
                                     </td>
                                 </tr>
@@ -61,15 +65,18 @@
             </div>
         </div>
 
-        <div class="text-secondary small mt-3">
+        <div class="cvm-admin-muted small mt-3">
             @Model.Yoneticiler.Count yönetici tanımlı. Sistemde en az bir yönetici bulunmalıdır.
         </div>
     </div>
 
     <div class="col-lg-5">
-        <div class="card">
+        <div class="card cvm-yonetici-ekle">
             <div class="card-body">
-                <h2 class="h5 mb-3">Yeni Yönetici Ekle</h2>
+                <h2 class="h5 mb-1">Yeni Yönetici Ekle</h2>
+                <p class="cvm-admin-muted small mb-3">
+                    Panele erişecek yeni bir kullanıcı tanımlayın.
+                </p>
 
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -85,14 +92,19 @@
 
                     <div class="mb-3">
                         <label asp-for="Yeni.Password" class="form-label"></label>
-                        <input asp-for="Yeni.Password" class="form-control" />
+                        <input asp-for="Yeni.Password" class="form-control" id="yeniParola" />
                         <span asp-validation-for="Yeni.Password" class="text-danger small"></span>
-                        <div class="form-text">
-                            En az 8 karakter; büyük harf, küçük harf, rakam ve simge içermelidir.
-                        </div>
+
+                        <ul class="cvm-parola-kural" id="parolaKurallari">
+                            <li data-kural="uzunluk">En az 8 karakter</li>
+                            <li data-kural="buyuk">Büyük harf</li>
+                            <li data-kural="kucuk">Küçük harf</li>
+                            <li data-kural="rakam">Rakam</li>
+                            <li data-kural="simge">Simge</li>
+                        </ul>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label asp-for="Yeni.ConfirmPassword" class="form-label"></label>
                         <input asp-for="Yeni.ConfirmPassword" class="form-control" />
                         <span asp-validation-for="Yeni.ConfirmPassword" class="text-danger small"></span>
@@ -103,6 +115,7 @@
 
                 <div class="cvm-info-box mt-3">
                     Eklenen yönetici doğrudan giriş yapabilir; e-posta doğrulaması istenmez.
+                    İlk girişinde iki aşamalı doğrulama kurulumu yapması gerekir.
                     Parolayı ilgili kişiyle güvenli bir kanaldan paylaşın.
                 </div>
             </div>
@@ -112,4 +125,31 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Parola kuralları yazdıkça işaretlenir; asıl doğrulama sunucuda
+        (function () {
+            const alan = document.getElementById('yeniParola');
+            const liste = document.getElementById('parolaKurallari');
+
+            if (!alan || !liste) return;
+
+            const kurallar = {
+                uzunluk: p => p.length >= 8,
+                buyuk:   p => /[A-ZÇĞİÖŞÜ]/.test(p),
+                kucuk:   p => /[a-zçğıöşü]/.test(p),
+                rakam:   p => /[0-9]/.test(p),
+                simge:   p => /[^A-Za-zÇĞİÖŞÜçğıöşü0-9]/.test(p)
+            };
+
+            alan.addEventListener('input', function () {
+                const parola = alan.value;
+
+                liste.querySelectorAll('li').forEach(function (satir) {
+                    const ad = satir.dataset.kural;
+                    satir.classList.toggle('saglandi', parola.length > 0 && kurallar[ad](parola));
+                });
+            });
+        })();
+    </script>
 }

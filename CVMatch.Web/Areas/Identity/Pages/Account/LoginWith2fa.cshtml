@@ -5,28 +5,48 @@
     ViewData["PageClass"] = "cvm-page-wide";
 }
 
-<div class="cvm-login-wrap">
-    <h1 class="h3 mb-1 text-center">Doğrulama Kodu</h1>
-    <p class="text-secondary text-center mb-4">
+<div class="cvm-login-wrap cvm-otp-wrap">
+    <h1 class="h3 mb-2 text-center">Doğrulama Kodu</h1>
+    <p class="cvm-lead text-center mb-4">
         Doğrulama uygulamanızdaki altı haneli kodu girin.
     </p>
 
     <div class="card">
         <div class="card-body">
-            <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+            <form method="post" asp-route-returnUrl="@Model.ReturnUrl" id="otpForm">
                 <input asp-for="RememberMe" type="hidden" />
 
                 @if (!ViewData.ModelState.IsValid)
                 {
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                 }
 
-                <div class="mb-3">
-                    <label asp-for="Input.TwoFactorCode" class="form-label">Kod</label>
-                    <input asp-for="Input.TwoFactorCode" class="form-control"
-                           autocomplete="off" inputmode="numeric" autofocus />
-                    <span asp-validation-for="Input.TwoFactorCode" class="text-danger small"></span>
-                </div>
+                @* Gerçek değer bu alanda; kutular yalnızca giriş arayüzü *@
+                <input asp-for="Input.TwoFactorCode" type="hidden" id="otpValue" />
+
+                <fieldset class="mb-4">
+                    <legend class="form-label mb-2">Doğrulama Kodu</legend>
+
+                    <div class="cvm-otp @(ViewData.ModelState.IsValid ? "" : "cvm-otp-error")"
+                         id="otpBoxes"
+                         role="group"
+                         aria-label="Altı haneli doğrulama kodu">
+
+                        @for (var i = 1; i <= 6; i++)
+                        {
+                            <input type="text"
+                                   class="cvm-otp-box"
+                                   inputmode="numeric"
+                                   pattern="[0-9]*"
+                                   maxlength="1"
+                                   autocomplete="@(i == 1 ? "one-time-code" : "off")"
+                                   aria-label="@i. hane"
+                                   data-otp-index="@i" />
+                        }
+                    </div>
+
+                    <span asp-validation-for="Input.TwoFactorCode" class="text-danger small d-block mt-2"></span>
+                </fieldset>
 
                 <div class="form-check mb-4">
                     <input asp-for="Input.RememberMachine" class="form-check-input" />
@@ -35,12 +55,14 @@
                     </label>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">Doğrula</button>
+                <button type="submit" class="btn btn-primary w-100" id="otpSubmit" disabled>
+                    Doğrula
+                </button>
 
                 <div class="mt-3 text-center">
                     <a asp-page="./LoginWithRecoveryCode"
                        asp-route-returnUrl="@Model.ReturnUrl"
-                       class="small text-decoration-none">
+                       class="small">
                         Telefonunuza erişemiyor musunuz?
                     </a>
                 </div>
@@ -51,5 +73,6 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/otp-input.js"></script>
     <script src="~/js/form-guard.js"></script>
 }

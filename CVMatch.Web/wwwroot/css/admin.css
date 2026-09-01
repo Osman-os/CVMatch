@@ -675,3 +675,314 @@
 .cvm-guvenlik-wrap {
     max-width: 720px;
 }
+
+/* ---- Genel bakış ---- */
+
+.cvm-admin-lead {
+    color: #475467;
+    font-size: .95rem;
+}
+
+.cvm-admin-muted {
+    color: #475467;
+}
+
+/* İstatistik kartları */
+
+.cvm-stat-kart .card-body {
+    padding: 20px 22px;
+}
+
+.cvm-stat-ust {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.cvm-stat-etiket {
+    font-size: .82rem;
+    font-weight: 500;
+    color: #475467;
+}
+
+.cvm-stat-deger {
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
+    color: var(--cvm-text);
+}
+
+.cvm-stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+}
+
+/* Boş durum */
+
+.cvm-admin-empty {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.cvm-admin-empty-icon {
+    font-size: 1.8rem;
+    color: #c4cad4;
+    margin-bottom: 10px;
+}
+
+/* İlan durumu satırları */
+
+.cvm-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 1px solid var(--cvm-border);
+    border-radius: 10px;
+    color: var(--cvm-text);
+    text-decoration: none;
+    font-size: .9rem;
+    transition: border-color .12s ease, background .12s ease;
+}
+
+.cvm-status-row:hover {
+    border-color: #c7d9fb;
+    background: #f8fbff;
+    color: var(--cvm-text);
+}
+
+.cvm-status-ad {
+    display: flex;
+    align-items: center;
+}
+
+/* Hızlı işlemler */
+
+.cvm-hizli-islemler {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.cvm-hizli-islem {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--cvm-border);
+    border-radius: 10px;
+    color: var(--cvm-text);
+    text-decoration: none;
+    transition: border-color .12s ease, background .12s ease;
+}
+
+.cvm-hizli-islem:hover {
+    border-color: #c7d9fb;
+    background: #f8fbff;
+    color: var(--cvm-text);
+}
+
+.cvm-hizli-islem strong {
+    display: block;
+    font-size: .92rem;
+    font-weight: 600;
+}
+
+.cvm-hizli-ikon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: var(--cvm-primary-soft);
+    color: var(--cvm-primary);
+    font-size: 1rem;
+}
+
+.cvm-hizli-aciklama {
+    display: block;
+    margin-top: 2px;
+    font-size: .8rem;
+    color: #667085;
+}
+
+@media (max-width: 992px) {
+    .cvm-hizli-islemler {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---- İlan tablosu işlemleri ---- */
+
+.cvm-islem-grup {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cvm-islem-menu-btn {
+    padding: 4px 10px;
+    line-height: 1.2;
+    font-size: 1rem;
+}
+
+.cvm-islem-grup .dropdown-menu {
+    min-width: 220px;
+    padding: 6px;
+    border-color: var(--cvm-border);
+    box-shadow: 0 6px 20px rgba(16, 24, 40, .1);
+}
+
+.cvm-islem-grup .dropdown-item {
+    border-radius: 6px;
+    font-size: .875rem;
+    padding: 8px 12px;
+}
+
+.cvm-islem-grup .dropdown-item.text-danger:hover {
+    background: #fef2f2;
+}
+
+/* İlan adı en güçlü sütun */
+.admin-content .table td .fw-semibold {
+    font-size: .95rem;
+}
+
+/* Açılır menü tablo kabının dışına taşabilsin */
+.admin-content .table-responsive:has(.dropdown-menu.show) {
+    overflow: visible;
+}
+
+.admin-content .card:has(.dropdown-menu.show) {
+    overflow: visible;
+}
+
+/* ---- Yetenekler ---- */
+
+.cvm-yetenek-arac {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.cvm-yetenek-arac input[type="search"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+.cvm-yetenek-arac .btn-group .btn.active {
+    background: var(--cvm-primary);
+    border-color: var(--cvm-primary);
+    color: #fff;
+}
+
+.cvm-yetenek-bos {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.cvm-yetenek-ekle {
+    position: sticky;
+    top: 16px;
+}
+
+/* ---- Yöneticiler ---- */
+
+.cvm-yonetici-ekle {
+    position: sticky;
+    top: 16px;
+}
+
+.cvm-parola-kural {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px 12px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cvm-parola-kural li {
+    position: relative;
+    padding-left: 20px;
+    font-size: .8rem;
+    color: #667085;
+    transition: color .12s ease;
+}
+
+.cvm-parola-kural li::before {
+    content: "○";
+    position: absolute;
+    left: 2px;
+    color: #c4cad4;
+}
+
+.cvm-parola-kural li.saglandi {
+    color: #12794f;
+}
+
+.cvm-parola-kural li.saglandi::before {
+    content: "✓";
+    color: #12794f;
+}
+
+/* ---- Aday listesi ---- */
+
+.cvm-aday-arac {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.cvm-aday-arac input[type="search"] {
+    flex: 1;
+}
+
+.cvm-filtre-aktif {
+    border-color: var(--cvm-primary);
+    color: var(--cvm-primary);
+}
+
+/* ---- Güvenlik merkezi ---- */
+
+.cvm-guvenlik-durum {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--cvm-border);
+}
+
+.cvm-guvenlik-rozet {
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: #ecf8f1;
+    color: #12794f;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.cvm-guvenlik-kod {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    font-size: .9rem;
+    color: #475467;
+}
+
+.cvm-guvenlik-kod strong {
+    font-size: 1.3rem;
+    color: var(--cvm-text);
+}
+
+.cvm-guvenlik-riskli {
+    border-color: #f0cfcd;
+}

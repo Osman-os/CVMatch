@@ -98,10 +98,23 @@
 @if (Model.Ilanlar.Count == 0)
 {
     <div class="card">
-        <div class="card-body text-center text-secondary py-5">
-            @(Model.FiltreVarMi
-                ? "Bu filtrelere uyan ilan bulunamadı."
-                : "Henüz ilan oluşturulmamış. Eşleştirme yapabilmek için en az bir ilan gerekir.")
+        <div class="card-body cvm-admin-empty">
+            <div class="cvm-admin-empty-icon">▤</div>
+
+            @if (Model.FiltreVarMi)
+            {
+                <p class="mb-1 fw-semibold">Bu filtrelere uyan ilan bulunamadı</p>
+                <p class="cvm-admin-muted small mb-3">Filtreleri değiştirip yeniden deneyin.</p>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Filtreleri Temizle</a>
+            }
+            else
+            {
+                <p class="mb-1 fw-semibold">Henüz ilan oluşturulmamış</p>
+                <p class="cvm-admin-muted small mb-3">
+                    Eşleştirme yapabilmek ve başvuru alabilmek için en az bir ilan gerekir.
+                </p>
+                <a asp-action="Create" class="btn btn-primary btn-sm">+ Yeni İlan Oluştur</a>
+            }
         </div>
     </div>
 }
@@ -117,8 +130,8 @@ else
                             <th>İlan Tipi</th>
                             <th>Şehir</th>
                             <th>Minimum Deneyim</th>
-                            <th>Yetenek</th>
-                            <th>Başvuru</th>
+                            <th class="text-center">Yetenek</th>
+                            <th class="text-center">Başvuru</th>
                             <th>İlan Durumu</th>
                             <th class="text-end">İşlemler</th>
                         </tr>
@@ -142,11 +155,11 @@ else
                                 <td class="small text-secondary">
                                     @(i.MinExperienceYears == 0 ? "—" : $"{i.MinExperienceYears} yıl")
                                 </td>
-                                <td class="small text-secondary">@i.SkillCount</td>
-                                <td>
+                                <td class="text-center small cvm-admin-muted">@i.SkillCount</td>
+                                <td class="text-center">
                                     @if (i.BasvuranSayisi == 0)
                                     {
-                                        <span class="text-secondary small">—</span>
+                                        <span class="cvm-admin-muted small">—</span>
                                     }
                                     else
                                     {
@@ -156,47 +169,67 @@ else
                                 </td>
                                 <td><span class="cvm-chip @DurumSinifi(i.Status)">@DurumMetni(i.Status)</span></td>
                                 <td class="text-end text-nowrap">
-                                    <a asp-action="Edit" asp-route-id="@i.Id"
-                                       class="small text-decoration-none">Düzenle</a>
-
-                                    <span class="text-secondary mx-1">|</span>
-
-                                    @if (i.Status == JobPostingStatus.Active)
-                                    {
-                                        <a asp-action="Match" asp-route-id="@i.Id"
-                                           class="small text-decoration-none">Eşleştirme Sonuçları</a>
-
-                                        <span class="text-secondary mx-1">|</span>
-
-                                        <button type="button"
-                                                class="btn btn-link btn-sm p-0 align-baseline text-decoration-none js-link-kopyala"
-                                                data-url="@Url.Action("Apply", "Cv", new { id = i.Id }, Context.Request.Scheme)">
-                                            Bağlantıyı Kopyala
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <span class="small text-secondary"
-                                              title="Eşleştirme için ilan yayında olmalı">Eşleştirme Sonuçları</span>
-                                    }
-
-                                    <form asp-action="ChangeStatus" method="post" class="d-inline ms-2">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@i.Id" />
-
-                                        @if (i.Status != JobPostingStatus.Active)
+                                    <div class="cvm-islem-grup">
+                                        @if (i.Status == JobPostingStatus.Active)
                                         {
-                                            <button type="submit" name="status"
-                                                    value="@((int)JobPostingStatus.Active)"
-                                                    class="btn btn-sm btn-outline-success">Yayınla</button>
+                                            <a asp-action="Match" asp-route-id="@i.Id"
+                                               class="btn btn-sm btn-outline-primary">Eşleştirme Sonuçları</a>
                                         }
                                         else
                                         {
-                                            <button type="submit" name="status"
-                                                    value="@((int)JobPostingStatus.Closed)"
-                                                    class="btn btn-sm btn-outline-secondary">Kapat</button>
+                                            <span class="btn btn-sm btn-outline-secondary disabled"
+                                                  title="Eşleştirme için ilan yayında olmalı">Eşleştirme Sonuçları</span>
                                         }
-                                    </form>
+
+                                        <div class="dropdown">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary cvm-islem-menu-btn"
+                                                    data-bs-toggle="dropdown"
+                                                    data-bs-strategy="fixed"
+                                                    aria-expanded="false"
+                                                    aria-label="Diğer işlemler">⋯</button>
+
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" asp-action="Edit" asp-route-id="@i.Id">
+                                                        Düzenle
+                                                    </a>
+                                                </li>
+
+                                                @if (i.Status == JobPostingStatus.Active)
+                                                {
+                                                    <li>
+                                                        <button type="button" class="dropdown-item js-link-kopyala"
+                                                                data-url="@Url.Action("Apply", "Cv", new { id = i.Id }, Context.Request.Scheme)">
+                                                            Başvuru Bağlantısını Kopyala
+                                                        </button>
+                                                    </li>
+                                                }
+
+                                                <li><hr class="dropdown-divider" /></li>
+
+                                                <li>
+                                                    <form asp-action="ChangeStatus" method="post" class="m-0">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@i.Id" />
+
+                                                        @if (i.Status != JobPostingStatus.Active)
+                                                        {
+                                                            <button type="submit" name="status"
+                                                                    value="@((int)JobPostingStatus.Active)"
+                                                                    class="dropdown-item">Yayınla</button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="submit" name="status"
+                                                                    value="@((int)JobPostingStatus.Closed)"
+                                                                    class="dropdown-item text-danger">İlanı Kapat</button>
+                                                        }
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         }

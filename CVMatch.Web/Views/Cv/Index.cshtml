@@ -1,6 +1,7 @@
 @model CVMatch.Web.Models.ViewModels.CvHomeViewModel
 @{
     ViewData["Title"] = "Açık İlanlar";
+    ViewData["PageClass"] = "cvm-page-wide";
 }
 
 @if (User.Identity?.IsAuthenticated == true)
@@ -25,13 +26,14 @@
     </div>
 </div>
 
-<section class="mb-5">
+<section class="cvm-ilan-bolum">
     @if (Model.Ilanlar.Count == 0)
     {
         <div class="card">
-            <div class="card-body p-5 text-center">
+            <div class="card-body cvm-empty">
+                <div class="cvm-empty-icon">▤</div>
                 <h2 class="h5 mb-2">Şu anda açık ilan bulunmuyor</h2>
-                <p class="text-secondary mb-0">
+                <p class="cvm-muted mb-0">
                     Yeni pozisyonlar açıldığında bu sayfada listelenecek.
                 </p>
             </div>
@@ -39,58 +41,73 @@
     }
     else
     {
-        <h2 class="h4 mb-3">Açık İlanlar</h2>
+        <div class="d-flex justify-content-between align-items-baseline mb-3">
+            <h2 class="h4 mb-0">Açık İlanlar</h2>
+            <span class="cvm-muted small">@Model.Ilanlar.Count pozisyon</span>
+        </div>
 
-                <div class="d-flex flex-column gap-3">
+        <div class="d-flex flex-column gap-3">
             @foreach (var ilan in Model.Ilanlar)
             {
-                <div class="card">
-                    <div class="card-body p-4">
-                        <div class="row g-3 align-items-center">
+                <div class="card cvm-ilan-kart">
+                    <div class="card-body">
+                        <div class="row g-4 align-items-center">
 
                             <div class="col-lg-9">
-                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                                     <h3 class="h5 mb-0">@ilan.Title</h3>
-                                    <span class="cvm-chip @(ilan.EmploymentType == CVMatch.Web.Models.Enums.EmploymentType.Internship ? "cvm-chip-purple" : "cvm-chip-blue")">
+                                    <span class="cvm-badge @(ilan.EmploymentType == CVMatch.Web.Models.Enums.EmploymentType.Internship ? "cvm-badge-purple" : "cvm-badge-blue")">
                                         @ilan.TurMetni
                                     </span>
                                 </div>
 
-                                <div class="text-secondary small mb-2">
-                                        @(ilan.CityName ?? "Konum belirtilmemiş") · @ilan.DeneyimMetni
+                                <div class="cvm-ilan-meta mb-3">
+                                    <span>@(ilan.CityName ?? "Konum belirtilmemiş")</span>
+                                    <span class="cvm-ilan-meta-ayrac">·</span>
+                                    <span>@ilan.DeneyimMetni</span>
+                                    <span class="cvm-ilan-meta-ayrac">·</span>
+                                    <span>@ilan.CreatedAt.ToLocalTime().ToString("dd MMMM yyyy") tarihinde yayınlandı</span>
                                 </div>
 
                                 @if (!string.IsNullOrWhiteSpace(ilan.Description))
                                 {
-                                    var ozet = ilan.Description!.Length > 160
-                                        ? ilan.Description[..160].TrimEnd() + "…"
+                                    var ozet = ilan.Description!.Length > 180
+                                        ? ilan.Description[..180].TrimEnd() + "…"
                                         : ilan.Description;
 
-                                    <p class="small text-secondary mb-2">@ozet</p>
+                                    <p class="cvm-ilan-ozet mb-3">@ozet</p>
                                 }
 
-                                @if (ilan.ZorunluYetenekler.Count > 0 || ilan.TercihYetenekler.Count > 0)
+                                @{
+                                    // Kart taranabilir kalsın diye ilk beş yetenek gösterilir
+                                    var tumYetenekler = ilan.ZorunluYetenekler
+                                        .Concat(ilan.TercihYetenekler)
+                                        .ToList();
+
+                                    var gosterilecek = tumYetenekler.Take(5).ToList();
+                                    var kalan = tumYetenekler.Count - gosterilecek.Count;
+                                }
+
+                                @if (gosterilecek.Count > 0)
                                 {
-                                    <div>
-                                        @foreach (var y in ilan.ZorunluYetenekler)
+                                    <div class="cvm-tag-grup">
+                                        @foreach (var y in gosterilecek)
                                         {
-                                            <span class="cvm-chip cvm-chip-blue">@y</span>
+                                            var zorunlu = ilan.ZorunluYetenekler.Contains(y);
+                                            <span class="cvm-tag @(zorunlu ? "cvm-tag-vurgulu" : "")">@y</span>
                                         }
-                                        @foreach (var y in ilan.TercihYetenekler)
+
+                                        @if (kalan > 0)
                                         {
-                                            <span class="cvm-chip">@y</span>
+                                            <span class="cvm-tag cvm-tag-sayac">+@kalan</span>
                                         }
                                     </div>
                                 }
                             </div>
 
-                            <div class="col-lg-3 text-lg-end">
+                            <div class="col-lg-3">
                                 <a asp-action="Apply" asp-route-id="@ilan.Id"
-                                   class="btn btn-primary w-100">Bu İlana Başvur</a>
-
-                                <div class="cvm-ilan-tarih">
-                                    @ilan.CreatedAt.ToLocalTime().ToString("dd MMMM yyyy") tarihinde yayınlandı
-                                </div>
+                                   class="btn btn-primary btn-lg w-100">Bu İlana Başvur</a>
                             </div>
 
                         </div>
@@ -102,16 +119,16 @@
 </section>
 
 <section class="cvm-how" id="nasil-calisir">
-    <h2 class="h4 text-center mb-1">Nasıl Çalışır?</h2>
-    <p class="text-center text-secondary mb-4">Üç adımda başvurunuzu tamamlayın.</p>
+    <h2 class="h4 text-center mb-2">Nasıl Çalışır?</h2>
+    <p class="text-center cvm-muted mb-4">Üç adımda başvurunuzu tamamlayın.</p>
 
     <div class="row g-3">
         <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body p-4">
+            <div class="card h-100 cvm-adim-kart">
+                <div class="card-body">
                     <span class="cvm-step-num">1</span>
-                    <h3 class="h6">İlanı seçin, CV'nizi yükleyin</h3>
-                    <p class="text-secondary small mb-0">
+                    <h3 class="h6 mb-2">İlanı seçin, CV'nizi yükleyin</h3>
+                    <p class="cvm-muted small mb-0">
                         Başvurmak istediğiniz ilanı seçip PDF biçimindeki CV'nizi ekleyin.
                         Üyelik veya parola gerekmez.
                     </p>
@@ -120,11 +137,11 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body p-4">
+            <div class="card h-100 cvm-adim-kart">
+                <div class="card-body">
                     <span class="cvm-step-num">2</span>
-                    <h3 class="h6">Bilgilerinizi kontrol edin</h3>
-                    <p class="text-secondary small mb-0">
+                    <h3 class="h6 mb-2">Bilgilerinizi kontrol edin</h3>
+                    <p class="cvm-muted small mb-0">
                         CV'nizden çıkarılan bilgileri gözden geçirin ve eksikleri tamamlayın.
                     </p>
                 </div>
@@ -132,11 +149,11 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body p-4">
+            <div class="card h-100 cvm-adim-kart">
+                <div class="card-body">
                     <span class="cvm-step-num">3</span>
-                    <h3 class="h6">Başvurunuzu onaylayın</h3>
-                    <p class="text-secondary small mb-0">
+                    <h3 class="h6 mb-2">Başvurunuzu onaylayın</h3>
+                    <p class="cvm-muted small mb-0">
                         Özetinizi kontrol ederek başvurunuzu tamamlayın ve size özel
                         düzenleme bağlantınızı alın.
                     </p>

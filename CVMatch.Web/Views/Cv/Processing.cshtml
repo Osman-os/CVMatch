@@ -9,25 +9,28 @@
 
 <div class="cvm-processing-wrap">
     <div class="card">
-        <div class="card-body text-center p-5">
+        <div class="card-body cvm-processing-body">
 
-            <div class="cvm-spinner mb-4"></div>
+            <div class="cvm-spinner"></div>
 
             <h1 class="h4 mb-2">CV'niz analiz ediliyor</h1>
-            <p class="text-secondary mb-4" id="durumMetni">
-                Bilgileriniz çıkarılıyor. Bu işlem yarım dakika kadar sürebilir.
+            <p class="cvm-lead mb-1" id="durumMetni">
+                Bilgileriniz çıkarılıyor.
+            </p>
+            <p class="cvm-muted small mb-4">
+                Bu işlem yarım dakika kadar sürebilir.
             </p>
 
-            <ul class="cvm-steps-list text-start" id="adimListesi">
+            <ul class="cvm-steps-list" id="adimListesi">
                 <li data-adim="1">Dosya okunuyor</li>
                 <li data-adim="2">Önizleme oluşturuluyor</li>
                 <li data-adim="3">Metin çıkarılıyor</li>
                 <li data-adim="4">Bilgiler yapılandırılıyor</li>
             </ul>
 
-            <p class="text-secondary small mt-4 mb-0">
+            <div class="cvm-processing-uyari">
                 Lütfen bu sayfayı kapatmayın.
-            </p>
+            </div>
 
         </div>
     </div>

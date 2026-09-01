@@ -21,30 +21,49 @@
 
 <div class="row g-4">
     <div class="col-lg-7">
+
+        <div class="card mb-3">
+            <div class="card-body cvm-yetenek-arac">
+                <input type="search" id="yetenekArama" class="form-control"
+                       placeholder="Yetenek ara" autocomplete="off"
+                       aria-label="Yetenek ara" />
+
+                <div class="btn-group" role="group" aria-label="Kullanım filtresi">
+                    <button type="button" class="btn btn-sm btn-outline-secondary active"
+                            data-filtre="tumu">Tümü</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                            data-filtre="kullanimda">Kullanımda</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                            data-filtre="bos">Kullanılmıyor</button>
+                </div>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0" id="yetenekTablo">
                         <thead>
                             <tr>
                                 <th>Yetenek</th>
                                 <th class="text-center" style="width: 100px;">Aday</th>
                                 <th class="text-center" style="width: 100px;">İlan</th>
-                                <th class="text-end" style="width: 100px;">İşlem</th>
+                                <th class="text-end" style="width: 120px;">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var y in Model.Yetenekler)
                             {
-                                <tr>
-                                    <td>@y.Name</td>
-                                    <td class="text-center text-secondary">@y.AdaySayisi</td>
-                                    <td class="text-center text-secondary">@y.IlanSayisi</td>
+                                <tr data-ad="@y.Name.ToLowerInvariant()"
+                                    data-kullanim="@(y.SilinebilirMi ? "bos" : "kullanimda")">
+                                    <td class="fw-semibold">@y.Name</td>
+                                    <td class="text-center cvm-admin-muted">@y.AdaySayisi</td>
+                                    <td class="text-center cvm-admin-muted">@y.IlanSayisi</td>
                                     <td class="text-end">
                                         @if (y.SilinebilirMi)
                                         {
                                             <form asp-action="DeleteSkill" method="post" class="d-inline"
-                                                  onsubmit="return confirm('Bu yetenek listeden kaldırılacak. Emin misiniz?');">
+                                                  onsubmit="return confirm('@y.Name yeteneği listeden kaldırılacak. Emin misiniz?');">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@y.Id" />
                                                 <button type="submit"
@@ -53,7 +72,7 @@
                                         }
                                         else
                                         {
-                                            <span class="text-secondary small">Kullanımda</span>
+                                            <span class="cvm-chip cvm-chip-green">Kullanımda</span>
                                         }
                                     </td>
                                 </tr>
@@ -61,18 +80,26 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="cvm-yetenek-bos d-none" id="yetenekBos">
+                    <div class="cvm-admin-empty-icon">✦</div>
+                    <p class="mb-0 cvm-admin-muted small">Aramanıza uyan yetenek bulunamadı.</p>
+                </div>
             </div>
         </div>
 
-        <div class="text-secondary small mt-3">
+        <div class="cvm-admin-muted small mt-3" id="yetenekSayac">
             @Model.Yetenekler.Count yetenek tanımlı.
         </div>
     </div>
 
     <div class="col-lg-5">
-        <div class="card">
+        <div class="card cvm-yetenek-ekle">
             <div class="card-body">
-                <h2 class="h5 mb-3">Yeni Yetenek Ekle</h2>
+                <h2 class="h5 mb-1">Yeni Yetenek Ekle</h2>
+                <p class="cvm-admin-muted small mb-3">
+                    İlanlarda aranabilecek bir yetenek tanımlayın.
+                </p>
 
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -100,4 +127,66 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Liste tümüyle basıldığı için filtreleme istemci tarafında yapılır
+        (function () {
+            const arama = document.getElementById('yetenekArama');
+            const tablo = document.getElementById('yetenekTablo');
+            const bosKutu = document.getElementById('yetenekBos');
+            const sayac = document.getElementById('yetenekSayac');
+
+            if (!arama || !tablo) return;
+
+            const satirlar = Array.from(tablo.querySelectorAll('tbody tr'));
+            const dugmeler = Array.from(document.querySelectorAll('[data-filtre]'));
+            const toplam = satirlar.length;
+
+            let aktifFiltre = 'tumu';
+
+            // Türkçede I/ı/İ/i ayrımı arama sonucunu bozuyor;
+            // karşılaştırma öncesi hepsi i'ye indirgenir
+            function sadelestir(metin) {
+                return metin
+                    .replace(/[İIı]/g, 'i')
+                    .toLowerCase();
+            }
+
+            function uygula() {
+                const metin = sadelestir(arama.value.trim());
+                let gorunen = 0;
+
+                satirlar.forEach(function (satir) {
+                    const ad = sadelestir(satir.dataset.ad);
+
+                    const adUyar = !metin || ad.includes(metin);
+                    const filtreUyar = aktifFiltre === 'tumu'
+                        || satir.dataset.kullanim === aktifFiltre;
+
+                    const goster = adUyar && filtreUyar;
+                    satir.classList.toggle('d-none', !goster);
+
+                    if (goster) gorunen++;
+                });
+
+                bosKutu.classList.toggle('d-none', gorunen > 0);
+                tablo.classList.toggle('d-none', gorunen === 0);
+
+                sayac.textContent = (metin || aktifFiltre !== 'tumu')
+                    ? `${toplam} yetenekten ${gorunen} tanesi gösteriliyor.`
+                    : `${toplam} yetenek tanımlı.`;
+            }
+
+            arama.addEventListener('input', uygula);
+
+            dugmeler.forEach(function (dugme) {
+                dugme.addEventListener('click', function () {
+                    dugmeler.forEach(d => d.classList.remove('active'));
+                    dugme.classList.add('active');
+                    aktifFiltre = dugme.dataset.filtre;
+                    uygula();
+                });
+            });
+        })();
+    </script>
 }

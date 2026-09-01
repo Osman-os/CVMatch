@@ -50,17 +50,21 @@
     };
 }
 
-<h1 class="h3 mb-1">Adaylar</h1>
-<p class="text-secondary mb-4">Adayları arayın, filtreleyin ve inceleyin.</p>
+<h1 class="h3 mb-2">Adaylar</h1>
+<p class="cvm-admin-lead mb-4">Adayları arayın, filtreleyin ve inceleyin.</p>
 
 <form method="get" asp-action="Candidates" id="filterForm">
 
     <div class="card mb-3">
-        <div class="card-body d-flex gap-3 align-items-center">
-            <input type="text" name="arama" value="@Model.Arama"
-                   class="form-control" placeholder="Aday ara — ad, e-posta veya başvuru no" />
+        <div class="card-body cvm-aday-arac">
+            <input type="search" name="arama" value="@Model.Arama"
+                   class="form-control" autocomplete="off"
+                   placeholder="Aday ara — ad, e-posta veya başvuru numarası" />
 
-            <button type="button" class="btn btn-outline-secondary flex-shrink-0"
+            <button type="submit" class="btn btn-primary flex-shrink-0">Ara</button>
+
+            <button type="button"
+                    class="btn btn-outline-secondary flex-shrink-0 @(Model.AktifFiltreSayisi > 0 ? "cvm-filtre-aktif" : "")"
                     data-bs-toggle="offcanvas" data-bs-target="#filtrePaneli">
                 Gelişmiş Filtreler
                 @if (Model.AktifFiltreSayisi > 0)
@@ -176,8 +180,24 @@
 @if (Model.Adaylar.Count == 0)
 {
     <div class="card">
-        <div class="card-body text-center text-secondary py-5">
-            @(Model.FiltreVarMi ? "Bu filtrelere uyan aday bulunamadı." : "Henüz başvuru yok.")
+        <div class="card-body cvm-admin-empty">
+            <div class="cvm-admin-empty-icon">◍</div>
+
+            @if (Model.FiltreVarMi)
+            {
+                <p class="mb-1 fw-semibold">Bu filtrelere uyan aday bulunamadı</p>
+                <p class="cvm-admin-muted small mb-3">
+                    Arama terimini veya filtreleri değiştirip yeniden deneyin.
+                </p>
+                <a asp-action="Candidates" class="btn btn-sm btn-outline-secondary">Filtreleri Temizle</a>
+            }
+            else
+            {
+                <p class="mb-1 fw-semibold">Henüz onaylanmış aday başvurusu bulunmuyor</p>
+                <p class="cvm-admin-muted small mb-0">
+                    Adaylar başvurularını tamamladıkça burada görüntülenecek.
+                </p>
+            }
         </div>
     </div>
 }
